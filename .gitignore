@@ -1,5 +1,6 @@
 LOCAETA.code-workspace
 notebooks/
+notebooks/.DS_Store
 outputs/
 .DS_Store
 __pycache__/
