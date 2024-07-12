@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../github/LOCAETA"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../RCM/INMAP/inmap-1.9.6/eval"
+		}
+	],
+	"settings": {}
+}

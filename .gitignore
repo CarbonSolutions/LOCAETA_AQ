@@ -1,0 +1,4 @@
+notebooks/
+outputs/
+.DS_Store
+__pycache__/
