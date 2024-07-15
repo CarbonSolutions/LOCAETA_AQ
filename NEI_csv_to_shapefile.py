@@ -15,29 +15,30 @@ package_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'LOCAETA_
 if package_path not in sys.path:
     sys.path.append(package_path)
 
-import my_emissions
+import emission_processing
 
 def main():
 
-    # read county polygon information from this shapefile 
+    # read county polygon information from this shapefile (needed for non-point sources)
     shapefile_path = "/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/emiss_shp2020/Census/cb_2020_us_county_500k.shp"
     gdf_fips = gpd.read_file(shapefile_path)
     gdf_fips['FIPS'] = gdf_fips['STATEFP'].astype(str) + gdf_fips['COUNTYFP'].astype(str)
     print(gdf_fips[['STATEFP', 'COUNTYFP', 'FIPS']].head())
 
-    # directory where the NEI zip files have been extracted
+    # directory with all each source directories created from the extracting NEI zip files.
+    # zip files are obtained from https://gaftp.epa.gov/air/emismod/2020/2020emissions/
     nei_raw_data_dir = '/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/2020ha2_cb6_20k/inputs/'
     
-    # directory where the final emissions files will be saved 
-    final_emis_dir = '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/new/'
+    # directory where the final emission shapefiles will be saved 
+    final_emis_dir = '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/'
 
     # output CSV file that has total emissions for each state computed for each emission file (verfying emission processing)
     output_state_emis_csv = final_emis_dir + 'total_emissions_by_state_and_species.csv'
 
     # get the list of all files in the directory
-    all_files = my_emissions.list_all_files(nei_raw_data_dir)
-    files_dict = my_emissions.get_dict(all_files)
-    clean_list = my_emissions.filter_and_delete_keys(files_dict) # Deleting any files containing the specified substrings (excluding certain keys)
+    all_files = emission_processing.list_all_files(nei_raw_data_dir)
+    files_dict = emission_processing.get_dict(all_files)
+    clean_list = emission_processing.filter_and_delete_keys(files_dict) # Deleting any files containing the specified substrings (excluding certain keys)
 
     print("Filtered files_dict:")
     for key, files in clean_list.items():
@@ -50,6 +51,8 @@ def main():
         
         if subdir in ['onroad', 'rail']:
             # onroad is processed from netcdf
+            print( "onroad and rail emissions are processed from annual netcdf")
+            # onroad emissions are directly available from gaftp and rail csv somehow returns 1.9x higher emissions.
             continue
 
         print(f"Files in subdir: {subdir}")
@@ -61,14 +64,13 @@ def main():
                 print(f"File {output_file} already exists, skipping.")
                 continue
 
-            final_df, is_point = my_emissions.process_nei_file(file)
+            final_df, is_point = emission_processing.process_nei_file(file)
 
             # Separate coordinates from other data if point source
             if is_point:
                 final_gdf = gpd.GeoDataFrame(final_df, geometry='coords', crs='epsg:4269')
             else:
                 if subdir == 'onroad':
-                    print( "onroad emissions are processed from annual netcdf")
                     #df_fips = pd.read_csv("/Users/yunhalee/Documents/LOCAETA/NEI_emissions/CenPop2020_Mean_CO.txt", dtype={'STATEFP': str, 'COUNTYFP': str})
                     #df_fips['FIPS'] = df_fips['STATEFP'] + df_fips['COUNTYFP']
                     #df_fips = df_fips[['FIPS', 'LATITUDE', 'LONGITUDE']]
@@ -100,11 +102,11 @@ def main():
                 total_emissions[state_code]['PM2_5'] += row['PM2_5']
 
             # Update the CSV file with the total emissions for the current file
-            my_emissions.save_state_emis(file, total_emissions, output_state_emis_csv)
+            emission_processing.save_state_emis(file, total_emissions, output_state_emis_csv)
 
             # convert the emissions into INMAP target_proj
             target_crs = "+proj=lcc +lat_1=33.000000 +lat_2=45.000000 +lat_0=40.000000 +lon_0=-97.000000 +x_0=0 +y_0=0 +a=6370997.000000 +b=6370997.000000 +to_meter=1"
-            final_gdf = my_emissions.reproject_and_save_gdf(final_gdf, target_crs)
+            final_gdf = emission_processing.reproject_and_save_gdf(final_gdf, target_crs)
 
             final_gdf.to_file(output_file)
             print(f"{file} is saved as shapefile here: {output_file}")

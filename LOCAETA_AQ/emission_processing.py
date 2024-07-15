@@ -418,7 +418,7 @@ def merge_and_calculate_new_emissions(gdf, cs_emis):
 
     return merged_df
 
-def plot_CCS_facility_emissions(df):
+def plot_CCS_facility_emissions(df, output_dir):
     pollutants = ['VOC', 'NOx', 'NH3', 'SOx', 'PM2_5']
     pollutants_new = [f'{pollutant}_new' for pollutant in pollutants]
     facility_poll = ["facVOC", "facNOx", "facNH3", "facSO2", "facPrimaryPM25"]
@@ -445,7 +445,9 @@ def plot_CCS_facility_emissions(df):
         ax.legend()
 
     plt.tight_layout()
-    plt.show()
+    plot_path = f"{output_dir}emissions_comparison.png"
+    plt.savefig(plot_path)
+    plt.close(fig)
 
     net_changes = [totals_new[f'{pollutant}_new'] - totals[pollutant] for pollutant in pollutants]
     colors = ['blue' if val < 0 else 'red' for val in net_changes]
@@ -457,4 +459,6 @@ def plot_CCS_facility_emissions(df):
     plt.axhline(0, color='black', linewidth=0.8)
     plt.yticks(fontsize=20)
     plt.xticks(fontsize=20)
-    plt.show()
+    plot_path = f"{output_dir}net_changes.png"
+    plt.savefig(plot_path)
+    plt.close(fig)

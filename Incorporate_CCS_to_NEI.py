@@ -14,7 +14,7 @@ package_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'LOCAETA_
 if package_path not in sys.path:
     sys.path.append(package_path)
 
-import my_emissions
+import emission_processing
 
 def main():
 
@@ -23,21 +23,22 @@ def main():
     NEI_CCS_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/new_NEI_point_oilgas_ptegu_ptnonimps_CCS.shp"
     LA_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/new_LA_point_CCS.shp"
     LA_CCS_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/new_LA_point_CCS_reduced_emis.shp"
+    output_plots_dir ='/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/'
 
     # CCS and NEI raw data directory
     CCS_raw_file = '/Users/yunhalee/Documents/LOCAETA/CS_emissions/conLA_plus_NEI_cdconly.csv'
     nei_raw_data_dir = '/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/2020ha2_cb6_20k/inputs/'
 
     # find which NEI emission file to open 
-    all_files = my_emissions.list_all_files(nei_raw_data_dir)
-    files_dict = my_emissions.get_dict(all_files)
-    clean_list = my_emissions.filter_and_delete_keys(files_dict)
+    all_files = emission_processing.list_all_files(nei_raw_data_dir)
+    files_dict = emission_processing.get_dict(all_files)
+    clean_list = emission_processing.filter_and_delete_keys(files_dict)
 
     all_nei_gdf = gpd.GeoDataFrame()
     for subdir, files in clean_list.items():
         if subdir in ['ptegu', 'pt_oilgas', 'ptnonipm']:
             for i, file in enumerate(files):
-                nei_df, is_point = my_emissions.process_nei_file(file)
+                nei_df, is_point = emission_processing.process_nei_file(file)
                 try:
                     nei_gdf = gpd.GeoDataFrame(nei_df, geometry='coords', crs='epsg:4269')
                     all_nei_gdf = pd.concat([all_nei_gdf, nei_gdf], ignore_index=True)
@@ -47,18 +48,18 @@ def main():
 
     # convert the emissions into INMAP target_proj
     target_crs = "+proj=lcc +lat_1=33.000000 +lat_2=45.000000 +lat_0=40.000000 +lon_0=-97.000000 +x_0=0 +y_0=0 +a=6370997.000000 +b=6370997.000000 +to_meter=1"
-    gdf = my_emissions.reproject_and_save_gdf(all_nei_gdf, target_crs)
+    gdf = emission_processing.reproject_and_save_gdf(all_nei_gdf, target_crs)
 
     # save the emissions as a shapefile
     gdf.to_file(combined_NEI_emis_path)
     print(f"Shapefile saved to: {combined_NEI_emis_path}")
 
     # process CCS emissions to merge it with NEI emissions
-    cs_emis = my_emissions.load_and_process_ccs_emissions(CCS_raw_file)
-    cs_emis = my_emissions.fill_missing_eis_id(cs_emis, 'https://gaftp.epa.gov/air/nei/2020/data_summaries/Facility%20Level%20by%20Pollutant.zip')
-    cs_emis = my_emissions.calculate_emission_rates(cs_emis)
+    cs_emis = emission_processing.load_and_process_ccs_emissions(CCS_raw_file)
+    cs_emis = emission_processing.fill_missing_eis_id(cs_emis, 'https://gaftp.epa.gov/air/nei/2020/data_summaries/Facility%20Level%20by%20Pollutant.zip')
+    cs_emis = emission_processing.calculate_emission_rates(cs_emis)
 
-    merged_df = my_emissions.merge_and_calculate_new_emissions(gdf, cs_emis)
+    merged_df = emission_processing.merge_and_calculate_new_emissions(gdf, cs_emis)
 
     # cleaning the columns we don't need to keep
     CCS_columns = [ "facPrimaryPM25", "facNOx" , "facSO2", "facNH3", "facVOC", 
@@ -89,7 +90,7 @@ def main():
             print(f"Final shapefile saved to: {NEI_CCS_emis_file}")
 
     # compare CCS facility emissions total with NEI facility total emissions (facility emissions should match with NEI)
-    #my_emissions.plot_CCS_facility_emissions(merged_df)
+    emission_processing.plot_CCS_facility_emissions(merged_df, output_plots_dir)
 
     # Save only LA point sources
 
