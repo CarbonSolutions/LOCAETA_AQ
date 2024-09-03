@@ -242,10 +242,15 @@ def modify_geojson(geojson_data, column):
 
     # Add displayProperties at the top level
     geojson_dict['displayProperties'] = display_properties
+
+    if column == 'TotalPopD':
+        geojson_dict['QuantityDescriptor'] = "Changes in total premature deaths"
+    elif column == 'TotalPM25':
+        geojson_dict['QuantityDescriptor'] = "Changes in surface PM2.5 concentrations"
     
     # Rename the quantity column to "Quantity"
-    #for feature in geojson_dict['features']:
-    #    feature['properties']['Quantity'] = feature['properties'].pop(column)
+    for feature in geojson_dict['features']:
+        feature['properties']['Quantity'] = feature['properties'].pop(column)
     
     modified_geojson = json.dumps(geojson_dict, indent=2)
     modified_geojson = f"var INMAP_{column} = {modified_geojson};"

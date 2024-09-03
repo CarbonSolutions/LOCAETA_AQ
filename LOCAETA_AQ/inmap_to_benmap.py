@@ -43,7 +43,9 @@ def reshape_inmap_to_grid_data(inmap_with_fips, gdf_grids):
 def save_AQ_csv(grid_level_gdf, output_csv_path):
     # Prepare data for CSV
     grid_level_gdf['Annual Metric'] = 'Mean'
-    inmap_csv = grid_level_gdf[['ROW', 'COL', 'Annual Metric','area_weighted_avg_TotalPM25']]
+    grid_level_gdf['Metric'] = 'D24HourMean'
+    grid_level_gdf['Seasonal Metric'] = 'QuarterlyMean'
+    inmap_csv = grid_level_gdf[['ROW', 'COL', 'Metric','Seasonal Metric','Annual Metric','area_weighted_avg_TotalPM25']]
     # Rename the columns name to BenMAP format
     inmap_csv = inmap_csv.rename(columns={'ROW': 'Row', 'COL':'Column','area_weighted_avg_TotalPM25':'Values'})
     

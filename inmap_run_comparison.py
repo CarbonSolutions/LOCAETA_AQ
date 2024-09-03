@@ -33,8 +33,8 @@ def main(inmap_run_dir, output_dir, webdata_path, run_pairs, inmap_to_geojson):
             # compare the changes of PopD matches PM25.
             inmap_analysis.compare_pm25_mortality_changes(gdf_diff,output_dir, run_name)
 
-            #min_pop_idx = gdf_diff['TotalPopD'].idxmin()
-            #gdf_diff = gdf_diff.drop(index=min_pop_idx)
+            min_pop_idx = gdf_diff['TotalPopD'].idxmin()
+            gdf_diff = gdf_diff.drop(index=min_pop_idx)
             
             for v in inmap_to_geojson:
                 inmap_analysis.create_interactive_map(gdf_diff, v, output_dir, run_name)
