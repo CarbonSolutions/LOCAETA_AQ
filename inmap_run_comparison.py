@@ -51,19 +51,19 @@ def main(inmap_run_dir, output_dir, webdata_path, run_pairs, inmap_to_geojson):
 
 if __name__ == "__main__":
 
-    inmap_run_dir = '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/inmap-1.9.6/outputs/'
+    inmap_run_dir = '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/inmap-1.9.6-gridsplit/outputs/'
     analysis_output_dir = '/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/model_analysis/'
     webdata_path = '/Users/yunhalee/Documents/LOCAETA/github/LOCAETA/WebTool/Data/'
 
     # Define pairs of base and sensitivity runs
     run_pairs = {
-        'LA_only': {
-            'base': 'LA_point_CSS/2020nei_LA_point_CSS_output_run_steady.shp',
-            'sens': 'LA_point_CSS_reduced_emis/2020nei_LA_point_CSS_reduced_emis_output_run_steady.shp'
+        'LA_CCS': {
+            'base': 'base_nei2020/2020nei_output_run_steady.shp',
+            'sens': 'LA_CCS/2020nei_output_run_steady.shp'
         },
-        'CONUS': {
-            'base': 'nei2020/2020nei_output_run_steady.shp',
-            'sens': 'nei2020_LA_CCS/2020nei_output_run_steady.shp'
+        'LA_CCS_noNH3': {
+            'base': 'base_nei2020/2020nei_output_run_steady.shp',
+            'sens': 'LA_CCS_noNH3/2020nei_output_run_steady.shp'
         }
     }
 

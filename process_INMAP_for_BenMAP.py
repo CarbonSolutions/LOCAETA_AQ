@@ -20,12 +20,13 @@ def main():
     grid_shapefile_path = '/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP/grids/County/County.shp'
     grid_level =  'county' #'tract' # or
 
-    inmap_output_dir = '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/inmap-1.9.6/outputs/'
+    inmap_output_dir = '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/inmap-1.9.6-gridsplit/outputs/'
 
     # List of InMAP output files to process
     inmap_outputs = [
-    'nei2020/2020nei_output_run_steady.shp',
-        'nei2020_LA_CCS/2020nei_output_run_steady.shp',
+        'base_nei2020/2020nei_output_run_steady.shp',
+        'LA_CCS/2020nei_output_run_steady.shp',
+        'LA_CCS_noNH3/2020nei_output_run_steady.shp'
     ]
 
     # Directory to save the grid and PM2.5 csv files, which are BenMAP input files
