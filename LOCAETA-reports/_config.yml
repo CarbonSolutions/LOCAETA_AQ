@@ -1,0 +1,50 @@
+# Book settings
+# Learn more at https://jupyterbook.org/customize/config.html
+
+title: Assessment of Air Quality and Public Health impact by Amine-based CCS tech
+author: Yunha Lee
+#logo: logo.png
+
+# Table of contents
+# Point this to the markdown or Jupyter Notebook files that make up your report
+toc:
+  - file: data_analysis  # Your analysis notebook file
+
+# Force re-execution of notebooks on each build.
+# See https://jupyterbook.org/content/execute.html
+execute:
+  execute_notebooks: force
+
+# Information about where the book exists on the web
+# repository:
+#   url: "" # https://github.com/executablebooks/jupyter-book  # Online location of your book
+#   path_to_book: "" # docs  # Optional path to your book, relative to the repository root
+#   branch: main  # Which branch of the repository should be used when creating links (optional)
+
+# Add GitHub buttons to your book
+# See https://jupyterbook.org/customize/config.html#add-a-link-to-your-repository
+html:
+  use_issues_button: false
+  use_repository_button: false
+
+
+# Hide code and only show output (for data analysis reports)
+sphinx:
+  config:
+    # Hide code cells globally across the book
+    jupyter_execute:
+      show_code: false  # Hides code cells but shows the outputs
+      show_prompt: false  # Hides input and output prompts
+
+# Control the format and look of the code cells
+# We hide code but ensure the outputs and figures are visible
+jupyter_execute:
+  allow_errors: false  # Stop execution if errors occur
+  timeout: 60  # Set a timeout (seconds) for long-running cells
+
+# Citations and references
+bibtex_bibfiles:
+  - references.bib  # If you use citations, point to your bibliography file here
+
+# Extra styling and CSS (optional)
+#extra_css: "custom.css"  # You can add custom CSS if you want to tweak the appearance
