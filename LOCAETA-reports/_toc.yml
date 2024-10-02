@@ -6,3 +6,4 @@ root: intro
 chapters:
 - file: emission_analysis
 - file: inmap_analysis
+- file: benmap_analysis

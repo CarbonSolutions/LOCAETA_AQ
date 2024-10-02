@@ -1,5 +1,10 @@
 # Introduction and Summary
 
+Authors: Yunha Lee, Qasim Mehdi, Daniel Rodriguez, Kat Sale, Bjorn Brooks, Amy Jordan
+
+* Contact: yunha.lee@carbonsolutionsllc.com
+
+
 ![](https://scx2.b-cdn.net/gfx/news/hires/2018/1-emissions.jpg)
 
 Image Source: https://phys.org/news/2019-10-carbon-capture.html (Credit: CC0 Public Domain)
@@ -10,6 +15,9 @@ Decarbonization strategies have emerged as an innovative approach to reduce carb
 In this study, we estimate changes in air pollutant emissions resulting from amine-based CCS applied to industrial point-source facilities across the U.S., using the CO2 National Capture Opportunities and Readiness Database (CO2NCORD). This CO2NCORD tool estimates capturable CO2 emissions and the cost-per-tonne for industrial point sources. We use the INMAP (Intervention Model for Air Pollution) model to compute the annual PM2.5 concentration with the modified emissions by amine-based CCS and the BenMAP-CE (Environmental Benefits Mapping and Analysis Program - Community Edition) model to estimate the health impacts of amine-based CCS in the U.S., as well as the monetized values of those health impacts. We estimate the overall cost of amine-based CCS by incorporating the valuation results from BenMAP-CE into the cost-per-tonne from CO2NCORD.
 
 The overall goals of our study are to assess the socioeconomic impacts of decarbonization strategies, focused on air quality, public health, and equity, and to identify effective decarbonization technologies for specific regions.
+
+
+
 
 ```{tableofcontents}
 1. Emissions analysis 

@@ -1,4 +1,9 @@
-# Welcome to your Jupyter Book
+# Introduction and Summary
+
+Authors: Yunha Lee, Qasim Mehdi, Daniel Rodriguez, Kat Sale, Bjorn Brooks, Amy Jordan
+
+* Contact: yunha.lee@carbonsolutionsllc.com
+
 
 ![](https://scx2.b-cdn.net/gfx/news/hires/2018/1-emissions.jpg)
 
@@ -11,14 +16,17 @@ In this study, we estimate changes in air pollutant emissions resulting from ami
 
 The overall goals of our study are to assess the socioeconomic impacts of decarbonization strategies, focused on air quality, public health, and equity, and to identify effective decarbonization technologies for specific regions.
 
+
+
+
 ```{tableofcontents}
-1. Faciltiy emissions analysis 
+1. Emissions analysis 
     - why some facilities have higher NH3 emissions than others?
     - Identify county with high NH3 facilities
     - What is the main factor to increase NH3? 
-2. INMAP PM2.5 analysis
-    - Changes of PM2.5 by LA CCS using INMAP
-    - Changes of PM2.5 from the facilities distance? 
+2. INMAP air quality simulation analysis
+    - Changes of AQ by LA CCS using INMAP
+    - Changes of AQ from the facilities distance? 
 3. BenMAP health impact analysis
     - Changes in mortality and morbidity by LA CCS (with and without NH3 emissions)
     - Impact on which race and which vulnerable commuties

@@ -8,7 +8,9 @@ author: Yunha Lee
 # Table of contents
 # Point this to the markdown or Jupyter Notebook files that make up your report
 toc:
-  - file: data_analysis  # Your analysis notebook file
+  - file: emission_analysis
+  - file: inmap_analysis
+  - file: benmap_analysis
 
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html
