@@ -72,6 +72,5 @@ For any questions or further information regarding this repository, please conta
 
 **Yunha Lee**  
 **Research Scientist**  
-**yunha.lee@carbonsolutionsllc.com**  
-**Carbon Solutions**
-
+**Carbon Solutions**  
+Email: [yunha.lee@carbonsolutionsllc.com](mailto:yunha.lee@carbonsolutionsllc.com)
