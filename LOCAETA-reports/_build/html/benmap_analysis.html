@@ -1,0 +1,922 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>3. BenMAP health impact analysis &#8212; Assessment of Air Quality and Public Health impact by Amine-based CCS tech</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'benmap_analysis';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="2. INMAP simulation results" href="inmap_analysis.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Assessment of Air Quality and Public Health impact by Amine-based CCS tech</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Introduction and Summary
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="emission_analysis.html">1. CCS Faciltiy emissions analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inmap_analysis.html">2. INMAP simulation results</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">3. BenMAP health impact analysis</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/benmap_analysis.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>3. BenMAP health impact analysis</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#note-that-only-emergency-room-visits-asthma-has-ethinicity-separate-for-white-population-so-i-will-merge-them-into-just-white">Note that only “Emergency Room Visits  Asthma” has ethinicity separate (for White population), so I will merge them into just “White”.</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#population-data-is-from-inmap-2013-population-with-race">Population data is from INMAP (2013 population with race)</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="benmap-health-impact-analysis">
+<h1>3. BenMAP health impact analysis<a class="headerlink" href="#benmap-health-impact-analysis" title="Link to this heading">#</a></h1>
+<p>The public health impact by the CCS technology is computed using BenMAP program, which is developed and maintained by U.S. EPA. The health impact analysis is race/ethnicity statified, in order to explore the impact of CCS technology on environmental justice.</p>
+<ol class="arabic simple">
+<li><p>spatial distribution of actual values</p></li>
+<li><p>spatial distribution of normalized values (by race/ethinicity population by county)</p></li>
+<li><p>national sum of each endpoint by race-ethinicity</p></li>
+<li><p>LA state sum of each endpoint by race-ethinictiy</p></li>
+<li><p>LA state sum of each endpoint (normalized by the corresponding population ) by race-ethinictiy</p></li>
+</ol>
+<section id="note-that-only-emergency-room-visits-asthma-has-ethinicity-separate-for-white-population-so-i-will-merge-them-into-just-white">
+<h2>Note that only “Emergency Room Visits  Asthma” has ethinicity separate (for White population), so I will merge them into just “White”.<a class="headerlink" href="#note-that-only-emergency-room-visits-asthma-has-ethinicity-separate-for-white-population-so-i-will-merge-them-into-just-white" title="Link to this heading">#</a></h2>
+</section>
+<section id="population-data-is-from-inmap-2013-population-with-race">
+<h2>Population data is from INMAP (2013 population with race)<a class="headerlink" href="#population-data-is-from-inmap-2013-population-with-race" title="Link to this heading">#</a></h2>
+<div class="cell tag_hide-input tag_hide-output docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+
+
+<span class="c1"># Function to subset data for a specific state or use national data</span>
+<span class="k">def</span> <span class="nf">subset_data</span><span class="p">(</span><span class="n">final_df</span><span class="p">,</span> <span class="n">state_fips</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">state_fips</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">final_df</span><span class="p">[</span><span class="n">final_df</span><span class="p">[</span><span class="s1">&#39;STATE_FIPS&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">state_fips</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">final_df</span>
+
+<span class="c1"># Function to plot bar plots</span>
+<span class="k">def</span> <span class="nf">plot_bar</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">y_column</span><span class="p">,</span> <span class="n">group_col</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+
+    <span class="c1"># Create the barplot</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Endpoint&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y_column</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="n">group_col</span><span class="p">)</span>
+    
+    <span class="c1"># Set title and labels</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Sum of &#39;</span> <span class="o">+</span> <span class="n">y_column</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Endpoint&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Use symlog scale for y-axis</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;symlog&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">group_col</span><span class="p">)</span>
+    
+    <span class="c1"># Add value annotations on top of the bars</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ax</span><span class="o">.</span><span class="n">patches</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">:</span>
+            <span class="n">annotation</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">elif</span> <span class="nb">abs</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">annotation</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">annotation</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">,</span> <span class="n">value</span><span class="p">),</span>
+                    <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;baseline&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Rotate the x-tick labels for better readability</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+
+    <span class="c1"># Add vertical gridlines between each category</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xticks</span><span class="p">())):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">i</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+    
+    <span class="c1"># Add a horizontal line at y=0</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">y_column</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">TARGET_GRID_LEVEL</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s1">_.png&#39;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="c1"># Creating a pretty table with plotly</span>
+<span class="k">def</span> <span class="nf">pretty_create_table</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+    <span class="n">formatted_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">format_values</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">])</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">]</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="n">go</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span>
+        <span class="n">header</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                    <span class="n">fill_color</span><span class="o">=</span><span class="s1">&#39;paleturquoise&#39;</span><span class="p">,</span>
+                    <span class="n">align</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">),</span>
+        <span class="n">cells</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">formatted_values</span><span class="p">,</span>
+                   <span class="n">fill_color</span><span class="o">=</span><span class="s1">&#39;lavender&#39;</span><span class="p">,</span>
+                   <span class="n">align</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">))</span>
+    <span class="p">])</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">title_text</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">TARGET_GRID_LEVEL</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s1">.png&#39;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;kaleido&#39;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># Example function to format values</span>
+<span class="k">def</span> <span class="nf">format_values</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s1">.4g</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span> <span class="k">else</span> <span class="n">value</span>
+
+<span class="c1"># Function to create and save a table as CSV</span>
+<span class="k">def</span> <span class="nf">create_csv</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">):</span>
+    <span class="c1"># Format the values in the DataFrame</span>
+    <span class="n">formatted_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">columns</span><span class="p">]</span><span class="o">.</span><span class="n">applymap</span><span class="p">(</span><span class="n">format_values</span><span class="p">)</span>
+    
+    <span class="c1"># Create the file path</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">TARGET_GRID_LEVEL</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s1">.csv&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Save the DataFrame to CSV</span>
+    <span class="n">formatted_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSV file saved at </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Function to plot spatial distribution for each race on the same page using the same color scale</span>
+<span class="k">def</span> <span class="nf">plot_spatial_distribution_combined</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">y_axis</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">):</span>
+    <span class="n">unique_races</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="s1">&#39;Race&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">n_races</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_races</span><span class="p">)</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_races</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="n">n_races</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+
+    <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">y_axis</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">gdf</span><span class="p">[</span><span class="n">y_axis</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">max_abs</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">vmin</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">vmax</span><span class="p">))</span> <span class="o">*</span> <span class="mf">0.8</span>
+
+    <span class="k">if</span> <span class="n">n_races</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">axes</span><span class="p">]</span>  <span class="c1"># Make axes iterable if there is only one subplot</span>
+
+    <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">race</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">unique_races</span><span class="p">):</span>
+        <span class="n">race_gdf</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">gdf</span><span class="p">[</span><span class="s1">&#39;Race&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">race</span><span class="p">]</span>
+        <span class="n">race_gdf</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="n">y_axis</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">max_abs</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">max_abs</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">race</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the sum of the values in the domain</span>
+        <span class="k">if</span> <span class="n">y_axis</span> <span class="o">==</span> <span class="s2">&quot;Mean_per_Pop&quot;</span><span class="p">:</span>
+            <span class="n">total_sum</span> <span class="o">=</span> <span class="n">race_gdf</span><span class="p">[</span><span class="s2">&quot;Mean&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">race_gdf</span><span class="p">[</span><span class="s2">&quot;Population&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="mi">1000000</span>
+            <span class="c1"># Add the sum as text within the subplot</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Sum: </span><span class="si">{</span><span class="n">total_sum</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  
+            <span class="n">total_sum</span> <span class="o">=</span> <span class="n">race_gdf</span><span class="p">[</span><span class="n">y_axis</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="c1"># Add the sum as text within the subplot</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Sum: </span><span class="si">{</span><span class="n">total_sum</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Add a single color bar</span>
+    <span class="n">cbar_ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">])</span>
+    <span class="n">sm</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">ScalarMappable</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="o">=-</span><span class="n">max_abs</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">max_abs</span><span class="p">))</span>
+    <span class="n">sm</span><span class="o">.</span><span class="n">_A</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cbar_ax</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">y_axis</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">TARGET_GRID_LEVEL</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s1">.png&#39;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="c1">##############</span>
+<span class="c1"># STEP 1: get BenMAP grid shapefile</span>
+<span class="c1">##############</span>
+
+<span class="c1"># Define file paths</span>
+
+<span class="n">TARGET_GRID_LEVEL</span> <span class="o">=</span> <span class="s1">&#39;County&#39;</span>
+
+<span class="k">if</span> <span class="n">TARGET_GRID_LEVEL</span> <span class="o">==</span> <span class="s1">&#39;County&#39;</span><span class="p">:</span>
+
+    <span class="n">grid_shapefile_path</span> <span class="o">=</span> <span class="s1">&#39;/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP/grids/County/County.shp&#39;</span>
+    <span class="n">grid_gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">grid_shapefile_path</span><span class="p">)</span>
+
+<span class="k">elif</span> <span class="n">TARGET_GRID_LEVEL</span> <span class="o">==</span> <span class="s1">&#39;Tract&#39;</span><span class="p">:</span>
+
+    <span class="c1">## TODO - add BenMAP tract shapefile to get Row and Col information</span>
+
+    <span class="n">grid_shapefile_path</span> <span class="o">=</span> <span class="s1">&#39;/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP/grids/US Census Tracts/US Census Tracts.shp&#39;</span>
+    <span class="n">grid_gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">grid_shapefile_path</span><span class="p">)</span>
+
+<span class="c1"># Rename Columns</span>
+<span class="n">grid_gdf</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span> <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;COL&quot;</span><span class="p">:</span><span class="s2">&quot;Col&quot;</span><span class="p">,</span> <span class="s2">&quot;ROW&quot;</span><span class="p">:</span> <span class="s2">&quot;Row&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<div class="cell tag_hide-input tag_hide-output docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
+<div class="cell_input above-output-prompt docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define file paths</span>
+
+<span class="n">benmap_output_type</span> <span class="o">=</span><span class="p">[</span><span class="s1">&#39;incidence&#39;</span><span class="p">,</span> <span class="s1">&#39;valuation&#39;</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">benmap_output</span> <span class="ow">in</span> <span class="n">benmap_output_type</span><span class="p">:</span>
+
+    <span class="n">benmap_output_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP/batchmode/APVR/control_la_ccs_county_inmap_2020_pm25-</span><span class="si">{</span><span class="n">benmap_output</span><span class="si">}</span><span class="s1">.csv&#39;</span>
+    <span class="c1">#benmap_output_file = f&quot;/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP/batchmode/APVR/GUI_{benmap_output}_08052024.csv&quot;</span>
+    <span class="n">output_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/BenMAP/batchmode/</span><span class="si">{</span><span class="n">benmap_output</span><span class="si">}</span><span class="s2">_results/&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_dir</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+
+
+    <span class="c1">##############</span>
+    <span class="c1"># STEP 2: Create final dataframe containing geometry and BenMAP key results ,and compute the normalized Mean with the population (x1e6) for incidence</span>
+    <span class="c1">##############</span>
+
+    <span class="n">benmap</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">benmap_output_file</span><span class="p">)</span>
+
+    <span class="c1"># this is only for GUI case</span>
+    <span class="n">benmap</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span> <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Column&quot;</span><span class="p">:</span><span class="s2">&quot;Col&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">benmap</span><span class="p">[</span><span class="s1">&#39;Pollutant&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PM2.5&#39;</span>
+ 
+    <span class="c1"># Merge incidence with pop_gdf on the &#39;Row&#39; and &#39;Col&#39; columns</span>
+    <span class="n">merged_df</span> <span class="o">=</span> <span class="n">benmap</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">grid_gdf</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="s1">&#39;Col&#39;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">benmap_output</span> <span class="o">==</span> <span class="s1">&#39;incidence&#39;</span><span class="p">:</span>
+        <span class="n">columns_to_keep</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Endpoint&#39;</span><span class="p">,</span> <span class="s1">&#39;Pollutant&#39;</span><span class="p">,</span> <span class="s1">&#39;Author&#39;</span><span class="p">,</span> <span class="s1">&#39;Race&#39;</span><span class="p">,</span> <span class="s1">&#39;STATE_FIPS&#39;</span><span class="p">,</span><span class="s1">&#39;CNTY_FIPS&#39;</span><span class="p">,</span> <span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="s1">&#39;Col&#39;</span><span class="p">,</span> <span class="s1">&#39;Mean&#39;</span><span class="p">,</span> <span class="s1">&#39;Population&#39;</span><span class="p">,</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">columns_to_keep</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Endpoint&#39;</span><span class="p">,</span> <span class="s1">&#39;Pollutant&#39;</span><span class="p">,</span> <span class="s1">&#39;Author&#39;</span><span class="p">,</span> <span class="s1">&#39;Race&#39;</span><span class="p">,</span> <span class="s1">&#39;STATE_FIPS&#39;</span><span class="p">,</span><span class="s1">&#39;CNTY_FIPS&#39;</span><span class="p">,</span> <span class="s1">&#39;Row&#39;</span><span class="p">,</span> <span class="s1">&#39;Col&#39;</span><span class="p">,</span> <span class="s1">&#39;Mean&#39;</span><span class="p">,</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+
+    <span class="n">final_df</span> <span class="o">=</span> <span class="n">merged_df</span><span class="p">[</span><span class="n">columns_to_keep</span><span class="p">]</span>
+
+    <span class="n">final_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+
+    <span class="c1">##############</span>
+    <span class="c1"># STEP 3: Create plots of total health impact (sum the health impact for each endpoint) either for State or Nation and Create map plots of local health impact</span>
+    <span class="c1">##############</span>
+
+    <span class="c1"># Dictionary to loop over</span>
+    <span class="n">regions</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;LA&quot;</span><span class="p">:</span> <span class="s1">&#39;22&#39;</span><span class="p">,</span> <span class="s2">&quot;Nation&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+
+    <span class="n">final_df</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">final_df</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span> <span class="s2">&quot;geometry&quot;</span><span class="p">)</span>
+    <span class="nb">type</span><span class="p">(</span><span class="n">final_df</span><span class="p">)</span>
+
+    <span class="c1"># Loop over the regions dictionary and process the data</span>
+    <span class="k">for</span> <span class="n">region_name</span><span class="p">,</span> <span class="n">state_fips</span> <span class="ow">in</span> <span class="n">regions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        
+        <span class="c1"># Subset the final DataFrame based on the chosen state or national</span>
+        <span class="n">final_df_subset</span> <span class="o">=</span> <span class="n">subset_data</span><span class="p">(</span><span class="n">final_df</span><span class="p">,</span> <span class="n">state_fips</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing data for: </span><span class="si">{</span><span class="n">region_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">final_df_subset</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">benmap_output</span> <span class="o">==</span> <span class="s1">&#39;incidence&#39;</span><span class="p">:</span>
+            <span class="c1"># Group by [&#39;Endpoint&#39;, &#39;Pollutant&#39;, &#39;Author&#39;, &#39;Race&#39;] and calculate the sum of &#39;Mean&#39;</span>
+            <span class="n">race_grouped_sum</span> <span class="o">=</span> <span class="n">final_df_subset</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;Endpoint&#39;</span><span class="p">,</span> <span class="s1">&#39;Pollutant&#39;</span><span class="p">,</span> <span class="s1">&#39;Author&#39;</span><span class="p">,</span> <span class="s1">&#39;Race&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s1">&#39;Mean&#39;</span><span class="p">:</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="s2">&quot;Population&quot;</span><span class="p">:</span><span class="s2">&quot;sum&quot;</span><span class="p">})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+            <span class="n">race_grouped_sum</span><span class="p">[</span><span class="s1">&#39;Mean_per_Pop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">race_grouped_sum</span><span class="p">[</span><span class="s1">&#39;Mean&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">race_grouped_sum</span><span class="p">[</span><span class="s1">&#39;Population&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1000000</span>  <span class="c1"># Scale by 1,000,000 for readability</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;race_grouped_sum&quot;</span><span class="p">,</span> <span class="n">race_grouped_sum</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+
+            <span class="c1"># Plotting &quot;SUM&quot; barplots by &#39;Race&#39; for each {endpoint}, {pollutant}, {author}</span>
+            <span class="n">plot_bar</span><span class="p">(</span><span class="n">race_grouped_sum</span><span class="p">,</span> <span class="s2">&quot;Mean&quot;</span><span class="p">,</span> <span class="s1">&#39;Race&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Sum of Mean by Race for Endpoint in </span><span class="si">{</span><span class="n">region_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
+            <span class="n">plot_bar</span><span class="p">(</span><span class="n">race_grouped_sum</span><span class="p">,</span> <span class="s2">&quot;Mean_per_Pop&quot;</span><span class="p">,</span> <span class="s1">&#39;Race&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Sum of Mean_per_Pop by Race for Endpoint in </span><span class="si">{</span><span class="n">region_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
+
+            <span class="c1"># Creating a table to show the values in the barplots</span>
+            <span class="n">table_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Endpoint&#39;</span><span class="p">,</span> <span class="s1">&#39;Race&#39;</span><span class="p">,</span> <span class="s1">&#39;Mean&#39;</span><span class="p">,</span> <span class="s1">&#39;Mean_per_Pop&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Group by [&#39;Endpoint&#39;, &#39;Pollutant&#39;, &#39;Author&#39;, &#39;Race&#39;] and calculate the sum of &#39;Mean&#39;</span>
+            <span class="n">race_grouped_sum</span> <span class="o">=</span> <span class="n">final_df_subset</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;Endpoint&#39;</span><span class="p">,</span> <span class="s1">&#39;Pollutant&#39;</span><span class="p">,</span> <span class="s1">&#39;Author&#39;</span><span class="p">,</span> <span class="s1">&#39;Race&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s1">&#39;Mean&#39;</span><span class="p">:</span> <span class="s1">&#39;sum&#39;</span><span class="p">})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+            <span class="c1"># Plotting &quot;SUM&quot; barplots by &#39;Race&#39; for each {endpoint}, {pollutant}, {author}</span>
+            <span class="n">plot_bar</span><span class="p">(</span><span class="n">race_grouped_sum</span><span class="p">,</span> <span class="s2">&quot;Mean&quot;</span><span class="p">,</span> <span class="s1">&#39;Race&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Sum of Mean by Race for Endpoint in </span><span class="si">{</span><span class="n">region_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
+
+            <span class="c1"># Creating a table to show the values in the barplots</span>
+            <span class="n">table_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Endpoint&#39;</span><span class="p">,</span> <span class="s1">&#39;Race&#39;</span><span class="p">,</span> <span class="s1">&#39;Mean&#39;</span><span class="p">]</span>
+
+        <span class="n">create_csv</span><span class="p">(</span><span class="n">race_grouped_sum</span><span class="p">,</span> <span class="n">table_columns</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Summary Table: Mean and Mean per Population by Race in </span><span class="si">{</span><span class="n">region_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
+
+
+        <span class="c1"># Group by [&#39;Endpoint&#39;, &#39;Pollutant&#39;, &#39;Author&#39;]</span>
+        <span class="n">grouped</span> <span class="o">=</span> <span class="n">final_df_subset</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;Endpoint&#39;</span><span class="p">,</span> <span class="s1">&#39;Pollutant&#39;</span><span class="p">,</span> <span class="s1">&#39;Author&#39;</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">pollutant</span><span class="p">,</span> <span class="n">author</span><span class="p">),</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">grouped</span><span class="p">:</span>
+
+            <span class="n">title_mean</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Spatial Distribution for </span><span class="si">{</span><span class="n">endpoint</span><span class="si">}</span><span class="s1"> (</span><span class="si">{</span><span class="n">pollutant</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">author</span><span class="si">}</span><span class="s1">) in </span><span class="si">{</span><span class="n">region_name</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="n">plot_spatial_distribution_combined</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">title_mean</span><span class="p">,</span> <span class="s2">&quot;Mean&quot;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">benmap_output</span> <span class="o">==</span> <span class="s1">&#39;incidence&#39;</span><span class="p">:</span>
+                <span class="n">group</span><span class="p">[</span><span class="s1">&#39;Mean_per_Pop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mean&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Population&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1000000</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Scale by 1,000,000 for readability</span>
+
+                <span class="n">title_mean_per_pop</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Spatial Distribution for </span><span class="si">{</span><span class="n">endpoint</span><span class="si">}</span><span class="s1"> (</span><span class="si">{</span><span class="n">pollutant</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">author</span><span class="si">}</span><span class="s1">) per Population in </span><span class="si">{</span><span class="n">region_name</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="n">plot_spatial_distribution_combined</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">title_mean_per_pop</span><span class="p">,</span> <span class="s2">&quot;Mean_per_Pop&quot;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<details class="hide below-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell output</span>
+<span class="expanded">Hide code cell output</span>
+</summary>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/var/folders/c8/7t_s93rd22l4mk18hd7pj0d80000gn/T/ipykernel_92116/273108093.py:19: DtypeWarning: Columns (6) have mixed types. Specify dtype option on import or set low_memory=False.
+  benmap = pd.read_csv(benmap_output_file)
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Processing data for: LA
+                  Endpoint Pollutant     Author Race STATE_FIPS CNTY_FIPS  \
+1079  Mortality  All Cause     PM2.5  Di et al.  ALL         22       001   
+1080  Mortality  All Cause     PM2.5  Di et al.  ALL         22       003   
+1081  Mortality  All Cause     PM2.5  Di et al.  ALL         22       005   
+1082  Mortality  All Cause     PM2.5  Di et al.  ALL         22       007   
+1083  Mortality  All Cause     PM2.5  Di et al.  ALL         22       009   
+
+      Row  Col      Mean    Population  \
+1079    1   22  0.181944   9874.500977   
+1080    3   22  0.172505   4071.125000   
+1081    5   22  0.514258  17177.894531   
+1082    7   22 -0.147783   4415.304688   
+1083    9   22  0.102663   7359.593262   
+
+                                               geometry  
+1079  POLYGON ((-92.62786 30.25861, -92.62403 30.258...  
+1080  POLYGON ((-92.92060 30.43811, -92.93478 30.438...  
+1081  POLYGON ((-91.00071 30.07411, -91.00575 30.079...  
+1082  POLYGON ((-91.09530 29.69632, -91.09581 29.696...  
+1083  POLYGON ((-91.92045 31.23167, -91.92006 31.234...  
+race_grouped_sum                      Endpoint Pollutant        Author     Race        Mean  \
+0  Asthma Exacerbation  Cough     PM2.5  Ostro et al.      ALL -132.884044   
+1  Asthma Exacerbation  Cough     PM2.5  Ostro et al.    ASIAN   -7.764903   
+2  Asthma Exacerbation  Cough     PM2.5  Ostro et al.    BLACK -147.338948   
+3  Asthma Exacerbation  Cough     PM2.5  Ostro et al.  NATAMER   -0.118241   
+4  Asthma Exacerbation  Cough     PM2.5  Ostro et al.    WHITE  -34.514710   
+
+      Population  Mean_per_Pop  
+0  811895.229431   -163.671418  
+1   16120.122029   -481.690115  
+2  315897.130127   -466.414329  
+3    6558.874529    -18.027702  
+4  473319.104462    -72.920594  
+</pre></div>
+</div>
+<img alt="_images/8808f562c6bda7e5c996d20dc1e7de5839f721827142e3742b4bc73bc46e1764.png" src="_images/8808f562c6bda7e5c996d20dc1e7de5839f721827142e3742b4bc73bc46e1764.png" />
+<img alt="_images/111466232382c346987e46ec2bc40d1a164885314601ae9e08fe2d510f6bc874.png" src="_images/111466232382c346987e46ec2bc40d1a164885314601ae9e08fe2d510f6bc874.png" />
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/var/folders/c8/7t_s93rd22l4mk18hd7pj0d80000gn/T/ipykernel_92116/2385064045.py:82: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.
+  formatted_df = df[columns].applymap(format_values)
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CSV file saved at /Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/BenMAP/batchmode/incidence_results/County_Summary Table: Mean and Mean per Population by Race in LA.csv
+</pre></div>
+</div>
+<img alt="_images/d39abd2581a0b1ebdc2d273fe32957880c19a803e642a9cb482aa81849997b6b.png" src="_images/d39abd2581a0b1ebdc2d273fe32957880c19a803e642a9cb482aa81849997b6b.png" />
+<img alt="_images/b35bac8d2b1d2fc34d95707186881c360fc16e15f7ba8f02fcfdc3cae6a8527b.png" src="_images/b35bac8d2b1d2fc34d95707186881c360fc16e15f7ba8f02fcfdc3cae6a8527b.png" />
+<img alt="_images/5557e63caf4de07f2380857361b9f6d5fca0695fea72812ce1a1f2d148019006.png" src="_images/5557e63caf4de07f2380857361b9f6d5fca0695fea72812ce1a1f2d148019006.png" />
+<img alt="_images/77396ede67fe96e9d230e9adf02ec60ced13c81e0c73d4a7c7416212399b6a01.png" src="_images/77396ede67fe96e9d230e9adf02ec60ced13c81e0c73d4a7c7416212399b6a01.png" />
+<img alt="_images/612e4c8624b81cd0706df681b8eac2ce98330adfcaf1d0407b6f27f04d2f9fc3.png" src="_images/612e4c8624b81cd0706df681b8eac2ce98330adfcaf1d0407b6f27f04d2f9fc3.png" />
+<img alt="_images/a2bd72707885b34324f4f1bb221c6c21e5007fd8d74e24eac5ec3bd880f4f9af.png" src="_images/a2bd72707885b34324f4f1bb221c6c21e5007fd8d74e24eac5ec3bd880f4f9af.png" />
+<img alt="_images/4eb3e09655bdc9983f524f9067ae9cf68f643d432edcc5e654c6aac5eaa77532.png" src="_images/4eb3e09655bdc9983f524f9067ae9cf68f643d432edcc5e654c6aac5eaa77532.png" />
+<img alt="_images/0bc77a325bb84749d4888e82fcce2ce058f7cc07f1e68ac61af1733a5342d25b.png" src="_images/0bc77a325bb84749d4888e82fcce2ce058f7cc07f1e68ac61af1733a5342d25b.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Processing data for: Nation
+               Endpoint Pollutant     Author Race STATE_FIPS CNTY_FIPS  Row  \
+0  Mortality  All Cause     PM2.5  Di et al.  ALL         01       001    1   
+1  Mortality  All Cause     PM2.5  Di et al.  ALL         01       003    3   
+2  Mortality  All Cause     PM2.5  Di et al.  ALL         01       005    5   
+3  Mortality  All Cause     PM2.5  Di et al.  ALL         01       007    7   
+4  Mortality  All Cause     PM2.5  Di et al.  ALL         01       009    9   
+
+   Col      Mean    Population  \
+0    1  0.004856   9445.816406   
+1    1  0.029840  49344.695312   
+2    1  0.001994   5224.887695   
+3    1  0.001987   3899.469238   
+4    1  0.007056  11738.237305   
+
+                                            geometry  
+0  POLYGON ((-86.52469 32.70706, -86.52443 32.707...  
+1  POLYGON ((-87.41247 30.57386, -87.41271 30.573...  
+2  POLYGON ((-85.13285 31.80037, -85.13283 31.798...  
+3  POLYGON ((-87.11632 32.83560, -87.15529 32.835...  
+4  POLYGON ((-86.73121 34.01470, -86.72710 34.016...  
+race_grouped_sum                      Endpoint Pollutant        Author     Race        Mean  \
+0  Asthma Exacerbation  Cough     PM2.5  Ostro et al.      ALL  862.664638   
+1  Asthma Exacerbation  Cough     PM2.5  Ostro et al.    ASIAN   36.297677   
+2  Asthma Exacerbation  Cough     PM2.5  Ostro et al.    BLACK  161.852616   
+3  Asthma Exacerbation  Cough     PM2.5  Ostro et al.  NATAMER   12.615064   
+4  Asthma Exacerbation  Cough     PM2.5  Ostro et al.    WHITE  714.255100   
+
+     Population  Mean_per_Pop  
+0  5.356664e+07     16.104511  
+1  3.140933e+06     11.556336  
+2  8.477715e+06     19.091538  
+3  7.171904e+05     17.589561  
+4  4.123081e+07     17.323336  
+</pre></div>
+</div>
+<img alt="_images/651c3223dcd8f2940dae0c42d5b191d463a94ffea37c47fe6dd21cc37c72c040.png" src="_images/651c3223dcd8f2940dae0c42d5b191d463a94ffea37c47fe6dd21cc37c72c040.png" />
+<img alt="_images/a7b61a61a35c8c6a2ce29e7d517309ccf5bec18f540d97beef2d72dbfd8735de.png" src="_images/a7b61a61a35c8c6a2ce29e7d517309ccf5bec18f540d97beef2d72dbfd8735de.png" />
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/var/folders/c8/7t_s93rd22l4mk18hd7pj0d80000gn/T/ipykernel_92116/2385064045.py:82: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.
+  formatted_df = df[columns].applymap(format_values)
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CSV file saved at /Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/BenMAP/batchmode/incidence_results/County_Summary Table: Mean and Mean per Population by Race in Nation.csv
+</pre></div>
+</div>
+<img alt="_images/4b90b324ddc66da691c08dd5da71526357253e77ced004f03f5c97c4f9d3c8c9.png" src="_images/4b90b324ddc66da691c08dd5da71526357253e77ced004f03f5c97c4f9d3c8c9.png" />
+<img alt="_images/620b051ec15d00958879fdf34fe572a83bdd55a55a3571061524a9c56ecad026.png" src="_images/620b051ec15d00958879fdf34fe572a83bdd55a55a3571061524a9c56ecad026.png" />
+<img alt="_images/a85e6044dfd0bbd4eed5e345a27b8c5e0f64c3a4afa9950241fff01b9eefdcdf.png" src="_images/a85e6044dfd0bbd4eed5e345a27b8c5e0f64c3a4afa9950241fff01b9eefdcdf.png" />
+<img alt="_images/a1d402301be91dfe71ac2b9d0e2b00266c5b0f4e82a4776dcf71ff9e61b4603a.png" src="_images/a1d402301be91dfe71ac2b9d0e2b00266c5b0f4e82a4776dcf71ff9e61b4603a.png" />
+<img alt="_images/4303192952ff83c28d6574b72bb27c024fe1cf6c686e3919bc49e52b9016d099.png" src="_images/4303192952ff83c28d6574b72bb27c024fe1cf6c686e3919bc49e52b9016d099.png" />
+<img alt="_images/dc5e0b49bf79ce4e9cc5034ae3deb90eba4f6921e1e2161b03df27bae72fe966.png" src="_images/dc5e0b49bf79ce4e9cc5034ae3deb90eba4f6921e1e2161b03df27bae72fe966.png" />
+<img alt="_images/fd8bbb942782b0902b6fcf559d87e0c761fecd0e0fc3a0a24cd5c18af5e4cf53.png" src="_images/fd8bbb942782b0902b6fcf559d87e0c761fecd0e0fc3a0a24cd5c18af5e4cf53.png" />
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">KeyboardInterrupt</span><span class="g g-Whitespace">                         </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">line</span> <span class="mi">95</span>
+<span class="g g-Whitespace">     </span><span class="mi">92</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;Mean_per_Pop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mean&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Population&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1000000</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Scale by 1,000,000 for readability</span>
+<span class="g g-Whitespace">     </span><span class="mi">94</span> <span class="n">title_mean_per_pop</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Spatial Distribution for </span><span class="si">{</span><span class="n">endpoint</span><span class="si">}</span><span class="s1"> (</span><span class="si">{</span><span class="n">pollutant</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">author</span><span class="si">}</span><span class="s1">) per Population in </span><span class="si">{</span><span class="n">region_name</span><span class="si">}</span><span class="s1">&#39;</span>
+<span class="ne">---&gt; </span><span class="mi">95</span> <span class="n">plot_spatial_distribution_combined</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">title_mean_per_pop</span><span class="p">,</span> <span class="s2">&quot;Mean_per_Pop&quot;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
+
+<span class="nn">Cell In[1], line 108,</span> in <span class="ni">plot_spatial_distribution_combined</span><span class="nt">(gdf, title, y_axis, output_dir)</span>
+<span class="g g-Whitespace">    </span><span class="mi">106</span> <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">race</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">unique_races</span><span class="p">):</span>
+<span class="g g-Whitespace">    </span><span class="mi">107</span>     <span class="n">race_gdf</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">gdf</span><span class="p">[</span><span class="s1">&#39;Race&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">race</span><span class="p">]</span>
+<span class="ne">--&gt; </span><span class="mi">108</span>     <span class="n">race_gdf</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="n">y_axis</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">max_abs</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">max_abs</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">109</span>     <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">race</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">111</span>     <span class="c1"># Calculate the sum of the values in the domain</span>
+
+<span class="nn">File ~/micromamba/lib/python3.10/site-packages/geopandas/plotting.py:979,</span> in <span class="ni">GeoplotAccessor.__call__</span><span class="nt">(self, *args, **kwargs)</span>
+<span class="g g-Whitespace">    </span><span class="mi">977</span> <span class="n">kind</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;kind&quot;</span><span class="p">,</span> <span class="s2">&quot;geo&quot;</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">978</span> <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;geo&quot;</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">979</span>     <span class="k">return</span> <span class="n">plot_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">980</span> <span class="k">if</span> <span class="n">kind</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pandas_kinds</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">981</span>     <span class="c1"># Access pandas plots</span>
+<span class="g g-Whitespace">    </span><span class="mi">982</span>     <span class="k">return</span> <span class="n">PlotAccessor</span><span class="p">(</span><span class="n">data</span><span class="p">)(</span><span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="nn">File ~/micromamba/lib/python3.10/site-packages/geopandas/plotting.py:862,</span> in <span class="ni">plot_dataframe</span><span class="nt">(df, column, cmap, color, ax, cax, categorical, legend, scheme, k, vmin, vmax, markersize, figsize, legend_kwds, categories, classification_kwds, missing_kwds, aspect, **style_kwds)</span>
+<span class="g g-Whitespace">    </span><span class="mi">860</span> <span class="n">subset</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">poly_idx</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">nan_idx</span><span class="p">)]</span>
+<span class="g g-Whitespace">    </span><span class="mi">861</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">polys</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">862</span>     <span class="n">_plot_polygon_collection</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">863</span>         <span class="n">ax</span><span class="p">,</span> <span class="n">polys</span><span class="p">,</span> <span class="n">subset</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">mn</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">mx</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="o">**</span><span class="n">style_kwds</span>
+<span class="g g-Whitespace">    </span><span class="mi">864</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">866</span> <span class="c1"># plot all LineStrings and MultiLineString components in same collection</span>
+<span class="g g-Whitespace">    </span><span class="mi">867</span> <span class="n">lines</span> <span class="o">=</span> <span class="n">expl_series</span><span class="p">[</span><span class="n">line_idx</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">nan_idx</span><span class="p">)]</span>
+
+<span class="nn">File ~/micromamba/lib/python3.10/site-packages/geopandas/plotting.py:184,</span> in <span class="ni">_plot_polygon_collection</span><span class="nt">(ax, geoms, values, color, cmap, vmin, vmax, **kwargs)</span>
+<span class="g g-Whitespace">    </span><span class="mi">180</span>     <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span>
+<span class="g g-Whitespace">    </span><span class="mi">182</span> <span class="n">_expand_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">multiindex</span><span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">184</span> <span class="n">collection</span> <span class="o">=</span> <span class="n">PatchCollection</span><span class="p">([</span><span class="n">_PolygonPatch</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span> <span class="k">for</span> <span class="n">poly</span> <span class="ow">in</span> <span class="n">geoms</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">186</span> <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">187</span>     <span class="n">collection</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+
+<span class="nn">File ~/micromamba/lib/python3.10/site-packages/geopandas/plotting.py:184,</span> in <span class="ni">&lt;listcomp&gt;</span><span class="nt">(.0)</span>
+<span class="g g-Whitespace">    </span><span class="mi">180</span>     <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span>
+<span class="g g-Whitespace">    </span><span class="mi">182</span> <span class="n">_expand_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">multiindex</span><span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">184</span> <span class="n">collection</span> <span class="o">=</span> <span class="n">PatchCollection</span><span class="p">([</span><span class="n">_PolygonPatch</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span> <span class="k">for</span> <span class="n">poly</span> <span class="ow">in</span> <span class="n">geoms</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">186</span> <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">187</span>     <span class="n">collection</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+
+<span class="nn">File ~/micromamba/lib/python3.10/site-packages/geopandas/plotting.py:129,</span> in <span class="ni">_PolygonPatch</span><span class="nt">(polygon, **kwargs)</span>
+<span class="g g-Whitespace">    </span><span class="mi">126</span> <span class="kn">from</span> <span class="nn">matplotlib.patches</span> <span class="kn">import</span> <span class="n">PathPatch</span>
+<span class="g g-Whitespace">    </span><span class="mi">127</span> <span class="kn">from</span> <span class="nn">matplotlib.path</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="ne">--&gt; </span><span class="mi">129</span> <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">make_compound_path</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">130</span>     <span class="n">Path</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">polygon</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">coords</span><span class="p">)[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]),</span>
+<span class="g g-Whitespace">    </span><span class="mi">131</span>     <span class="o">*</span><span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ring</span><span class="o">.</span><span class="n">coords</span><span class="p">)[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span> <span class="n">ring</span> <span class="ow">in</span> <span class="n">polygon</span><span class="o">.</span><span class="n">interiors</span><span class="p">],</span>
+<span class="g g-Whitespace">    </span><span class="mi">132</span> <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span> <span class="k">return</span> <span class="n">PathPatch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="nn">File ~/micromamba/lib/python3.10/site-packages/matplotlib/path.py:337,</span> in <span class="ni">Path.make_compound_path</span><span class="nt">(cls, *args)</span>
+<span class="g g-Whitespace">    </span><span class="mi">335</span>     <span class="k">else</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">336</span>         <span class="n">codes</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">codes</span>
+<span class="ne">--&gt; </span><span class="mi">337</span>     <span class="n">i</span> <span class="o">+=</span> <span class="n">size</span>
+<span class="g g-Whitespace">    </span><span class="mi">338</span> <span class="n">not_stop_mask</span> <span class="o">=</span> <span class="n">codes</span> <span class="o">!=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">STOP</span>  <span class="c1"># Remove STOPs, as internal STOPs are a bug.</span>
+<span class="g g-Whitespace">    </span><span class="mi">339</span> <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">vertices</span><span class="p">[</span><span class="n">not_stop_mask</span><span class="p">],</span> <span class="n">codes</span><span class="p">[</span><span class="n">not_stop_mask</span><span class="p">])</span>
+
+<span class="ne">KeyboardInterrupt</span>: 
+</pre></div>
+</div>
+<img alt="_images/2f352da817c4137c6ea68507166fc4c6ed3c975aaaddd94d34ad48a0ebcb9087.png" src="_images/2f352da817c4137c6ea68507166fc4c6ed3c975aaaddd94d34ad48a0ebcb9087.png" />
+</div>
+</details>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="inmap_analysis.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">2. INMAP simulation results</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#note-that-only-emergency-room-visits-asthma-has-ethinicity-separate-for-white-population-so-i-will-merge-them-into-just-white">Note that only “Emergency Room Visits  Asthma” has ethinicity separate (for White population), so I will merge them into just “White”.</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#population-data-is-from-inmap-2013-population-with-race">Population data is from INMAP (2013 population with race)</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Yunha Lee
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

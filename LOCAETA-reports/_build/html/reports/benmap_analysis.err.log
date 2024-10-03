@@ -30,7 +30,7 @@ nbclient.exceptions.CellTimeoutError: A cell timed out while it was being execut
 The message was: Cell execution timed out.
 Here is a preview of the cell contents:
 -------------------
-['# Define file paths', '', "benmap_output_type =['incidence'] #, 'valuation']", '', 'for benmap_output in benmap_output_type:']
+['# Define file paths', '', "benmap_output_type =['incidence', 'valuation']", '', 'for benmap_output in benmap_output_type:']
 ...
 ["            if benmap_output == 'incidence':", "                group['Mean_per_Pop'] = group.apply(lambda row: row['Mean'] / row['Population'] * 1000000, axis=1)  # Scale by 1,000,000 for readability", '', "                title_mean_per_pop = f'Spatial Distribution for {endpoint} ({pollutant}, {author}) per Population in {region_name}'", '                plot_spatial_distribution_combined(group, title_mean_per_pop, "Mean_per_Pop", output_dir)']
 -------------------
