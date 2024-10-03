@@ -55,6 +55,14 @@ LOCAETA_AQ/
 
 NOTE : After Step 2 (emissions are processed), INMAP should be run with the processed emissions files. See the details in this repo: https://github.com/yunhal/inmap-1.9.6-gridsplit
 
+# How to generate Jupyter Book for INMAP analysis
+
+Use the following command in the terminal: 
+
+```
+jupyter-book build LOCAETA-reports
+```
+
 ## Contact Information
 
 For any questions or further information regarding this repository, please contact:
