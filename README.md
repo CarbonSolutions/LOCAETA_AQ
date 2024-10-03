@@ -28,6 +28,7 @@ This repository contains the code used for LOCAETA's air quality modeling and im
 
 ## Repository structure
 
+```plaintext
 LOCAETA_AQ/
 ├── LOCAETA_AQ/
 ├── LOCAETA-reports/
@@ -52,8 +53,10 @@ LOCAETA_AQ/
 ├── inmap_run_comparison.py       # Python script for comparing INMAP model runs (Step 3: compare a set of INMAP outputs)
 ├── process_INMAP_for_BenMAP.py   # Python script for processing INMAP data for BenMAP (Step 4: Create BenMAP input using INMAP outputs)
 └── README.md                     # README file for project documentation
+```
 
 NOTE : After Step 2 (emissions are processed), INMAP should be run with the processed emissions files. See the details in this repo: https://github.com/yunhal/inmap-1.9.6-gridsplit
+
 
 # How to generate Jupyter Book for INMAP analysis
 
