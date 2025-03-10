@@ -57,13 +57,13 @@ if __name__ == "__main__":
 
     # Define pairs of base and sensitivity runs
     run_pairs = {
-        'LA_CCS': {
+        'CO_CCS': {
             'base': 'base_nei2020/2020nei_output_run_steady.shp',
-            'sens': 'LA_CCS/2020nei_output_run_steady.shp'
+            'sens': 'CO_CCS/2020nei_output_run_steady.shp'
         },
-        'LA_CCS_noNH3': {
+        'CO_CCS_wo_NH3_VOC': {
             'base': 'base_nei2020/2020nei_output_run_steady.shp',
-            'sens': 'LA_CCS_noNH3/2020nei_output_run_steady.shp'
+            'sens': 'CO_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
         }
     }
 

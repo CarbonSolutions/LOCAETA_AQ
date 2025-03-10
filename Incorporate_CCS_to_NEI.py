@@ -19,14 +19,14 @@ import emission_processing
 def main():
 
     # output file path for processed emissions 
-    combined_NEI_emis_path = '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/new_NEI2020_pt_oilgas_ptegu_ptnonipm.shp'
-    NEI_CCS_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/new_NEI_point_oilgas_ptegu_ptnonimps_CCS.shp"
-    LA_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/new_LA_point_CCS.shp"
-    LA_CCS_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/new_LA_point_CCS_reduced_emis.shp"
+    combined_NEI_emis_path = '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/combined_NEI2020_pt_oilgas_ptegu_ptnonipm.shp'
+    NEI_CCS_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/Colorado_CCS_combined_NEI_point_oilgas_ptegu_ptnonimps.shp"
+    State_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/Colorado_point_CCS.shp"
+    State_CCS_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/Colorado_point_CCS_reduced_emis.shp"
     output_plots_dir ='/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/'
 
     # CCS and NEI raw data directory
-    CCS_raw_file = '/Users/yunhalee/Documents/LOCAETA/CS_emissions/conLA_plus_NEI_cdconly.csv'
+    CCS_raw_file = '/Users/yunhalee/Documents/LOCAETA/CS_emissions/final_output_1_updated_unitcheck.csv'
     nei_raw_data_dir = '/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/2020ha2_cb6_20k/inputs/'
 
     # find which NEI emission file to open 
@@ -56,78 +56,71 @@ def main():
 
     # process CCS emissions to merge it with NEI emissions
     cs_emis = emission_processing.load_and_process_ccs_emissions(CCS_raw_file)
-    cs_emis = emission_processing.fill_missing_eis_id(cs_emis, 'https://gaftp.epa.gov/air/nei/2020/data_summaries/Facility%20Level%20by%20Pollutant.zip')
-    cs_emis = emission_processing.calculate_emission_rates(cs_emis)
 
-    merged_df = emission_processing.merge_and_calculate_new_emissions(gdf, cs_emis)
+    # following step is commented out because Kelly's output has all eis_id. 
+    ## cs_emis = emission_processing.fill_missing_eis_id(cs_emis, 'https://gaftp.epa.gov/air/nei/2020/data_summaries/Facility%20Level%20by%20Pollutant.zip')
+    ##cs_emis = emission_processing.calculate_emission_rates(cs_emis)
 
-    # cleaning the columns we don't need to keep
-    CCS_columns = [ "facPrimaryPM25", "facNOx" , "facSO2", "facNH3", "facVOC", 
-                        "PM_red", "NOx_red" , "SO2_red", "NH3_inc", "VOCs_inc", 
-                        "PM_rate", "NOx_rate" , "SO2_rate", "NH3_rate", "VOC_rate" ]
-
-    filtered_df = merged_df.drop(columns = CCS_columns, axis =1)
+    subset_df = emission_processing.subset_and_validate_emissions(gdf, cs_emis)
+    merged_df = emission_processing.merge_to_NEI_emissions(gdf, cs_emis)
 
     # List of original emission columns
     original_emission_cols = ['VOC', 'NOx', 'NH3', 'SOx', 'PM2_5']
-
+    CCS_cols = ['VOC_out_subpart_tons', 'NOX_out_subpart_tons', 'NH3_out_subpart_tons', 
+                'SO2_out_subpart_tons', 'PM25_out_subpart_tons']
+    
     # Create a mapping for renaming the columns
     rename_mapping = {col: col + '_old' for col in original_emission_cols}
     rename_mapping.update({col + '_new': col for col in original_emission_cols})
 
     # Rename the columns
-    filtered_df.rename(columns=rename_mapping, inplace=True)
+    merged_df.rename(columns=rename_mapping, inplace=True)
 
-    print("National Emissions with CCS contains the following columns", filtered_df.head())
+    print("National Emissions with CCS contains the following columns", merged_df.head())
 
-    if not isinstance(filtered_df, gpd.GeoDataFrame):
+    if not isinstance(merged_df, gpd.GeoDataFrame):
         raise TypeError("The object is not a GeoDataFrame")
     else:
-        if filtered_df.crs != CRS.from_string(target_crs):
+        if merged_df.crs != CRS.from_string(target_crs):
             raise ValueError(f"The GeoDataFrame CRS does not match the target CRS: {target_crs}")
         else: 
-            filtered_df.to_file(NEI_CCS_emis_file)
+            merged_df.to_file(NEI_CCS_emis_file)
             print(f"Final shapefile saved to: {NEI_CCS_emis_file}")
 
-    # compare CCS facility emissions total with NEI facility total emissions (facility emissions should match with NEI)
-    emission_processing.plot_CCS_facility_emissions(merged_df, output_plots_dir)
-
     # Save only LA point sources
-
-    # drop if CCS columns are missing
-    filtered_df = merged_df.dropna(subset=CCS_columns, how='all')
-    
-    filtered_df.drop(columns=CCS_columns, inplace=True)
-
-    if not isinstance(filtered_df, gpd.GeoDataFrame):
+    if not isinstance(subset_df, gpd.GeoDataFrame):
         raise TypeError("The object is not a GeoDataFrame")
     else:
-        if filtered_df.crs != CRS.from_string(target_crs):
+        if subset_df.crs != CRS.from_string(target_crs):
             raise ValueError(f"The GeoDataFrame CRS does not match the target CRS: {target_crs}")
         else: 
-            filtered_df.to_file(LA_emis_file)
-            print(f"Filtered shapefile saved to: {LA_emis_file}")
+            subset_df.to_file(State_emis_file)
+            print(f"Filtered shapefile saved to: {State_emis_file}")
 
-    # List of original emission columns
-    original_emission_cols = ['VOC', 'NOx', 'NH3', 'SOx', 'PM2_5']
+    NEI_cols = ['VOC', 'NOx', 'NH3', 'SOx', 'PM2_5']
+    CCS_cols = ['VOC_out_subpart_tons', 'NOX_out_subpart_tons', 'NH3_out_subpart_tons', 
+                'SO2_out_subpart_tons', 'PM25_out_subpart_tons']
 
     # Create a mapping for renaming the columns
-    rename_mapping = {col: col + '_old' for col in original_emission_cols}
-    rename_mapping.update({col + '_new': col for col in original_emission_cols})
+    rename_mapping = {col: col + '_old' for col in NEI_cols}
+    rename_mapping.update({CCS : NEI for NEI, CCS in zip(NEI_cols, CCS_cols)})
 
     # Rename the columns
-    filtered_df.rename(columns=rename_mapping, inplace=True)
+    subset_df.rename(columns=rename_mapping, inplace=True)
 
-    print("LA Emissions with CCS contains the following columns", filtered_df.head())
+    print("LA Emissions with CCS contains the following columns", subset_df.head())
 
-    if not isinstance(filtered_df, gpd.GeoDataFrame):
+    # compare CCS facility emissions total with NEI facility total emissions (facility emissions should match with NEI)
+    emission_processing.plot_CCS_facility_emissions(subset_df, output_plots_dir)
+
+    if not isinstance(subset_df, gpd.GeoDataFrame):
         raise TypeError("The object is not a GeoDataFrame")
     else:
-        if filtered_df.crs != CRS.from_string(target_crs):
+        if subset_df.crs != CRS.from_string(target_crs):
             raise ValueError(f"The GeoDataFrame CRS does not match the target CRS: {target_crs}")
         else: 
-            filtered_df.to_file(LA_CCS_emis_file)
-            print(f"Filtered shapefile saved to: {LA_CCS_emis_file}")
+            subset_df.to_file(State_CCS_emis_file)
+            print(f"Filtered shapefile saved to: {State_CCS_emis_file}")
 
 if __name__ == "__main__":
     main()

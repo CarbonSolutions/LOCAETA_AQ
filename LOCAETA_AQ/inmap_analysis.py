@@ -60,7 +60,7 @@ def compute_and_print_summaries(gdf_diff, columns, area_weight_list):
     for field in area_weight_list:
         area_weighted_averages[field] = (gdf_diff[field] * gdf_diff['area']).sum() / gdf_diff['area'].sum()
 
-    print("Area-Weighted Averages:")
+    print("Area-Weighted Averages [ug m-3]:")
     for key, value in area_weighted_averages.items():
         print(f"{key}: {value}")
 
@@ -81,8 +81,8 @@ def create_interactive_map(gdf_diff, field, output_dir, run_name):
 
     colormap = cm.LinearColormap(
         colors=['blue', 'white', 'red'],
-        vmin=-0.5, #min_value, #-2, #0.5,
-        vmax=0.5, #max_value, #2, #0.5,
+        vmin=-0.1, #min_value, #-2, #0.5,
+        vmax=0.1, #max_value, #2, #0.5,
         caption=f'{field} Difference'
     )
 
@@ -147,22 +147,22 @@ def barplot_health_aq_benefits (area_weighted_averages, column_sums, output_dir,
     plt.figure(figsize=(12, 6))
     colors = ['blue' if val < 0 else 'red' for val in area_weighted_averages.values()]
     plt.bar(area_weighted_averages.keys(), area_weighted_averages.values(), color=colors)
-    plt.title('Impact of LA CSS emissions on surface air quality', fontsize=14)
+    plt.title('Impact of CSS emissions on surface air quality', fontsize=14)
     plt.xlabel('Fields', fontsize=12)
-    plt.ylabel('Area-Weighted Average', fontsize=12)
+    plt.ylabel('Area-Weighted Average [ug m-3]', fontsize=12)
     plt.xticks(rotation=45, fontsize=10)
     plt.yticks(fontsize=10)
     plt.axhline(0, color='black', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
 
-    plt.savefig(os.path.join(output_dir, f'{run_name}_LA_CCS_impact_on_area_weighted_AQ.png'), dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, f'{run_name}_CCS_impact_on_area_weighted_AQ.png'), dpi=300, bbox_inches='tight')
 
 
     plt.figure(figsize=(12, 6))
     colors = ['blue' if val < 0 else 'red' for val in column_sums.values]
     plt.bar(column_sums.index, column_sums.values, color=colors)
-    plt.title('Impact of LA CSS emissions on populations', fontsize=14)
+    plt.title('Impact of CSS emissions on populations', fontsize=14)
     plt.xlabel('Fields', fontsize=12)
     plt.ylabel('Total premature mortality by CSS', fontsize=12)
     plt.xticks(rotation=45, fontsize=10)
@@ -171,7 +171,7 @@ def barplot_health_aq_benefits (area_weighted_averages, column_sums, output_dir,
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
 
-    plt.savefig(os.path.join(output_dir, f'{run_name}_LA_CCS_impact_on_total_deaths.png'), dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, f'{run_name}_CCS_impact_on_total_deaths.png'), dpi=300, bbox_inches='tight')
 
 
 def load_shapefile(shapefile_path):

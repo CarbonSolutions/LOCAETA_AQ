@@ -18,19 +18,20 @@ def main():
     #grid_shapefile_path = "/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/emiss_shp2020/Census/cb_2020_us_county_500k.shp"
     grid_shapefile_path = '/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP/grids/US Census Tracts/US Census Tracts.shp'
     grid_shapefile_path = '/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP/grids/County/County.shp'
-    grid_level =  'county' #'tract' # or
+    grid_level =  'county' # or 'tract' 
+    target_year = '2020'
 
     inmap_output_dir = '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/inmap-1.9.6-gridsplit/outputs/'
 
     # List of InMAP output files to process
     inmap_outputs = [
-        'base_nei2020/2020nei_output_run_steady.shp',
-        'LA_CCS/2020nei_output_run_steady.shp',
-        'LA_CCS_noNH3/2020nei_output_run_steady.shp'
+#            'base_nei2020/2020nei_output_run_steady.shp', (include only if it is not available)
+            'CO_CCS/2020nei_output_run_steady.shp',
+            'CO_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
     ]
 
     # Directory to save the grid and PM2.5 csv files, which are BenMAP input files
-    benmap_input_dir ='/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP/inmap_output/'
+    benmap_input_dir =f'/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP/inmap_output/{grid_level}_case/'
 
     for inmap_output_path in inmap_outputs:
 
@@ -38,7 +39,11 @@ def main():
         print(f"Processing InMAP output from directory: {inmap_runname}")
 
         output_shapefile_path = f'{benmap_input_dir}{inmap_runname}_{grid_level}_inmap_grid.shp' # not used 
-        output_csv_path = f'{benmap_input_dir}{inmap_runname}_{grid_level}_inmap_PM25.csv'
+        
+        if "base" in inmap_runname:
+            output_csv_path = f'{benmap_input_dir}{inmap_runname}_{grid_level}_inmap_{target_year}_pm25.csv'
+        else: # control
+            output_csv_path = f'{benmap_input_dir}control_{inmap_runname}_{grid_level}_inmap_{target_year}_pm25.csv'
         
         inmap, grid_level_gdf = inmap_to_benmap.process_inmap_to_benmap_inputs(
             inmap_output_dir+inmap_output_path, 

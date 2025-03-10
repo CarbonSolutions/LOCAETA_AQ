@@ -327,7 +327,8 @@ def reproject_and_save_gdf(gdf, target_crs):
         print(f"GeoDataFrame is already in the target CRS: {target_proj}")
     return gdf
 
-def load_and_process_ccs_emissions(file_path):
+def load_and_process_ccs_emissions_old(file_path):
+    # This function processes Amy's old CS emission data file.
     cs_emis = pd.read_csv(file_path)
     all_columns = cs_emis.columns.tolist()
     start_index = all_columns.index("reporting_year")
@@ -336,6 +337,44 @@ def load_and_process_ccs_emissions(file_path):
     cs_emis = cs_emis[columns_to_keep]
     cs_emis.dropna(how='all', axis='columns', inplace=True)
     cs_emis.replace(["missing", "Blank"], np.nan, inplace=True)
+    return cs_emis
+
+NAN_FILL_VALUE = 0 # -9999
+
+def load_and_process_ccs_emissions(file_path):
+    # This function processes Kelly's new CS emission data file.
+    cs_emis = pd.read_csv(file_path)
+
+    # Filter columns based on partial name matching
+    all_columns = cs_emis.columns
+    columns_to_keep = ['scc']
+
+    # Keep columns that end with '_id' or contain 'subpart_ton'
+    for col in all_columns:
+        if col.endswith('_id') or 'subpart_tons' in col:
+            columns_to_keep.append(col)
+    
+    # Keep only the matching columns
+    cs_emis = cs_emis[columns_to_keep]
+
+    # Exclude the rows with missing SCC
+    cs_emis = cs_emis[cs_emis['scc'] > NAN_FILL_VALUE] 
+    
+    # fill NA with zero
+    cs_emis = cs_emis.fillna(NAN_FILL_VALUE)
+
+    # Compute missing output from Kelly's file
+    cs_emis['PM25_reduction_subpart_tons'] = cs_emis['PM25CON_reduction_subpart_tons']+ cs_emis['PM25FIL_reduction_subpart_tons']
+    cs_emis['VOC_out_subpart_tons'] = cs_emis['VOC_subpart_tons']+ cs_emis['VOC_increase_subpart_tons']
+    cs_emis['NH3_out_subpart_tons'] = cs_emis['NH3_subpart_tons']+ cs_emis['NH3_increase_subpart_tons']
+
+
+
+    # ensure scc column to be integer
+    cs_emis['scc'] = cs_emis['scc'].astype(int)
+
+    cs_emis.rename(columns={'eis_id': 'EIS_ID', 'scc': 'SCC'}, inplace = True)
+
     return cs_emis
 
 def fill_missing_eis_id(cs_emis, url):
@@ -367,7 +406,7 @@ def fill_missing_eis_id(cs_emis, url):
         raise RuntimeError(f"Failed to download Facility ZIP file: {response.status_code}")
 
     
-def calculate_emission_rates(cs_emis):
+def calculate_emission_rates_old(cs_emis):
     if cs_emis['EIS_ID'].duplicated().any():
         raise ValueError (f"CCS emissions EIS_ID has duplicates and needs attention")
     else: 
@@ -381,14 +420,102 @@ def calculate_emission_rates(cs_emis):
         cs_emis = cs_emis[ ["EIS_ID", "facPrimaryPM25", "facNOx" , "facSO2", "facNH3", "facVOC", "PM_red", "NOx_red" , "SO2_red", "NH3_inc", "VOCs_inc", "PM_rate", "NOx_rate" , "SO2_rate", "NH3_rate", "VOC_rate" ]]
         return cs_emis
     
+def calculate_emission_rates(cs_emis):
+    # This approach is not used anymore. 
+    # Define pollutants with their calculation parameters
+    pollutants = [
+        ("PM25", "PM25_subpart_tons", "PM25_reduction_subpart_tons", -1),
+        ("NOx", "NOX_subpart_tons", "NOX_reduction_subpart_tons", -1),
+        ("SO2", "SO2_subpart_tons", "SO2_reduction_subpart_tons", -1),
+        ("NH3", "NH3_subpart_tons", "NH3_increase_subpart_tons", 1),
+        ("VOC", "VOC_subpart_tons", "VOC_increase_subpart_tons", 1)
+    ]
+    
+    # Calculate all rates in one loop
+    for poll, fac, adj, sign in pollutants:
+        cs_emis[f"{poll}_rate"] = np.where(
+            cs_emis[fac] == 0, 0, 
+            (cs_emis[fac] + sign * cs_emis[adj]) / cs_emis[fac]
+        )
+    
+    # Keep only required columns
+    cols_to_keep = ["eis_id", "scc"]
+    cols_to_keep.extend([p[1] for p in pollutants])  # Add fac columns
+    cols_to_keep.extend([p[2] for p in pollutants])  # Add adj columns
+    cols_to_keep.extend([f"{p[0]}_rate" for p in pollutants])  # Add rate columns
+    
+    return cs_emis[cols_to_keep]
 
-def merge_and_calculate_new_emissions(gdf, cs_emis):
+def subset_and_validate_emissions(gdf, cs_emis):
+    # First merge for the EIS_ID and SCC matched rows
+    merged_df = pd.merge(gdf, cs_emis, on=['EIS_ID', 'SCC'], how='right')
+    
+    print(merged_df.columns)
+    
+    NEI_cols = ['VOC', 'NOx', 'NH3', 'SOx', 'PM2_5']
+    CCS_cols = ['VOC_subpart_tons', 'NOX_subpart_tons', 'NH3_subpart_tons', 'SO2_subpart_tons', 'PM25_subpart_tons']
+    
+    # Check if NEI_cols and CCS_cols value matches
+    for NEI, CCS in zip(NEI_cols, CCS_cols):
+        # Check if columns exist in the dataframe
+        if NEI in merged_df.columns and CCS in merged_df.columns:
+            match_count = 0
+            total_rows = len(merged_df)
+            mismatch_examples = []
+            
+            # Iterate through each row to compare emissions
+            for index, row in merged_df.iterrows():
+                if row[CCS] == 0 and row[NEI] == 0:
+                    match_count += 1
+                elif row[CCS] == 0 and row[NEI] != 0:
+                    mismatch_examples.append({
+                        'index': index,
+                        'EIS_ID': row.get('EIS_ID', 'N/A'),
+                        'SCC': row.get('SCC', 'N/A'),
+                        NEI: row[NEI],
+                        CCS: row[CCS]
+                    })
+                else:
+                    # Compare values
+                    if (row[NEI] - row[CCS])/row[CCS] < 0.001 :
+                        match_count += 1
+                    else:
+                        mismatch_examples.append({
+                            'index': index,
+                            'EIS_ID': row.get('EIS_ID', 'N/A'),
+                            'SCC': row.get('SCC', 'N/A'),
+                            NEI: row[NEI],
+                            CCS: row[CCS]
+                        })
+            
+            # Report matching results
+            print(f"Comparing {NEI} with {CCS}:")
+            print(f"  - Matches: {match_count} out of {total_rows} rows")
+            
+            # Show mismatches 
+            if mismatch_examples:
+                print("  - Mismatch examples:")
+                for example in mismatch_examples:
+                    print(f"    Row {example['index']} (EIS_ID: {example['EIS_ID']}, SCC: {example['SCC']}): {example[NEI]} vs {example[CCS]}")
+        else:
+            missing_cols = []
+            if NEI not in merged_df.columns:
+                missing_cols.append(NEI)
+            if CCS not in merged_df.columns:
+                missing_cols.append(CCS)
+            print(f"Cannot compare {NEI} and {CCS}. Missing columns: {', '.join(missing_cols)}")
+    
+    merged_df.to_excel('/Users/yunhalee/Documents/LOCAETA/CS_emissions/validate_Kelly_NEI_emissions.xlsx', index=True)
+
+    return merged_df
+
+def merge_and_calculate_new_emissions_old(gdf, cs_emis):
     merged_df = pd.merge(gdf, cs_emis, on='EIS_ID', how='left')
 
     print(merged_df.columns)
 
     emissions_cols = ['VOC', 'NOx', 'NH3', 'SOx', 'PM2_5']
-    rate_cols = ['VOC_rate', 'NOx_rate', 'NH3_rate', 'SO2_rate', 'PM_rate']
+    rate_cols = ['VOC_rate', 'NOx_rate', 'NH3_rate', 'SO2_rate', 'PM25_rate']
     inc_cols = {'NH3': 'NH3_inc', 'VOC': 'VOCs_inc'}
 
     for emis, rate in zip(emissions_cols, rate_cols):
@@ -418,14 +545,36 @@ def merge_and_calculate_new_emissions(gdf, cs_emis):
 
     return merged_df
 
+def merge_to_NEI_emissions(gdf, cs_emis):
+    # First merge for the EIS_ID and SCC matched rows
+    merged_df = pd.merge(gdf, cs_emis, on=['EIS_ID', 'SCC'], how='left')
+    
+    NEI_cols = ['VOC', 'NOx', 'NH3', 'SOx', 'PM2_5']
+    CCS_cols = ['VOC_out_subpart_tons', 'NOX_out_subpart_tons', 'NH3_out_subpart_tons', 
+                'SO2_out_subpart_tons', 'PM25_out_subpart_tons']
+    
+    for NEI, CCS in zip(NEI_cols, CCS_cols):
+        # Create a mask for where CCS values are greater than NAN_FILL_VALUE
+        valid_ccs_mask = merged_df[CCS] > NAN_FILL_VALUE
+        
+        # Create a new column with NEI values
+        merged_df[NEI + '_new'] = merged_df[NEI]
+        
+        # Where the mask is True, replace with CCS values
+        merged_df.loc[valid_ccs_mask, NEI + '_new'] = merged_df.loc[valid_ccs_mask, CCS]
+    
+    # Identify columns matching the pattern
+    merged_df.drop(list(merged_df.filter(regex='subpart_tons')), axis=1, inplace=True)
+
+    return merged_df
+
+
 def plot_CCS_facility_emissions(df, output_dir):
     pollutants = ['VOC', 'NOx', 'NH3', 'SOx', 'PM2_5']
-    pollutants_new = [f'{pollutant}_new' for pollutant in pollutants]
-    facility_poll = ["facVOC", "facNOx", "facNH3", "facSO2", "facPrimaryPM25"]
+    pollutants_old = [f'{pollutant}_old' for pollutant in pollutants]
 
-    totals = {pollutant: df[pollutant].sum() for pollutant in pollutants}
-    totals_new = {f'{pollutant}_new': df[f'{pollutant}_new'].sum() for pollutant in pollutants}
-    totals_facility = {facility_poll[i]: df[facility_poll[i]].unique().sum() for i in range(len(facility_poll))}
+    totals_new = {pollutant: df[pollutant].sum() for pollutant in pollutants}
+    totals_old = {f'{pollutant}': df[f'{pollutant}'].sum() for pollutant in pollutants_old}
 
     fig, axes = plt.subplots(nrows=len(pollutants), ncols=1, figsize=(20, 20))
     bar_width = 0.35
@@ -433,11 +582,10 @@ def plot_CCS_facility_emissions(df, output_dir):
         ax = axes[i]
         indices = np.arange(len(df))
         ax.bar(indices, df[pollutant], bar_width, label=f'{pollutant}')
-        ax.bar(indices + bar_width, df[pollutants_new[i]], bar_width, label=f'{pollutants_new[i]}')
-        total_original = totals[pollutant]
-        total_new = totals_new[f'{pollutant}_new']
-        total_fac = totals_facility[facility_poll[i]]
-        ax.set_title(f'{pollutant}\nTotal: {total_original:.0f} | Facility Total: {total_fac:.0f} | New Total: {total_new:.0f} | Change: {(total_new - total_original):.0f} [tons]', fontsize=20)
+        ax.bar(indices + bar_width, df[pollutants_old[i]], bar_width, label=f'{pollutants_old[i]}')
+        total_original = totals_old[f'{pollutant}_old']
+        total_new = totals_new[f'{pollutant}']
+        ax.set_title(f'{pollutant}\nTotal: {total_original:.3f} | New Total: {total_new:.3f} | Change: {(total_new - total_original):.3f} [tons]', fontsize=20)
         ax.set_xlabel('FIPS')
         ax.set_ylabel('Total emissions')
         ax.set_xticks(indices + bar_width / 2)
@@ -449,7 +597,7 @@ def plot_CCS_facility_emissions(df, output_dir):
     plt.savefig(plot_path)
     plt.close(fig)
 
-    net_changes = [totals_new[f'{pollutant}_new'] - totals[pollutant] for pollutant in pollutants]
+    net_changes = [totals_new[f'{pollutant}'] - totals_old[f'{pollutant}_old'] for pollutant in pollutants]
     colors = ['blue' if val < 0 else 'red' for val in net_changes]
     fig, ax = plt.subplots(figsize=(20, 10))
     ax.bar(pollutants, net_changes, color=colors)
