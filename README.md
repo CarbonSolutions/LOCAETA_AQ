@@ -42,7 +42,7 @@ LOCAETA_AQ/
 │   ├── logo.png                 # Logo image for the project (NOT USED)
 │   ├── references.bib           # Bibliography file for references (BibTeX format; NOT USED)
 │   ├── requirements.txt         # Dependencies or packages required for the project
-├── no_need/                     # Directory for files that are no longer needed
+├── notebooks/                     # Directory for useful jupyter notebook iles for additional processing
 ├── outputs/                     # Directory for storing generated outputs (NOT INCLUDED IN THE REPO)
 ├── __init__.py
 ├── setup.py                                   
@@ -56,6 +56,49 @@ LOCAETA_AQ/
 ```
 
 NOTE : After Step 2 (emissions are processed), INMAP should be run with the processed emissions files. See the details in this repo: https://github.com/yunhal/inmap-1.9.6-gridsplit
+
+
+# How to use this repository 
+
+1. Generate NEI shapefiles from SMOKE ready csv files
+```
+python ./NEI_csv_to_shapefile.py
+```
+Note that it needs to set a directory where the SMOKE ready csv files are located and a directory where shapefiles will be saved. 
+
+2. Add CCS emissions into NEI shapefiles
+
+```
+python ./Incorporate_CCS_to_NEI.py
+```
+This script generate a new emission shapefile that has all point-source NEI emissions and a emission shapefile that includes CCS emissions for the facilities affected by CCS tech. The combined point-source emissions are needed, because CCS tech can apply to any point source type. With that, this script doesn't change non-point source. This script and the script called by this script may need to be revised, if the CCS output from Kelly is changed (esp. for column names). 
+
+If you want to check/validate emissions, you can use this jupyter notebook: ./notebooks/check_emissions.ipynb.
+
+If you need to remove NH3 and VOC emission, you can use this jupyter notebook: ./notebooks/remove_NH3_VOC_from_CCS.ipynb
+
+If you need to modify a specific facility emissions, you can use this jupyter notebook: ./notebooks/modify_facility_emissions.ipynb
+
+
+3. Run INMAP
+
+Once the emission files are processed, it is time to run INMAP. You can find the instruction on how to run INMAP in this repo: https://github.com/yunhal/inmap-1.9.6-gridsplit In short. Step-1) create "toml" run file (you can modify eval/nei2020Config_CO_CCS.toml), Step-2) set the emission files you just processed, Step-3) set the INMAP output file path, and Step-4) run INMAP. 
+
+4. Evaluate INMAP runs
+```
+python ./inmap_run_comparison.py 
+```
+Make sure to set run_pairs which defines the INMAP output file path and scenario name. This script will generate figures under analysis_output_dir and json files under webdata_path by each run pair.
+
+5. Prepare BenMAP input file from INMAP output
+```
+python ./process_INMAP_for_BenMAP.py
+```
+This will generate air quality files in csv for each INMAP run, which will be used as an input to BenMAP. The instruction to run BenMAP will be available in this repo: "will create soon" 
+
+6. Analyze BenMAP ouputs
+
+You can run this jupyter notebook for that: ./notebooks/BenMAP_output_analysis_final.ipynb
 
 
 # How to generate Jupyter Book for INMAP analysis

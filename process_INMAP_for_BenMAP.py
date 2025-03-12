@@ -41,7 +41,7 @@ def main():
         output_shapefile_path = f'{benmap_input_dir}{inmap_runname}_{grid_level}_inmap_grid.shp' # not used 
         
         if "base" in inmap_runname:
-            output_csv_path = f'{benmap_input_dir}{inmap_runname}_{grid_level}_inmap_{target_year}_pm25.csv'
+            output_csv_path = f'{benmap_input_dir}base_{grid_level}_inmap_{target_year}_pm25.csv'
         else: # control
             output_csv_path = f'{benmap_input_dir}control_{inmap_runname}_{grid_level}_inmap_{target_year}_pm25.csv'
         

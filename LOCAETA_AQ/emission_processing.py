@@ -353,10 +353,14 @@ def load_and_process_ccs_emissions(file_path):
     for col in all_columns:
         if col.endswith('_id') or 'subpart_tons' in col:
             columns_to_keep.append(col)
-    
+
     # Keep only the matching columns
     cs_emis = cs_emis[columns_to_keep]
 
+    # remove any duplicate after removing frs_id (Kelly's output contains duplicates because of frs_id)
+    cs_emis = cs_emis.drop(columns=['frs_id'])
+    cs_emis.drop_duplicates(inplace=True)
+    
     # Exclude the rows with missing SCC
     cs_emis = cs_emis[cs_emis['scc'] > NAN_FILL_VALUE] 
     

@@ -66,7 +66,7 @@ def compute_and_print_summaries(gdf_diff, columns, area_weight_list):
 
     return column_sums, area_weighted_averages
 
-def create_interactive_map(gdf_diff, field, output_dir, run_name):
+def create_interactive_map(gdf_diff, field, output_dir):
 
     if gdf_diff.crs is None:
         gdf_diff.set_crs(epsg=4326, inplace=True)
@@ -140,9 +140,9 @@ def create_interactive_map(gdf_diff, field, output_dir, run_name):
         popup=f'Min {field}: {min_value}'
     ).add_to(m)
 
-    m.save(f"{output_dir}{run_name}_{field}_interactive_map.html")
+    m.save(os.path.join(output_dir, f"{field}_interactive_map.html"))
 
-def barplot_health_aq_benefits (area_weighted_averages, column_sums, output_dir, run_name): 
+def barplot_health_aq_benefits (area_weighted_averages, column_sums, output_dir): 
 
     plt.figure(figsize=(12, 6))
     colors = ['blue' if val < 0 else 'red' for val in area_weighted_averages.values()]
@@ -156,7 +156,7 @@ def barplot_health_aq_benefits (area_weighted_averages, column_sums, output_dir,
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
 
-    plt.savefig(os.path.join(output_dir, f'{run_name}_CCS_impact_on_area_weighted_AQ.png'), dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, f'CCS_impact_on_area_weighted_AQ.png'), dpi=300, bbox_inches='tight')
 
 
     plt.figure(figsize=(12, 6))
@@ -171,7 +171,7 @@ def barplot_health_aq_benefits (area_weighted_averages, column_sums, output_dir,
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
 
-    plt.savefig(os.path.join(output_dir, f'{run_name}_CCS_impact_on_total_deaths.png'), dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, f'CCS_impact_on_total_deaths.png'), dpi=300, bbox_inches='tight')
 
 
 def load_shapefile(shapefile_path):
@@ -181,7 +181,7 @@ def load_shapefile(shapefile_path):
     return gdf
 
 def plot_difference_map(gdf1, gdf2, field, output_dir, year):
-
+# NOT USED
     if gdf1.crs != gdf2.crs:
         gdf2 = gdf2.to_crs(gdf1.crs)
 
@@ -258,7 +258,7 @@ def modify_geojson(geojson_data, column):
     return modified_geojson
 
 
-def save_inmap_json(gdf_diff, columns_to_save, webdata_path,  run_name):
+def save_inmap_json(gdf_diff, columns_to_save, webdata_path):
 
     for column in columns_to_save:
 
@@ -274,7 +274,7 @@ def save_inmap_json(gdf_diff, columns_to_save, webdata_path,  run_name):
         geojson_data = gdf_filtered.to_json()
         modified_geojson = modify_geojson(geojson_data, column)
 
-        filename = webdata_path + f'INMAP_{column}_{run_name}.json'
+        filename = webdata_path + f'INMAP_{column}.json'
         with open(filename, 'w') as f:
             f.write(modified_geojson)
 
@@ -299,5 +299,5 @@ def compare_pm25_mortality_changes(gdf_diff,output_dir, run_name):
     plt.grid(True)
     # Add a diagonal line for reference
     plt.plot(plt.xlim(), plt.ylim(), ls="--", c=".3")
-    plt.savefig(os.path.join(output_dir, f'{run_name}_scatter_plot.png'))
+    plt.savefig(os.path.join(output_dir, 'INMAP_PM_mortality_scatter_plot.png'))
     plt.close() 
