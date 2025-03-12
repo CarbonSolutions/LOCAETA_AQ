@@ -34,8 +34,8 @@ def main(inmap_run_dir, output_dir, webdata_path, run_pairs, inmap_to_geojson):
             os.makedirs(run_output_dir)
 
         run_webdata_path = os.path.join(webdata_path, run_name)
-        if not os.path.exists(webdata_path):
-            os.makedirs(webdata_path)
+        if not os.path.exists(run_webdata_path):
+            os.makedirs(run_webdata_path)
 
         # Remove the row with the minimum TotalPopD for inmap_run
         if output_type == 'inmap_run':

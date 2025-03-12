@@ -274,7 +274,7 @@ def save_inmap_json(gdf_diff, columns_to_save, webdata_path):
         geojson_data = gdf_filtered.to_json()
         modified_geojson = modify_geojson(geojson_data, column)
 
-        filename = webdata_path + f'INMAP_{column}.json'
+        filename = os.path.join(webdata_path, f'INMAP_{column}.json')
         with open(filename, 'w') as f:
             f.write(modified_geojson)
 
