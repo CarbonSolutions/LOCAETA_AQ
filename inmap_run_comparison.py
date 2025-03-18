@@ -20,6 +20,7 @@ def main(inmap_run_dir, output_dir, webdata_path, run_pairs, inmap_to_geojson):
 
     inmap_columns = ['AsianD', 'BlackD', 'LatinoD', 'NativeD', 'WhitNoLatD', 'TotalPopD']
     source_receptor_columns = ['deathsK', 'deathsL']
+    state_regions = {"CO": '08'}
 
     for run_name, paths in run_pairs.items():
         gdf_diff = inmap_analysis.process_run_pair(run_name, paths, inmap_run_dir)
@@ -49,6 +50,12 @@ def main(inmap_run_dir, output_dir, webdata_path, run_pairs, inmap_to_geojson):
             for v in inmap_to_geojson:
                 inmap_analysis.create_interactive_map(gdf_diff, v, run_output_dir)
 
+                ## This plot must only for the state (otherwise it takes very long to plot the map)
+                for state, state_fips in state_regions.items():
+                    print(f"subsetting the dataset for the state {state_fips}")
+                    gdf_subset = inmap_analysis.subset_state(gdf_diff, state_fips)
+                    inmap_analysis.plot_spatial_distribution_percent_change_with_basemap(gdf_subset, v, run_output_dir)
+
         # Compute summaries and print them
         column_sums, area_weighted_averages = inmap_analysis.compute_and_print_summaries(gdf_diff, columns_list, area_weight_list)
 
@@ -67,16 +74,26 @@ if __name__ == "__main__":
 
     # Define pairs of base and sensitivity runs
     run_pairs = {
-        # 'CO_CCS': {
+        #  'CO_CCS': {
+        #      'base': 'base_nei2020/2020nei_output_run_steady.shp',
+        #      'sens': 'CO_CCS/2020nei_output_run_steady.shp'
+        #  },
+        # 'CO_CCS_wo_NH3_VOC': {
+        #      'base': 'base_nei2020/2020nei_output_run_steady.shp',
+        #      'sens': 'CO_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
+        #  },
+        # 'CO_CCS_wo_NH3_VOC': {
         #     'base': 'base_nei2020/2020nei_output_run_steady.shp',
-        #     'sens': 'CO_CCS/2020nei_output_run_steady.shp'
+        #     'sens': 'CO_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
         # },
-        'CO_Cherokee_CCS_wo_NH3_VOC': {
+        #'CO_Cherokee_wo_NH3_VOC': {
+        #    'base': 'base_nei2020/2020nei_output_run_steady.shp',
+        #    'sens': 'CO_Cherokee_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
+        #}
+        'NEI_no_Landfill_2001411':{
             'base': 'base_nei2020/2020nei_output_run_steady.shp',
-            'sens': 'CO_Cherokee_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
-        }
+            'sens': 'NEI_no_Landfill_2001411/2020nei_output_run_steady.shp'}
     }
-
     inmap_to_geojson = ['TotalPopD', 'TotalPM25']
 
     main(inmap_run_dir, analysis_output_dir, webdata_path, run_pairs, inmap_to_geojson)

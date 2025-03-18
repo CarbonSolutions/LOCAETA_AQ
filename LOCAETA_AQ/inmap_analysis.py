@@ -12,7 +12,7 @@ from folium import LayerControl
 import branca.colormap as cm
 import numpy as np
 import json
-
+import contextily as ctx
 
 def process_run_pair(run_name, paths, inmap_run_dir):
     base_path = os.path.join(inmap_run_dir, paths['base'])
@@ -29,6 +29,7 @@ def process_run_pair(run_name, paths, inmap_run_dir):
     # Compute the differences and add them as new fields to gdf_diff
     for field in columns:
         gdf_diff[field] = gdf_sens[field] - gdf_base[field]
+        gdf_diff[field+'_base'] = gdf_base[field]  # save base run results
 
     return gdf_diff
 
@@ -223,6 +224,87 @@ def plot_difference_map(gdf1, gdf2, field, output_dir, year):
     plt.savefig(os.path.join(output_dir, f'difference_pm25_map_{year}.png'), dpi=300, bbox_inches='tight')
 
 
+# Function to plot the percent change of each field and its "_base" version with a basemap
+def plot_spatial_distribution_percent_change_with_basemap(gdf, field, output_dir):
+    
+    # Ensure the GeoDataFrame is in the correct CRS for basemaps (Web Mercator)
+    gdf = gdf.to_crs(epsg=3857)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    col_diff = f'{field}'
+    col_base = f'{field}_base'
+
+    # Ensure both the current and "_old" columns exist in the GeoDataFrame
+    if col_diff not in gdf.columns or col_base not in gdf.columns:
+        print(f'Columns {col_diff} or {col_base} do not exist in the data.')
+    
+    # Calculate the percent change, avoiding division by zero
+    gdf[ field+'_percent_change'] = (gdf[col_diff] / gdf[col_base]) * 100
+
+    # Plot the spatial distribution of the percent change
+    vmin, vmax = -1, 1  # Fixed color scale from -50% to 50%
+
+    gdf.plot(column=field+'_percent_change', cmap='coolwarm', vmin=vmin, vmax=vmax, legend=False, edgecolor=None, 
+                ax=ax, markersize=30, alpha=0.8)  # Increase marker size and reduce transparency
+
+    # Add a basemap (using OpenStreetMap)
+    ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik, zoom=6)
+
+    ax.set_title(f'Percent Change in {field}')
+
+    # Calculate the total, max, and min percent change
+    total_diff = gdf[col_diff].sum()
+    total_base = gdf[col_base].sum()
+    total_percent_change = (total_diff / total_base) * 100
+    max_percent_change = gdf[field+'_percent_change'].max()
+    min_percent_change = gdf[field+'_percent_change'].min()
+
+    # Display the total, max, and min percent changes on the plot
+    ax.text(0.5, -0.15, f'Total Percent Change: {total_percent_change:.3f}%\nMax Percent Change: {max_percent_change:.3f}%\nMin Percent Change: {min_percent_change:.3f}%', 
+            ha='center', va='center', transform=ax.transAxes, fontsize=12, color='black')
+
+    # Add a color bar for the field
+    sm = plt.cm.ScalarMappable(cmap='coolwarm', norm=mcolors.TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax))
+    sm._A = []
+    cbar_ax = fig.add_axes([0.92, 0.15, 0.02, 0.7])  # Position color bar to avoid overlap
+    fig.colorbar(sm, cax=cbar_ax).set_label(f'{field} Percent Change')
+
+    # Adjust layout to prevent overlap
+    plt.subplots_adjust(left=0.1, right=0.85, top=0.9, bottom=0.2)
+
+    # Save the figure for each field as a separate file
+    plt.savefig(os.path.join(output_dir, f'{field}_Percent Change_with_basemap.png'), dpi=300, bbox_inches='tight')
+    plt.close()  # Close the figure to avoid overlapping plots
+
+def subset_state(gdf, state_fips):
+
+    # read county polygon information from this shapefile (needed for non-point sources)
+    shapefile_path = "/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/emiss_shp2020/Census/cb_2020_us_county_500k.shp"
+    gdf_fips = gpd.read_file(shapefile_path)
+
+    # this is necessary for basemap plotting
+    gdf_fips = gdf_fips.to_crs(epsg=3857)
+
+    target_proj = gdf.crs
+
+    if gdf_fips.crs != target_proj:
+        print(f"Reprojecting from {gdf_fips.crs} to {target_proj}")
+        gdf_fips = gdf_fips.to_crs(target_proj)
+
+
+    print(f"unique FIPS are {gdf_fips['STATEFP'].unique()}")
+
+    # Get all county geometries for the state and merge them into a single geometry
+    state_geom = gdf_fips[gdf_fips['STATEFP'] == state_fips].geometry.unary_union
+
+    # Subset your dataset using spatial intersection
+    gdf_co = gdf[gdf.intersects(state_geom)]
+
+    # check new dataset
+    print(gdf_co.head())
+
+    return gdf_co
 
 def modify_geojson(geojson_data, column):
 
