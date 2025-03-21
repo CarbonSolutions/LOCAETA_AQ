@@ -82,7 +82,7 @@ If you need to modify a specific facility emissions, you can use this jupyter no
 
 3. Run INMAP
 
-Once the emission files are processed, it is time to run INMAP. You can find the instruction on how to run INMAP in this repo: https://github.com/yunhal/inmap-1.9.6-gridsplit In short. Step-1) create "toml" run file (you can modify eval/nei2020Config_CO_CCS.toml), Step-2) set the emission files you just processed, Step-3) set the INMAP output file path, and Step-4) run INMAP. 
+Once the emission files are processed, it is time to run INMAP. You can find the instruction on how to run INMAP in this repo: https://github.com/yunhal/inmap-1.9.6-gridsplit In short. Step-1) create "toml" run file (you can modify eval/nei2020Config_CO_CCS.toml), Step-2) set the emission file path you just processed, Step-3) set the INMAP output file path (make sure to create the output directory as well), and Step-4) run INMAP. 
 
 4. Evaluate INMAP runs
 ```
@@ -94,7 +94,7 @@ Make sure to set run_pairs which defines the INMAP output file path and scenario
 ```
 python ./process_INMAP_for_BenMAP.py
 ```
-This will generate air quality files in csv for each INMAP run, which will be used as an input to BenMAP. The instruction to run BenMAP will be available in this repo: "will create soon" 
+This will generate air quality files in csv for each INMAP run, which will be used as an input to BenMAP. The instruction to run BenMAP will be available in this repo: https://github.com/yunhal/BenMAP_batchmode_for_MAC
 
 6. Analyze BenMAP ouputs
 

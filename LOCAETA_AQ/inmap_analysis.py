@@ -13,6 +13,7 @@ import branca.colormap as cm
 import numpy as np
 import json
 import contextily as ctx
+import pandas as pd
 
 def process_run_pair(run_name, paths, inmap_run_dir):
     base_path = os.path.join(inmap_run_dir, paths['base'])
@@ -64,6 +65,30 @@ def compute_and_print_summaries(gdf_diff, columns, area_weight_list):
     print("Area-Weighted Averages [ug m-3]:")
     for key, value in area_weighted_averages.items():
         print(f"{key}: {value}")
+
+    return column_sums, area_weighted_averages
+
+def compute_and_print_summaries(gdf_diff, columns, area_weight_list, output_dir):
+    # Compute column sums for health benefits
+    column_sums = gdf_diff[columns].sum()
+    print("Column Sums:\n", column_sums)
+
+    # Compute area-weighted averages for AQ benefits
+    gdf_diff['area'] = gdf_diff.geometry.area
+    area_weighted_averages = {}
+
+    for field in area_weight_list:
+        area_weighted_averages[field] = (gdf_diff[field] * gdf_diff['area']).sum() / gdf_diff['area'].sum()
+
+    print("Area-Weighted Averages [ug m-3]:")
+    for key, value in area_weighted_averages.items():
+        print(f"{key}: {value}")
+
+    # Save area-weighted averages to CSV
+    output_file = os.path.join(output_dir, "area_weighted_averages.csv")
+    df = pd.DataFrame(area_weighted_averages.items(), columns=["Species", "Area-Weighted Average"])
+    df.to_csv(output_file, index=False)
+    print(f"Saved area-weighted averages to {output_file}")
 
     return column_sums, area_weighted_averages
 
@@ -143,37 +168,83 @@ def create_interactive_map(gdf_diff, field, output_dir):
 
     m.save(os.path.join(output_dir, f"{field}_interactive_map.html"))
 
-def barplot_health_aq_benefits (area_weighted_averages, column_sums, output_dir): 
 
-    plt.figure(figsize=(12, 6))
-    colors = ['blue' if val < 0 else 'red' for val in area_weighted_averages.values()]
-    plt.bar(area_weighted_averages.keys(), area_weighted_averages.values(), color=colors)
-    plt.title('Impact of CSS emissions on surface air quality', fontsize=14)
-    plt.xlabel('Fields', fontsize=12)
-    plt.ylabel('Area-Weighted Average [ug m-3]', fontsize=12)
-    plt.xticks(rotation=45, fontsize=10)
-    plt.yticks(fontsize=10)
-    plt.axhline(0, color='black', linewidth=0.8)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.tight_layout()
+import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-    plt.savefig(os.path.join(output_dir, f'CCS_impact_on_area_weighted_AQ.png'), dpi=300, bbox_inches='tight')
+def barplot_health_aq_benefits(area_weighted_averages, column_sums, output_dir):
+    """
+    Generates two bar plots: 
+    - Impact of CCS emissions on surface air quality
+    - Impact of CCS emissions on total premature mortality
+    """
+    # Convert dictionaries to DataFrame for easier plotting
+    df_aq = pd.DataFrame(list(area_weighted_averages.items()), columns=['Field', 'Value'])
+    df_pop = pd.DataFrame({'Field': column_sums.index, 'Value': column_sums.values})
 
+    # Ensure values are numeric (fixes missing annotations issue)
+    df_aq['Value'] = pd.to_numeric(df_aq['Value'])
+    df_pop['Value'] = pd.to_numeric(df_pop['Value'])
 
-    plt.figure(figsize=(12, 6))
-    colors = ['blue' if val < 0 else 'red' for val in column_sums.values]
-    plt.bar(column_sums.index, column_sums.values, color=colors)
-    plt.title('Impact of CSS emissions on populations', fontsize=14)
-    plt.xlabel('Fields', fontsize=12)
-    plt.ylabel('Total premature mortality by CSS', fontsize=12)
-    plt.xticks(rotation=45, fontsize=10)
-    plt.yticks(fontsize=10)
-    plt.axhline(0, color='black', linewidth=0.8)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.tight_layout()
+    # Set Seaborn style
+    sns.set_style('whitegrid')
 
-    plt.savefig(os.path.join(output_dir, f'CCS_impact_on_total_deaths.png'), dpi=300, bbox_inches='tight')
+    def format_value(value):
+        """Formats values for bar annotations."""
+        if abs(value) < 0.01:
+            return f'{value:.2e}'  # Scientific notation
+        elif abs(value) < 1:
+            return f'{value:.2f}'  # Two decimal places
+        else:
+            return f'{int(value)}'  # No decimal places
 
+    def plot_bar(df, title, y_label, output_filename):
+        """Helper function to create bar plots with improved aesthetics."""
+        plt.figure(figsize=(14, 8))
+
+        # Define color palette
+        colors = ['blue' if val < 0 else 'red' for val in df['Value']]
+
+        # Create bar plot
+        ax = sns.barplot(data=df, x='Field', y='Value', palette=colors, errorbar=None, edgecolor='black')
+
+        # Title and labels
+        plt.title(title, fontsize=25, fontweight='bold', pad=20)
+        plt.xlabel('Fields', fontsize=18)
+        plt.ylabel(y_label, fontsize=18)
+        plt.xticks(rotation=45, fontsize=18)
+        plt.yticks(fontsize=16)
+        plt.axhline(0, color='black', linewidth=1.2, linestyle='--')
+        plt.grid(axis='y', linestyle='--', alpha=0.5)
+
+        # Add value labels on bars
+        for p in ax.patches:
+            value = p.get_height()
+            if not np.isnan(value):  # Skip NaNs and tiny values
+                text_y_pos = 0 # value + (abs(value)* 0.2* np.sign(value))
+                ax.annotate(
+                    format_value(value),
+                    (p.get_x() + p.get_width() / 2., text_y_pos),
+                    ha='center', 
+                    va='bottom',
+                    fontsize=12,
+                    fontweight='bold')
+
+        # Save plot
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, output_filename), dpi=300, bbox_inches='tight')
+        plt.show()
+
+    # Plot Air Quality Impact
+    plot_bar(df_aq, 'Impact of CCS Emissions on Surface Air Quality',
+             'Area-Weighted Average [ug/m³]', 'CCS_impact_on_area_weighted_AQ.png')
+
+    # Plot Population Health Impact
+    plot_bar(df_pop, 'Impact of CCS Emissions on Total Premature Mortality',
+             'Total Premature Mortality by CCS', 'CCS_impact_on_total_deaths.png')
 
 def load_shapefile(shapefile_path):
     gdf = gpd.read_file(shapefile_path)
@@ -349,7 +420,7 @@ def save_inmap_json(gdf_diff, columns_to_save, webdata_path):
         if column == 'TotalPopD':
             threshold = 0
         elif column == 'TotalPM25':
-            threshold = 0.0001
+            threshold = 0.0000001
 
         gdf_filtered = gdf_column[(gdf_column[column].abs() > threshold)]
 

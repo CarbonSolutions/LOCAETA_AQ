@@ -57,13 +57,13 @@ def main(inmap_run_dir, output_dir, webdata_path, run_pairs, inmap_to_geojson):
                     inmap_analysis.plot_spatial_distribution_percent_change_with_basemap(gdf_subset, v, run_output_dir)
 
         # Compute summaries and print them
-        column_sums, area_weighted_averages = inmap_analysis.compute_and_print_summaries(gdf_diff, columns_list, area_weight_list)
+        column_sums, area_weighted_averages = inmap_analysis.compute_and_print_summaries(gdf_diff, columns_list, area_weight_list, run_output_dir)
 
         # Create a barplot of total premature deaths and area-weighted AQ
         inmap_analysis.barplot_health_aq_benefits(area_weighted_averages, column_sums, run_output_dir)
 
         # Create geojson files for columns_to_save
-        inmap_analysis.save_inmap_json(gdf_diff, inmap_to_geojson, run_webdata_path)
+        inmap_analysis.save_inmap_json(gdf_subset, inmap_to_geojson, run_webdata_path)
 
 
 if __name__ == "__main__":
@@ -74,22 +74,22 @@ if __name__ == "__main__":
 
     # Define pairs of base and sensitivity runs
     run_pairs = {
-        #  'CO_CCS': {
-        #      'base': 'base_nei2020/2020nei_output_run_steady.shp',
-        #      'sens': 'CO_CCS/2020nei_output_run_steady.shp'
-        #  },
-        # 'CO_CCS_wo_NH3_VOC': {
-        #      'base': 'base_nei2020/2020nei_output_run_steady.shp',
-        #      'sens': 'CO_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
-        #  },
-        # 'CO_CCS_wo_NH3_VOC': {
-        #     'base': 'base_nei2020/2020nei_output_run_steady.shp',
-        #     'sens': 'CO_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
-        # },
-        #'CO_Cherokee_wo_NH3_VOC': {
-        #    'base': 'base_nei2020/2020nei_output_run_steady.shp',
-        #    'sens': 'CO_Cherokee_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
-        #}
+         'CO_CCS': {
+             'base': 'base_nei2020/2020nei_output_run_steady.shp',
+             'sens': 'CO_CCS/2020nei_output_run_steady.shp'
+         },
+        'CO_CCS_wo_NH3_VOC': {
+             'base': 'base_nei2020/2020nei_output_run_steady.shp',
+             'sens': 'CO_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
+         },
+        'CO_Suncor_CCS_wo_NH3_VOC': {
+            'base': 'base_nei2020/2020nei_output_run_steady.shp',
+            'sens': 'CO_Suncor_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
+        },
+        'CO_Cherokee_CCS_wo_NH3_VOC': {
+           'base': 'base_nei2020/2020nei_output_run_steady.shp',
+           'sens': 'CO_Cherokee_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
+        },
         'NEI_no_Landfill_2001411':{
             'base': 'base_nei2020/2020nei_output_run_steady.shp',
             'sens': 'NEI_no_Landfill_2001411/2020nei_output_run_steady.shp'}
