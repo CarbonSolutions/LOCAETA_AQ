@@ -44,29 +44,10 @@ def determine_output_type(gdf_diff, INMAP_cols, SRmatrix_cols):
         output_type = 'source_receptor'
         area_weight_list = ['pNH4', 'pNO3', 'pSO4', 'PrimPM25', 'TotalPM25']
     else:
-        raise ValueError("The columns in gdf_diff do not match either expected set of columns.")
+        raise ValueError("The columns in gdf_diff do not match expected set of columns.")
     
     return columns, output_type, area_weight_list
 
-
-def compute_and_print_summaries(gdf_diff, columns, area_weight_list):
-
-    # Compute column sums for health benefits
-    column_sums = gdf_diff[columns].sum()
-    print("Column Sums:\n", column_sums)
-
-    # Compute area-weighted averages for AQ benefits
-    gdf_diff['area'] = gdf_diff.geometry.area
-    area_weighted_averages = {}
-
-    for field in area_weight_list:
-        area_weighted_averages[field] = (gdf_diff[field] * gdf_diff['area']).sum() / gdf_diff['area'].sum()
-
-    print("Area-Weighted Averages [ug m-3]:")
-    for key, value in area_weighted_averages.items():
-        print(f"{key}: {value}")
-
-    return column_sums, area_weighted_averages
 
 def compute_and_print_summaries(gdf_diff, columns, area_weight_list, output_dir):
     # Compute column sums for health benefits
@@ -89,6 +70,12 @@ def compute_and_print_summaries(gdf_diff, columns, area_weight_list, output_dir)
     df = pd.DataFrame(area_weighted_averages.items(), columns=["Species", "Area-Weighted Average"])
     df.to_csv(output_file, index=False)
     print(f"Saved area-weighted averages to {output_file}")
+
+    # Save column sums to CSV
+    output_file = os.path.join(output_dir, "mortality_sums.csv")
+    #df = pd.DataFrame(column_sums.items(), columns=["Species", "Area-Weighted Average"])
+    column_sums.to_csv(output_file, index=True)
+    print(f"Saved column sums to {output_file}")
 
     return column_sums, area_weighted_averages
 
@@ -236,7 +223,7 @@ def barplot_health_aq_benefits(area_weighted_averages, column_sums, output_dir):
         # Save plot
         plt.tight_layout()
         plt.savefig(os.path.join(output_dir, output_filename), dpi=300, bbox_inches='tight')
-        plt.show()
+        #plt.show()
 
     # Plot Air Quality Impact
     plot_bar(df_aq, 'Impact of CCS Emissions on Surface Air Quality',
@@ -363,9 +350,6 @@ def subset_state(gdf, state_fips):
         print(f"Reprojecting from {gdf_fips.crs} to {target_proj}")
         gdf_fips = gdf_fips.to_crs(target_proj)
 
-
-    print(f"unique FIPS are {gdf_fips['STATEFP'].unique()}")
-
     # Get all county geometries for the state and merge them into a single geometry
     state_geom = gdf_fips[gdf_fips['STATEFP'] == state_fips].geometry.unary_union
 
@@ -373,7 +357,7 @@ def subset_state(gdf, state_fips):
     gdf_co = gdf[gdf.intersects(state_geom)]
 
     # check new dataset
-    print(gdf_co.head())
+    #print(gdf_co.head())
 
     return gdf_co
 
