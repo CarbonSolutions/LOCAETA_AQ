@@ -18,16 +18,19 @@ def main():
     #grid_shapefile_path = "/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/emiss_shp2020/Census/cb_2020_us_county_500k.shp"
     grid_shapefile_path = '/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP/grids/US Census Tracts/US Census Tracts.shp'
     grid_shapefile_path = '/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP/grids/County/County.shp'
-    grid_level =  'county' # or 'tract' 
+    grid_level =  'tracts' # or 'tract' 
     target_year = '2020'
 
     inmap_output_dir = '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/inmap-1.9.6-gridsplit/outputs/'
 
     # List of InMAP output files to process
     inmap_outputs = [
-#            'base_nei2020/2020nei_output_run_steady.shp', (include only if it is not available)
-            'CO_CCS/2020nei_output_run_steady.shp',
-            'CO_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
+            'base_nei2020/2020nei_output_run_steady.shp' #, (include only if it is not available)
+           # 'CO_CCS/2020nei_output_run_steady.shp',
+           # 'CO_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp',
+           # 'CO_Suncor_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp',
+           # 'CO_Cherokee_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp',
+           # 'NEI_no_Landfill_2001411/2020nei_output_run_steady.shp'
     ]
 
     # Directory to save the grid and PM2.5 csv files, which are BenMAP input files
