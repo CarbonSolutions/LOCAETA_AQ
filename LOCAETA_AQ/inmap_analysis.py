@@ -350,8 +350,15 @@ def subset_state(gdf, state_fips):
         print(f"Reprojecting from {gdf_fips.crs} to {target_proj}")
         gdf_fips = gdf_fips.to_crs(target_proj)
 
+    # Ensure state_fips is a list
+    if not isinstance(state_fips, list):
+        state_fips = [state_fips]
+    
+    # Collect all states of interest, including neighbors
+    all_fips = set(state_fips)
+
     # Get all county geometries for the state and merge them into a single geometry
-    state_geom = gdf_fips[gdf_fips['STATEFP'] == state_fips].geometry.unary_union
+    state_geom = gdf_fips[gdf_fips['STATEFP'].isin(all_fips)].geometry.unary_union
 
     # Subset your dataset using spatial intersection
     gdf_co = gdf[gdf.intersects(state_geom)]
