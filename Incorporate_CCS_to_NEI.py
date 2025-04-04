@@ -26,7 +26,7 @@ def main():
     output_plots_dir ='/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/'
 
     # CCS and NEI raw data directory
-    CCS_raw_file = '/Users/yunhalee/Documents/LOCAETA/CS_emissions/final_output_1_updated_unitcheck.csv'
+    CCS_raw_file = '/Users/yunhalee/Documents/LOCAETA/CS_emissions/final_output_1_manual_update_noLandfill.csv'
     nei_raw_data_dir = '/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/2020ha2_cb6_20k/inputs/'
 
     # find which NEI emission file to open 
