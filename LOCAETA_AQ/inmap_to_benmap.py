@@ -65,7 +65,7 @@ def process_inmap_to_benmap_inputs(inmap_output_path, grid_shapefile_path, outpu
     
     gdf_grids = gpd.read_file(grid_shapefile_path)
 
-    if grid_level == 'tract':
+    if grid_level == 'tracts':
         # Create a unique ID for tracts using ROW and COL
         gdf_grids['ID'] = gdf_grids['ROW'].astype(str) + '_' + gdf_grids['COL'].astype(str)
     elif grid_level == 'county':  
