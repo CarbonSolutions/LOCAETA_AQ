@@ -20,7 +20,7 @@ def main(inmap_run_dir, output_dir, webdata_path, run_pairs, inmap_to_geojson):
 
     inmap_columns = ['AsianD', 'BlackD', 'LatinoD', 'NativeD', 'WhitNoLatD', 'TotalPopD']
     source_receptor_columns = ['deathsK', 'deathsL']
-    state_regions = {"CO": '08'}
+    state_regions = {"LA": ['22','05', "28", "48"]}   # {"CO": '08'} 
 
     for run_name, paths in run_pairs.items():
         gdf_diff = inmap_analysis.process_run_pair(run_name, paths, inmap_run_dir)
@@ -44,9 +44,13 @@ def main(inmap_run_dir, output_dir, webdata_path, run_pairs, inmap_to_geojson):
             # compare the changes of PopD matches PM25.
             inmap_analysis.compare_pm25_mortality_changes(gdf_diff,run_output_dir, run_name)
 
-            min_pop_idx = gdf_diff['TotalPopD'].idxmin()
-            gdf_diff = gdf_diff.drop(index=min_pop_idx)
-            
+            # Somehow one grid has larger mortality change than population..
+            to_check = gdf_diff[(abs(gdf_diff['TotalPopD_base']) > abs(gdf_diff['TotalPop_base']))]
+            print("Rows to be deleted due to wrong mortality:\n", to_check)
+            to_check.to_csv( run_output_dir + "/wrong_mortality_rows.csv", index=True)
+
+            gdf_diff = gdf_diff.drop(to_check.index)
+
             for v in inmap_to_geojson:
                 inmap_analysis.create_interactive_map(gdf_diff, v, run_output_dir)
 
@@ -74,25 +78,34 @@ if __name__ == "__main__":
 
     # Define pairs of base and sensitivity runs
     run_pairs = {
-         'CO_CCS': {
+        # 'LA_CCS': {
+        #      'base': 'base_nei2020/2020nei_output_run_steady.shp',
+        #      'sens': 'LA_CCS/2020nei_output_run_steady.shp'
+        #  },
+        'LA_CCS_noNH3': {
              'base': 'base_nei2020/2020nei_output_run_steady.shp',
-             'sens': 'CO_CCS/2020nei_output_run_steady.shp'
-         },
-        'CO_CCS_wo_NH3_VOC': {
-             'base': 'base_nei2020/2020nei_output_run_steady.shp',
-             'sens': 'CO_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
-         },
-        'CO_Suncor_CCS_wo_NH3_VOC': {
-            'base': 'base_nei2020/2020nei_output_run_steady.shp',
-            'sens': 'CO_Suncor_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
-        },
-        'CO_Cherokee_CCS_wo_NH3_VOC': {
-           'base': 'base_nei2020/2020nei_output_run_steady.shp',
-           'sens': 'CO_Cherokee_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
-        },
-        'NEI_no_Landfill_2001411':{
-            'base': 'base_nei2020/2020nei_output_run_steady.shp',
-            'sens': 'NEI_no_Landfill_2001411/2020nei_output_run_steady.shp'}
+             'sens': 'LA_CCS_noNH3/2020nei_output_run_steady.shp'
+         }
+
+        #  'CO_CCS': {
+        #      'base': 'base_nei2020/2020nei_output_run_steady.shp',
+        #      'sens': 'CO_CCS/2020nei_output_run_steady.shp'
+        #  },
+        # 'CO_CCS_wo_NH3_VOC': {
+        #      'base': 'base_nei2020/2020nei_output_run_steady.shp',
+        #      'sens': 'CO_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
+        #  },
+        # 'CO_Suncor_CCS_wo_NH3_VOC': {
+        #     'base': 'base_nei2020/2020nei_output_run_steady.shp',
+        #     'sens': 'CO_Suncor_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
+        # },
+        # 'CO_Cherokee_CCS_wo_NH3_VOC': {
+        #    'base': 'base_nei2020/2020nei_output_run_steady.shp',
+        #    'sens': 'CO_Cherokee_CCS_wo_NH3_VOC/2020nei_output_run_steady.shp'
+        # },
+        # 'NEI_no_Landfill_2001411':{
+        #     'base': 'base_nei2020/2020nei_output_run_steady.shp',
+        #     'sens': 'NEI_no_Landfill_2001411/2020nei_output_run_steady.shp'}
     }
     inmap_to_geojson = ['TotalPopD', 'TotalPM25']
 
