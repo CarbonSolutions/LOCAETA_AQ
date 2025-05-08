@@ -20,13 +20,13 @@ def main():
 
     # output file path for processed emissions 
     combined_NEI_emis_path = '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/combined_NEI2020_pt_oilgas_ptegu_ptnonipm.shp'
-    NEI_CCS_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/Colorado_CCS_combined_NEI_point_oilgas_ptegu_ptnonimps.shp"
-    State_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/Colorado_point_CCS.shp"
-    State_CCS_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/Colorado_point_CCS_reduced_emis.shp"
+    NEI_CCS_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/USA_CCS_combined_NEI_point_oilgas_ptegu_ptnonimps.shp"
+    State_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/USA_point_CCS.shp"
+    State_CCS_emis_file = "/Users/yunhalee/Documents/LOCAETA/CS_emissions/USA_point_CCS_reduced_emis.shp"
     output_plots_dir ='/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/'
 
     # CCS and NEI raw data directory
-    CCS_raw_file = '/Users/yunhalee/Documents/LOCAETA/CS_emissions/final_output_1_manual_update_noLandfill.csv'
+    CCS_raw_file = '/Users/yunhalee/Documents/LOCAETA/CS_emissions/USA-compiled-cobenefits-emissions-withSCC.csv' #'/Users/yunhalee/Documents/LOCAETA/CS_emissions/final_output_1_manual_update_noLandfill.csv'
     nei_raw_data_dir = '/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/2020ha2_cb6_20k/inputs/'
 
     # find which NEI emission file to open 

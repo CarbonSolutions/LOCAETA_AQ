@@ -303,8 +303,8 @@ def plot_spatial_distribution_percent_change_with_basemap(gdf, field, output_dir
     # Plot the spatial distribution of the percent change
     vmin, vmax = -1, 1  # Fixed color scale from -50% to 50%
 
-    gdf.plot(column=field+'_percent_change', cmap='coolwarm', vmin=vmin, vmax=vmax, legend=False, edgecolor=None, 
-                ax=ax, markersize=30, alpha=0.8)  # Increase marker size and reduce transparency
+    gdf.plot(column=field+'_percent_change', cmap='coolwarm', vmin=vmin, vmax=vmax, legend=False, edgecolor='none', 
+                linewidth=0, ax=ax, markersize=30, alpha=0.8)  # Increase marker size and reduce transparency
 
     # Add a basemap (using OpenStreetMap)
     ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik, zoom=6)

@@ -358,7 +358,8 @@ def load_and_process_ccs_emissions(file_path):
     cs_emis = cs_emis[columns_to_keep]
 
     # remove any duplicate after removing frs_id (Kelly's output contains duplicates because of frs_id)
-    cs_emis = cs_emis.drop(columns=['frs_id'])
+    if 'frs_id' in cs_emis.columns: 
+        cs_emis = cs_emis.drop(columns=['frs_id'])
     cs_emis.drop_duplicates(inplace=True)
     
     # Exclude the rows with missing SCC
@@ -509,7 +510,7 @@ def subset_and_validate_emissions(gdf, cs_emis):
                 missing_cols.append(CCS)
             print(f"Cannot compare {NEI} and {CCS}. Missing columns: {', '.join(missing_cols)}")
     
-    merged_df.to_excel('/Users/yunhalee/Documents/LOCAETA/CS_emissions/validate_Kelly_NEI_emissions.xlsx', index=True)
+    merged_df.to_excel('/Users/yunhalee/Documents/LOCAETA/CS_emissions/USA_validate_Kelly_NEI_emissions.xlsx', index=True)
 
     return merged_df
 
