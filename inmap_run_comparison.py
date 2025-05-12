@@ -13,14 +13,13 @@ if package_path not in sys.path:
 import inmap_analysis
 
 
-def main(inmap_run_dir, output_dir, webdata_path, run_pairs, inmap_to_geojson):
+def main(inmap_run_dir, output_dir, webdata_path, run_pairs, inmap_to_geojson, state_regions):
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     inmap_columns = ['AsianD', 'BlackD', 'LatinoD', 'NativeD', 'WhitNoLatD', 'TotalPopD']
     source_receptor_columns = ['deathsK', 'deathsL']
-    state_regions = {"LA": ['22','05', "28", "48"]}   # {"CO": '08'} 
 
     for run_name, paths in run_pairs.items():
         gdf_diff = inmap_analysis.process_run_pair(run_name, paths, inmap_run_dir)
@@ -75,6 +74,7 @@ if __name__ == "__main__":
     inmap_run_dir = '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/inmap-1.9.6-gridsplit/outputs/'
     analysis_output_dir = '/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/model_analysis/'
     webdata_path = '/Users/yunhalee/Documents/LOCAETA/github/LOCAETA/WebTool/Data/'
+    state_regions = {'TN':['47', '28', '05'] } # {"LA": ['22','05', "28", "48"]}   # {"CO": '08'} 
 
     # Define pairs of base and sensitivity runs
     run_pairs = {
@@ -82,11 +82,18 @@ if __name__ == "__main__":
         #      'base': 'base_nei2020/2020nei_output_run_steady.shp',
         #      'sens': 'LA_CCS/2020nei_output_run_steady.shp'
         #  },
-        'LA_CCS_noNH3': {
+        # 'LA_CCS_noNH3': {
+        #      'base': 'base_nei2020/2020nei_output_run_steady.shp',
+        #      'sens': 'LA_CCS_noNH3/2020nei_output_run_steady.shp'
+        #  }
+        'TN_DataCenter_NOx_2ppm': {
              'base': 'base_nei2020/2020nei_output_run_steady.shp',
-             'sens': 'LA_CCS_noNH3/2020nei_output_run_steady.shp'
+             'sens': 'TN_DataCenter_NOx_2ppm/2020nei_output_run_steady.shp'
+         },
+        'TN_DataCenter_NOx_25ppm': {
+             'base': 'base_nei2020/2020nei_output_run_steady.shp',
+             'sens': 'TN_DataCenter_NOx_25ppm/2020nei_output_run_steady.shp'
          }
-
         #  'CO_CCS': {
         #      'base': 'base_nei2020/2020nei_output_run_steady.shp',
         #      'sens': 'CO_CCS/2020nei_output_run_steady.shp'
@@ -109,4 +116,4 @@ if __name__ == "__main__":
     }
     inmap_to_geojson = ['TotalPopD', 'TotalPM25']
 
-    main(inmap_run_dir, analysis_output_dir, webdata_path, run_pairs, inmap_to_geojson)
+    main(inmap_run_dir, analysis_output_dir, webdata_path, run_pairs, inmap_to_geojson, state_regions)
