@@ -30,7 +30,7 @@ import pandas as pd
 
 # set run_name
 run_name = 'current_2020'
-run_list = ["current_2020","decarb95_2050"] # ,"highREcost_2050"] # ['TN_DataCenter_NOx_2ppm', 'TN_DataCenter_NOx_25ppm'] # ['LA_CCS', 'LA_CCS_noNH3']
+run_list = ["current_2020","decarb95_2050","highREcost_2050"] # ['TN_DataCenter_NOx_2ppm', 'TN_DataCenter_NOx_25ppm'] # ['LA_CCS', 'LA_CCS_noNH3']
 #run_list = ['CO_CCS', 'CO_CCS_wo_NH3_VOC', 'CO_Suncor_CCS_wo_NH3_VOC','CO_Cherokee_CCS_wo_NH3_VOC', 'NEI_no_Landfill_2001411']
 
 # Define all output paths
