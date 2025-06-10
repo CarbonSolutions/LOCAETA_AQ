@@ -71,6 +71,7 @@ def main():
                 final_gdf = gpd.GeoDataFrame(final_df, geometry='coords', crs='epsg:4269')
             else:
                 if subdir == 'onroad':
+                    print("onroad")
                     #df_fips = pd.read_csv("/Users/yunhalee/Documents/LOCAETA/NEI_emissions/CenPop2020_Mean_CO.txt", dtype={'STATEFP': str, 'COUNTYFP': str})
                     #df_fips['FIPS'] = df_fips['STATEFP'] + df_fips['COUNTYFP']
                     #df_fips = df_fips[['FIPS', 'LATITUDE', 'LONGITUDE']]
