@@ -185,7 +185,8 @@ def process_emissions_data(emis_df, is_point):
     # Remove the 'poll' and 'ann_value' columns
     emis_df = emis_df.drop(columns=['poll', 'ann_value'])
 
-    # If is_point is True, apply the safe_float_conversion function
+
+    # Convert stack values and add coords for point sources
     if is_point:
         emis_df['height'] = emis_df['stkhgt'].apply(safe_float_conversion, args=(0.3048, 0, 0, 5))
         emis_df['diam'] = emis_df['stkdiam'].apply(safe_float_conversion, args=(0.3048, 0, 0, 5))
@@ -193,34 +194,108 @@ def process_emissions_data(emis_df, is_point):
         emis_df['velocity'] = emis_df['stkvel'].apply(safe_float_conversion, args=(0.3048, 0, 0, 5))
         emis_df['coords'] = emis_df.apply(lambda row: Point(row['longitude'], row['latitude']), axis=1)
 
-    # Group by 'FIPS' and 'SCC' and aggregate the values
-    aggregation_functions = {
-        'region_cd': 'first',
-        'scc': 'first',
-        'VOC': 'sum',
-        'NOx': 'sum',
-        'NH3': 'sum',
-        'SOx': 'sum',
-        'PM2_5': 'sum'
-    }
+    if is_point: 
+        stack_cols = ['height', 'diam', 'temp', 'velocity']
+        group_all = ['facility_id', 'rel_point_id', 'scc']
+        group_short = ['facility_id', 'scc']
 
-    if is_point:
-        aggregation_functions.update({
+        # First, ensure each (facility_id, rel_point_id, scc) has all species in one row
+        # Aggregation functions
+        agg_funcs_indivual = {
+            'region_cd': 'first',
+            #'scc': 'first',
+            'VOC': 'sum',
+            'NOx': 'sum',
+            'NH3': 'sum',
+            'SOx': 'sum',
+            'PM2_5': 'sum',
+            'height': 'first',
+            'diam': 'first',
+            'temp': 'first',
+            'velocity': 'first',
+            #'facility_id': 'first',
+            'coords': 'first',
+            'latitude': 'first',
+            'longitude': 'first'
+        }
+        
+        # Aggregate by (facility_id, rel_point_id, scc) to get all species in one row
+        emis_df = emis_df.groupby(group_all).agg(agg_funcs_indivual).reset_index()
+        
+        # Now proceed with stack parameter checking
+        emis_df['stack_hash'] = emis_df[stack_cols].astype(str).agg('-'.join, axis=1)
+        
+        # Count both unique stack hashes AND unique rel_point_ids per (facility_id, scc)
+        group_stats = emis_df.groupby(group_short).agg({
+            'stack_hash': 'nunique',
+            'rel_point_id': 'nunique'
+        }).rename(columns={'stack_hash': 'n_stack_variants', 'rel_point_id': 'n_rel_points'})
+        
+        # Only aggregate if there are multiple rel_point_ids with identical stack parameters
+        to_aggregate_keys = group_stats[
+            (group_stats['n_stack_variants'] == 1) & 
+            (group_stats['n_rel_points'] > 1)
+        ].index
+        
+        # Flag rows that can be aggregated
+        emis_df['can_aggregate'] = emis_df.set_index(group_short).index.isin(to_aggregate_keys)
+        
+        df_agg = emis_df[emis_df['can_aggregate']].copy()
+        df_rest = emis_df[~emis_df['can_aggregate']].copy()
+
+        # Aggregation functions
+        agg_funcs = {
+            'region_cd': 'first',
+            'scc': 'first',
+            'VOC': 'sum',
+            'NOx': 'sum',
+            'NH3': 'sum',
+            'SOx': 'sum',
+            'PM2_5': 'sum',
             'height': 'first',
             'diam': 'first',
             'temp': 'first',
             'velocity': 'first',
             'facility_id': 'first',
-            'coords': 'first'
-        })
+            'coords': 'first',
+            'latitude': 'first',
+            'longitude': 'first'
+        }
 
-        # for point source, facility_id and scc is unique to each data point  
-        grouped_emis_df = emis_df.groupby(['facility_id', 'scc']).agg(aggregation_functions).reset_index(drop=True)
-        grouped_emis_df.rename(columns={'region_cd': 'FIPS','facility_id': 'EIS_ID', 'scc': 'SCC'}, inplace = True)
+        # Aggregate those with identical stack info across rel_point_id
+        df_agg_result = df_agg.groupby(group_short).agg(agg_funcs).reset_index(drop=True)
+        df_agg_result['rel_point_id'] = 'AGG'  # Optional placeholder
+
+        # Keep df_rest as-is (individual rel_point_id rows, but each row has all species)
+        df_rest_result = df_rest.copy()
+
+        grouped_emis_df = pd.concat([df_agg_result, df_rest_result], ignore_index=True)
+
+        # Keep the rest as-is
+        grouped_emis_df.rename(columns={
+            'region_cd': 'FIPS',
+            'facility_id': 'EIS_ID',
+            'scc': 'SCC'
+        }, inplace=True)
+
+        #remove unnecessary columns
+        grouped_emis_df.drop(columns=['stack_hash', 'can_aggregate'], inplace=True)
+        print(grouped_emis_df.head())
+
     else:
-        # for non point source, fips and scc is unique to each data point  
-        grouped_emis_df = emis_df.groupby(['region_cd', 'scc']).agg(aggregation_functions).reset_index(drop=True)
-        grouped_emis_df.rename(columns={'region_cd': 'FIPS', 'scc': 'SCC'}, inplace = True)
+        # Non-point source logic unchanged
+        group_keys = ['region_cd', 'scc']
+        aggregation_functions = {
+            'region_cd': 'first',
+            'scc': 'first',
+            'VOC': 'sum',
+            'NOx': 'sum',
+            'NH3': 'sum',
+            'SOx': 'sum',
+            'PM2_5': 'sum'
+        }
+        grouped_emis_df = emis_df.groupby(group_keys).agg(aggregation_functions).reset_index(drop=True)
+        grouped_emis_df.rename(columns={'region_cd': 'FIPS', 'scc': 'SCC'}, inplace=True)
 
     print("grouped_emis_df dataframe")
     print(grouped_emis_df.head())
@@ -281,7 +356,7 @@ def is_integer(value):
         return False
 
 
-# Function to read and process a single NEI file
+# This is the main function to read and process a single NEI file
 def process_nei_file(file_path):
 
     emis_df = pd.read_csv(file_path, comment='#', dtype={'region_cd': str})
@@ -295,7 +370,7 @@ def process_nei_file(file_path):
         # Subset the dataframe to the columns we need
         emis_df = emis_df[['region_cd', 'scc', 'poll', 'ann_value', 
                         'stkhgt', 'stkdiam', 'stktemp', 'stkvel',
-                        'facility_id', 
+                        'facility_id', 'rel_point_id',  #  'process_id', 'unit_id',
                         'latitude', 'longitude']]
     else:
         # Subset the dataframe to the columns we need
@@ -330,11 +405,13 @@ def reproject_and_save_gdf(gdf, target_crs):
 def load_and_process_ccs_emissions_old(file_path):
     # This function processes Amy's old CS emission data file.
     cs_emis = pd.read_csv(file_path)
-    all_columns = cs_emis.columns.tolist()
-    start_index = all_columns.index("reporting_year")
-    end_index = all_columns.index("FRS_ID")
-    columns_to_keep = all_columns[:start_index + 1] + all_columns[end_index:]
-    cs_emis = cs_emis[columns_to_keep]
+
+    # turn off the below lines: July 17, 2025
+    # all_columns = cs_emis.columns.tolist()
+    # start_index = all_columns.index("reporting_year")
+    # end_index = all_columns.index("FRS_ID")
+    # columns_to_keep = all_columns[:start_index + 1] + all_columns[end_index:]
+    # cs_emis = cs_emis[columns_to_keep]
     cs_emis.dropna(how='all', axis='columns', inplace=True)
     cs_emis.replace(["missing", "Blank"], np.nan, inplace=True)
     return cs_emis
@@ -451,7 +528,7 @@ def calculate_emission_rates(cs_emis):
     
     return cs_emis[cols_to_keep]
 
-def subset_and_validate_emissions(gdf, cs_emis):
+def subset_and_validate_emissions_old(gdf, cs_emis):
     # First merge for the EIS_ID and SCC matched rows
     merged_df = pd.merge(gdf, cs_emis, on=['EIS_ID', 'SCC'], how='right')
     
@@ -514,6 +591,66 @@ def subset_and_validate_emissions(gdf, cs_emis):
 
     return merged_df
 
+# new function accounts for NaN-0 comparison and mismatch only if the difference is larger than 0.1%
+def subset_and_validate_emissions(gdf, cs_emis):
+    import numpy as np
+
+    NEI_cols = ['VOC', 'NOx', 'NH3', 'SOx', 'PM2_5']
+    CCS_cols = ['VOC_subpart_tons', 'NOX_subpart_tons', 'NH3_subpart_tons', 'SO2_subpart_tons', 'PM25_subpart_tons']
+
+    # Group gdf to aggregate by EIS_ID and SCC
+    gdf_grouped = gdf.groupby(['EIS_ID', 'SCC'])[NEI_cols].sum().reset_index()
+
+    # Merge with cs_emis on EIS_ID and SCC
+    merged_df = pd.merge(gdf_grouped, cs_emis, on=['EIS_ID', 'SCC'], how='inner')
+
+    for NEI, CCS in zip(NEI_cols, CCS_cols):
+        if NEI in merged_df.columns and CCS in merged_df.columns:
+            match_count = 0
+            total_rows = len(merged_df)
+            mismatch_examples = []
+
+            for idx, row in merged_df.iterrows():
+                nei_val = row[NEI]
+                ccs_val = row[CCS]
+
+                # Treat NaN and 0 as equivalent
+                if (pd.isna(nei_val) or nei_val == 0) and (pd.isna(ccs_val) or ccs_val == 0):
+                    match_count += 1
+                    continue
+
+                if ccs_val == 0 or pd.isna(ccs_val):
+                    rel_diff = np.inf
+                else:
+                    rel_diff = abs(nei_val - ccs_val) / ccs_val
+
+                if rel_diff <= 0.001:  # 0.1%
+                    match_count += 1
+                else:
+                    mismatch_examples.append({
+                        'index': idx,
+                        'EIS_ID': row['EIS_ID'],
+                        'SCC': row['SCC'],
+                        NEI: nei_val,
+                        CCS: ccs_val,
+                        'Relative_Diff_%': rel_diff * 100
+                    })
+
+            print(f"\nComparing {NEI} vs {CCS}:")
+            print(f"  - Matches (within 0.1%): {match_count} out of {total_rows}")
+
+            if mismatch_examples:
+                print("  - Mismatches > 0.1%:")
+                for ex in mismatch_examples[:10]:  # print only first 10 examples
+                    print(f"    Row {ex['index']}: EIS_ID {ex['EIS_ID']}, SCC {ex['SCC']}, {NEI}={ex[NEI]}, {CCS}={ex[CCS]}, Diff={ex['Relative_Diff_%']:.3f}%")
+
+        else:
+            missing = [col for col in [NEI, CCS] if col not in merged_df.columns]
+            print(f"Cannot compare {NEI} and {CCS}. Missing columns: {', '.join(missing)}")
+
+    return merged_df
+
+
 def merge_and_calculate_new_emissions_old(gdf, cs_emis):
     merged_df = pd.merge(gdf, cs_emis, on='EIS_ID', how='left')
 
@@ -550,7 +687,7 @@ def merge_and_calculate_new_emissions_old(gdf, cs_emis):
 
     return merged_df
 
-def merge_to_NEI_emissions(gdf, cs_emis):
+def merge_to_NEI_emissions_old(gdf, cs_emis):
     # First merge for the EIS_ID and SCC matched rows
     merged_df = pd.merge(gdf, cs_emis, on=['EIS_ID', 'SCC'], how='left')
     
@@ -572,6 +709,177 @@ def merge_to_NEI_emissions(gdf, cs_emis):
     merged_df.drop(list(merged_df.filter(regex='subpart_tons')), axis=1, inplace=True)
 
     return merged_df
+
+def merge_to_NEI_emissions_old(gdf, cs_emis, NAN_FILL_VALUE=-9999, check_conservation=True):
+    import pandas as pd
+    import numpy as np
+
+    NEI_cols = ['VOC', 'NOx', 'NH3', 'SOx', 'PM2_5']
+    CCS_cols = ['VOC_out_subpart_tons', 'NOX_out_subpart_tons', 'NH3_out_subpart_tons',
+                'SO2_out_subpart_tons', 'PM25_out_subpart_tons']
+
+    print("CCS values before allocation:", cs_emis[CCS_cols].isna().sum())
+
+
+    # Merge CCS emissions into gdf
+    merged_df = pd.merge(gdf, cs_emis, on=['EIS_ID', 'SCC'], how='left', suffixes=('', '_ccs'))
+
+    def allocate_ccs(group):
+
+        # Extract CCS values (already merged in)
+        ccs_vals = group.iloc[0][CCS_cols]
+
+        # If all CCS values are NaN, skip allocation
+        if ccs_vals.isna().all():
+            # Optionally log
+            #print(f"[SKIP] No CCS values for EIS_ID={group['EIS_ID'].iloc[0]}, SCC={group['SCC'].iloc[0]}")
+            return group
+
+        n_rows = len(group)
+
+        # Add this inside allocate_ccs function
+        if n_rows > 2: 
+            print(f"Group size: {n_rows}, CCS values: {ccs_vals}")
+            print(f"NEI totals: {group[NEI_cols].sum()}")
+
+
+        for nei_col, ccs_col in zip(NEI_cols, CCS_cols):
+            if pd.isna(ccs_vals[ccs_col]):
+                group[ccs_col] = np.nan
+            else:
+                total_nei = group[nei_col].sum()
+                if total_nei > 0:
+                    weights = group[nei_col] / total_nei
+                    group[ccs_col] = weights * ccs_vals[ccs_col]
+                else:
+                    group[ccs_col] = ccs_vals[ccs_col] / n_rows
+
+        # Conservation check per group
+        post_allocated_sum = group[CCS_cols].sum()
+        rel_diff = abs(post_allocated_sum.values - ccs_vals.values) / (ccs_vals.values)
+        #print(f"Allocated={post_allocated_sum}, Original={ccs_vals}, Diff={rel_diff*100}%")
+
+        if any(rel_diff > 0.00001):
+            print(f"[CONSERVATION FAILED] EIS_ID={group['EIS_ID'].iloc[0]}, SCC={group['SCC'].iloc[0]}")
+            for i, species in enumerate(CCS_cols):
+                print(f"  {species}: Allocated={post_allocated_sum[i]:.6f}, Original={ccs_vals[i]:.6f}, Diff={rel_diff[i]*100:.4f}%")
+
+        return group
+
+    # Split rows with and without valid CCS values
+    has_ccs = merged_df[CCS_cols].notna().any(axis=1)
+    to_allocate = merged_df[has_ccs].copy()
+    skip_allocate = merged_df[~has_ccs].copy()
+
+    # Apply allocation only to relevant subset
+    allocated = to_allocate.groupby(['EIS_ID', 'SCC'], group_keys=False).apply(allocate_ccs)
+
+    # Combine and return
+    final = pd.concat([allocated, skip_allocate], ignore_index=True)
+
+    # Conservation check
+    if check_conservation:
+        total_sum_original = cs_emis[CCS_cols].sum()
+        total_sum_allocated = final[CCS_cols].sum()
+
+        print("\n[Global Conservation Check]")
+        print("Original Total CCS Emissions:")
+        print(total_sum_original)
+        print("Allocated Total CCS Emissions:")
+        print(total_sum_allocated)
+        print("Relative Difference:")
+        print((total_sum_allocated - total_sum_original) / (total_sum_original))
+
+    print(f"Original rows: {len(merged_df)}")
+    print(f"Final rows: {len(final)}")
+
+    return final
+
+def merge_to_NEI_emissions(gdf, cs_emis, NAN_FILL_VALUE=-9999, check_conservation=True):
+    import pandas as pd
+    import numpy as np
+    
+    NEI_cols = ['VOC', 'NOx', 'NH3', 'SOx', 'PM2_5']
+    CCS_cols = ['VOC_out_subpart_tons', 'NOX_out_subpart_tons', 'NH3_out_subpart_tons',
+                'SO2_out_subpart_tons', 'PM25_out_subpart_tons']
+    
+    # SOLUTION 1: Create a lookup dictionary to avoid duplicating CCS values
+    # Convert cs_emis to a dictionary for lookup
+    cs_emis_dict = cs_emis.set_index(['EIS_ID', 'SCC'])[CCS_cols].to_dict('index')
+    
+    # Initialize CCS columns in gdf with NaN
+    for col in CCS_cols:
+        gdf[col] = np.nan
+    
+    # Map CCS values to gdf without creating duplicates
+    for idx, row in gdf.iterrows():
+        key = (row['EIS_ID'], row['SCC'])
+        if key in cs_emis_dict:
+            for col in CCS_cols:
+                gdf.loc[idx, col] = cs_emis_dict[key][col]
+    
+    merged_df = gdf.copy()
+    
+    def allocate_ccs(group):
+        # Get the CCS values for this group (should be same for all rows)
+        ccs_vals = group.iloc[0][CCS_cols]
+        
+        # If all CCS values are NaN, skip allocation
+        if ccs_vals.isna().all():
+            return group
+        
+        n_rows = len(group)
+        
+        # Store original CCS values for conservation check
+        original_ccs = ccs_vals.copy()
+        
+        for nei_col, ccs_col in zip(NEI_cols, CCS_cols):
+            if pd.isna(ccs_vals[ccs_col]):
+                group[ccs_col] = np.nan
+            else:
+                total_nei = group[nei_col].sum()
+                if total_nei > 0:
+                    weights = group[nei_col] / total_nei
+                    group[ccs_col] = weights * ccs_vals[ccs_col]
+                else:
+                    group[ccs_col] = ccs_vals[ccs_col] / n_rows
+        
+        # Conservation check per group (now should work correctly)
+        post_allocated_sum = group[CCS_cols].sum()
+        rel_diff = abs(post_allocated_sum.values - original_ccs.values) / (original_ccs.values + 1e-10)
+        
+        if any(rel_diff > 0.00001):
+            print(f"[CONSERVATION FAILED] EIS_ID={group['EIS_ID'].iloc[0]}, SCC={group['SCC'].iloc[0]}")
+            for i, species in enumerate(CCS_cols):
+                print(f"  {species}: Allocated={post_allocated_sum[i]:.6f}, Original={original_ccs[i]:.6f}, Diff={rel_diff[i]*100:.4f}%")
+        
+        return group
+    
+    # Split rows with and without valid CCS values
+    has_ccs = merged_df[CCS_cols].notna().any(axis=1)
+    to_allocate = merged_df[has_ccs].copy()
+    skip_allocate = merged_df[~has_ccs].copy()
+    
+    # Apply allocation only to relevant subset
+    allocated = to_allocate.groupby(['EIS_ID', 'SCC'], group_keys=False).apply(allocate_ccs)
+    
+    # Combine and return
+    final = pd.concat([allocated, skip_allocate], ignore_index=True)
+    
+    # Conservation check
+    if check_conservation:
+        total_sum_original = cs_emis[CCS_cols].sum()
+        total_sum_allocated = final[CCS_cols].sum()
+        
+        print("\n[Global Conservation Check]")
+        print("Original Total CCS Emissions:")
+        print(total_sum_original)
+        print("Allocated Total CCS Emissions:")
+        print(total_sum_allocated)
+        print("Relative Difference:")
+        print((total_sum_allocated - total_sum_original) / (total_sum_original))
+    
+    return final
 
 
 def plot_CCS_facility_emissions(df, output_dir):
