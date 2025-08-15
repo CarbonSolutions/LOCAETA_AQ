@@ -1,5 +1,5 @@
 ---
-title: "LOCAETA report: Louisiana CCS"
+title: "LOCAETA report: USA CCS"
 format:
   html:
     embed-resources: true
@@ -14,9 +14,9 @@ jupyter: python3
 
 Author: Yunha Lee (yunha.lee@carbonsolutionsllc.com)
 
-Date: May 8, 2025
+Date: Aug 6, 2025
 
-Disclaimer : This report will be updated with new emissions soon. 
+Disclaimer : This report is based on the updated emissions (v4) from July 25, 2025.
 
 <style>
 .quarto-figure {
@@ -31,8 +31,8 @@ import geopandas as gpd
 import pandas as pd
 
 # set run_name
-run_name = 'LA_CCS'
-run_list = ['LA_CCS', 'LA_CCS_noNH3']
+run_name = 'USA_CCS'
+run_list = ['USA_CCS', 'USA_CCS_wo_NH3_VOC']
 #run_list = ['CO_CCS', 'CO_CCS_wo_NH3_VOC', 'CO_Suncor_CCS_wo_NH3_VOC','CO_Cherokee_CCS_wo_NH3_VOC', 'NEI_no_Landfill_2001411']
 
 # Define all output paths
@@ -41,13 +41,13 @@ inmap_output_path = f"outputs/model_analysis/"
 benmap_inc_output_path = f"outputs/BenMAP/county/incidence_results/"
 benmap_value_output_path = f"outputs/BenMAP/county/valuation_results/"
 
-# read base and sens emission scenarios
-gdf_emis = gpd.read_file(
-  '/Users/yunhalee/Documents/LOCAETA/CS_emissions/new_LA_point_CCS_reduced_emis.shp')
- #'/Users/yunhalee/Documents/LOCAETA/CS_emissions/Colorado_point_CCS_reduced_emis.shp')
+# # read base and sens emission scenarios
+# gdf_emis = gpd.read_file(
+#   '/Users/yunhalee/Documents/LOCAETA/CS_emissions/USA_CCS.shp')
+#  #'/Users/yunhalee/Documents/LOCAETA/CS_emissions/Colorado_point_CCS_reduced_emis.shp')
 
-# Reset index to ensure proper comparison
-gdf_emis.reset_index(drop=True, inplace=True)
+# # Reset index to ensure proper comparison
+# gdf_emis.reset_index(drop=True, inplace=True)
    
 
 ```
@@ -75,13 +75,13 @@ $$ NH_{3} \text{ increase} = \text{CO2NCORD } \text{MtCO}_{2,\text{capturable}} 
 
 
 ```{python}
-
+#| eval: false
 
 def subset_pollutants_with_difference(df, pollutants):
     mask = False  # Initialize a mask to filter rows
     for pollutant in pollutants:
         col_current = pollutant
-        col_old = f'{pollutant}_old'
+        col_old = f'{pollutant}_nei'
         
         if col_current in df.columns and col_old in df.columns:
             # Check where the pollutant and its "_old" version differ
@@ -109,7 +109,7 @@ emission_postprocess.plot_spatial_distribution_relative_difference_with_basemap(
 
 
 ```{python}
-
+#| eval: false
 
 from IPython.display import display, Markdown
 
@@ -119,11 +119,12 @@ markdown_text = f"The number of facilties applied with the amine-based CCS techn
 display(Markdown(markdown_text))
 ```
 
-@tbl-total-emissions-changes summarizes the percent change in total emissions by pollutants resulting from amine-based CCS implementation in the NEI2020 emission inventory. These changes reflect only the emissions source categories (i.e., Source Classification Code) affected by the CCS implementation. Percent changes are computed using the difference between emissions with CCS and the original NEI2020 emissions, divided by the NEI2020 values. 
+<!-- @tbl-total-emissions-changes summarizes the percent change in total emissions by pollutants resulting from amine-based CCS implementation in the NEI2020 emission inventory. These changes reflect only the emissions source categories (i.e., Source Classification Code) affected by the CCS implementation. Percent changes are computed using the difference between emissions with CCS and the original NEI2020 emissions, divided by the NEI2020 values.  -->
 
 
 
 ```{python}
+#| eval: false
 #| label: tbl-total-emissions-changes
 #| tbl-cap: Percent changes of air quality emissions at all facilities affected by amine-based CCS  
 #| tbl-colwidths: [20,20]
@@ -135,6 +136,7 @@ GT(stats_df)
 
 
 ```{python}
+#| eval: false
 from IPython.display import display, Markdown
 
 pollutants = ['PM2_5', 'NOx',  'SOx',  'NH3', 'VOC'] # 
@@ -170,9 +172,10 @@ display(HTML(html))
 
 
 ```{python}
+#| eval: false
 from IPython.display import display, Markdown
 
-pollutants_old = [f'{pollutant}_old' for pollutant in pollutants]
+pollutants_old = [f'{pollutant}_nei' for pollutant in pollutants]
 
 # Calculate total sums for each pollutant
 totals = {pollutant: subset_df[pollutant].sum() for pollutant in pollutants_old}
@@ -181,7 +184,7 @@ totals_CCS ={pollutant: subset_df[pollutant].sum() for pollutant in pollutants}
 markdown_text = ""
                  
 for i, pollutant in enumerate(pollutants):
-    total_original = totals[f'{pollutant}_old']
+    total_original = totals[f'{pollutant}_nei']
     change = totals_CCS[f'{pollutant}'] - total_original
 
     # Use Markdown to display the computed value
@@ -512,7 +515,7 @@ plt.show()
 import matplotlib.pyplot as plt
 import matplotlib.image as img
 
-img_path = f"{benmap_value_output_path}/{run_name}/Monetized Health Benefits  (per million $).png"
+img_path = f"{benmap_value_output_path}/{run_name}/Monetized Health Benefits  (million $).png"
 image = img.imread(img_path)
 
 # Optional: dynamically scale down the image
@@ -548,7 +551,7 @@ Because the total monetary value of health benefits is largely driven by reducti
 import matplotlib.pyplot as plt
 import matplotlib.image as img
 
-img_path = f"{benmap_value_output_path}/{run_name}/Monetized Health Benefits  (per million $) only mortality.png"
+img_path = f"{benmap_value_output_path}/{run_name}/Monetized Health Benefits  (million $) only mortality.png"
 image = img.imread(img_path)
 
 # Optional: dynamically scale down the image

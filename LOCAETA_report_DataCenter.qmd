@@ -1,20 +1,24 @@
 ---
-title: "LOCAETA report: Data Center in Memphis, TN with clean CCS"
+title: "LOCAETA report: Current 2020 grid with 300 MW grid demand in selected GEA regions"
 format:
   html:
     embed-resources: true
 theme: cosmos
+
+author: Yunha Lee (yunha.lee@carbonsolutionsllc.com)
+date: today
+
+date-format: "MMMM D, YYYY"
+
 #  html:
 code-fold: true
 execute:
   echo: false
 jupyter: python3
+
+
 ---
 
-
-Author: Yunha Lee (yunha.lee@carbonsolutionsllc.com)
-
-Date: Aug 7, 2025
 
 <style>
 .quarto-figure {
@@ -29,55 +33,51 @@ import geopandas as gpd
 import pandas as pd
 
 # set run_name
-run_list = ['TN_DataCenter_NOx_2ppm_clean_CCS', 'TN_DataCenter_NOx_2ppm'] 
-
-run_name = run_list[0] # ["current_2020","decarb95_2050"] # ,"highREcost_2050"] # ['TN_DataCenter_NOx_2ppm', 'TN_DataCenter_NOx_25ppm'] # ['LA_CCS', 'LA_CCS_noNH3']
+run_list = ['current_2020_MISO_Central','current_2020_SPP_North','current_2020_PJM_East','current_2020_MISO_South','current_2020_CAISO','current_2020_NorthernGrid_West']
+#run_list = ["current_2020"] # ["current_2020","decarb95_2050","highREcost_2050"] # ['TN_DataCenter_NOx_2ppm', 'TN_DataCenter_NOx_25ppm'] # ['LA_CCS', 'LA_CCS_noNH3']
 #run_list = ['CO_CCS', 'CO_CCS_wo_NH3_VOC', 'CO_Suncor_CCS_wo_NH3_VOC','CO_Cherokee_CCS_wo_NH3_VOC', 'NEI_no_Landfill_2001411']
+run_name = run_list[0]
 
 # Define all output paths
-emis_output_path = f"outputs/emissions/{run_name}"
-inmap_output_path = f"outputs/model_analysis/"
-benmap_inc_output_path = f"outputs/BenMAP/county/incidence_results/"
-benmap_value_output_path = f"outputs/BenMAP/county/valuation_results/"
+emis_output_path = f"/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/emissions/{run_name}"
+inmap_output_path = f"/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/model_analysis"
+benmap_inc_output_path = f"/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/BenMAP/county/incidence_results/"
+benmap_value_output_path = f"/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/BenMAP/county/valuation_results/"
+text_path = f"/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/report_txt/{run_name}/"
 
 ```
 
 
 # Introduction 
-The primary objectives of this study are to assess the socioeconomic and air quality impacts of energy demand by single hypothetical data center in Memphis, TN, which is assumed to be powered by on-site fossil fuels. 
+```{python}
+from IPython.display import Markdown, display
+
+with open(f"{text_path}intro.txt", "r") as f:
+    intro_text = f.read()
+display(Markdown(intro_text))
+```
+
 
 # Emission Changes by Key Pollutants
 
-We estimated changes in air pollutant emissions resulting from running fossil fuels-based generators in data center in Memphis, TN: exact location is at latitude = 35.0598925 and longitude = -90.1559922684821. Two scenarios are considered in this study: emissions with assuming NOx 2ppm and the same but with clean CCS tech (i.e., CCS tech without NH3 and VOC emission increase).   
-
-@tbl-total-emissions-changes summarizes the total emissions by pollutants, resulting from the data center in Memphis, TN. These emissions are not available in the NEI2020 emissions inventory. Since there is no established EIS ID and SCC for this emission, we use "placeholder" EIS ID and SCC values. 
 
 ```{python}
-#| label: tbl-total-emissions-changes
-#| tbl-cap: Air quality emissions from the data center in Memphis, TN 
-#| tbl-colwidths: [20,60]
 
-import pandas as pd
-
-df = pd.read_csv(f'{emis_output_path}/Total_emissions.csv')
-
-from great_tables import GT
-GT(df)
-```
-
-```{python}
-#| eval: false
-#| label: fig-total-emissions-changes
-#| fig-cap: Air quality emissions from the data center in Memphis, TN
+#| label: fig-gea-region
+#| fig-cap: Map of GEA regions in CONUS
 
 import matplotlib.pyplot as plt
 import matplotlib.image as img
 
 
-img_path =f'{emis_output_path}/Total_Difference.png'
+img_path ='/Users/yunhalee/Documents/LOCAETA/DataCenter_emissions/gea_mappings_and_shapefiles/GEA_map.png'
 image = img.imread(img_path)
 
-fig, ax = plt.subplots(figsize=(6, 4))  # Adjust this to control final figure size
+# Desired width in inches (adjust to fit page)
+fig_width = 8 
+fig_height = fig_width * image.shape[0] / image.shape[1]  # maintain aspect ratio
+
+fig, ax = plt.subplots(figsize=(fig_width, fig_height))
 ax.imshow(image)
 ax.axis('off')
 plt.tight_layout(pad=0)
@@ -85,6 +85,41 @@ plt.show()
 
 
 ```
+
+```{python}
+with open(f"{text_path}emis_description.txt", "r") as f:
+    emis_text = f.read()
+display(Markdown(emis_text))
+```
+
+
+
+```{python}
+
+#| label: fig-total-emissions-changes
+#| fig-cap: Air quality emissions from the data center in Memphis, TN
+
+import matplotlib.pyplot as plt
+import matplotlib.image as img
+
+
+# img_path =f'{emis_output_path}/Total_Difference.png'
+img_path = "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/emissions/current_2020/Total_Difference.png"
+image = img.imread(img_path)
+
+# Desired width in inches (adjust to fit page)
+fig_width = 8 
+fig_height = fig_width * image.shape[0] / image.shape[1]  # maintain aspect ratio
+
+fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+ax.imshow(image)
+ax.axis('off')
+plt.tight_layout(pad=0)
+plt.show()
+
+
+```
+
 
 # Modeling Approaches
 
@@ -97,7 +132,7 @@ To evaluate the impacts on air quality and public health, we employed two well-e
 
 import pandas as pd
 
-df = pd.read_csv(f'/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/method_descriptions/{run_name}_simulations_description.csv')
+df = pd.read_csv(f'{text_path}simulations_description.csv')
 
 from great_tables import GT
 GT(df)
@@ -215,24 +250,35 @@ Subsequent analysis focuses on total PM2.5 concentrations, which are the primary
 ```{python}
 
 #| label: fig-spatial-concentrations
-#| fig-cap: "Spatial distribution of percent changes in total PM₂.5 concentrations across all runs"
-#| fig-subcap: true
+#| fig-cap: "Spatial distribution of percent changes in total PM2.5 concentrations across all runs"
 
 import matplotlib.pyplot as plt
 import matplotlib.image as img
+import math
 
-for run in run_list: 
+
+# Height per subplot in inches
+height_per_plot = 6  # adjust smaller for tighter spacing
+fig, axes = plt.subplots(
+    len(run_list), 1,
+    figsize=(8, height_per_plot * len(run_list)),
+    constrained_layout=True
+)
+
+if len(run_list) == 1:
+    axes = [axes]  # ensure iterable
+
+for ax, run in zip(axes, run_list):
     img_path = f"{inmap_output_path}/{run}/TotalPM25_Percent Change_with_basemap.png"
     image = img.imread(img_path)
 
-    # Optional: dynamically scale down the image
-    fig, ax = plt.subplots(figsize=(8, 10))  # Adjust this to control final figure size
     ax.imshow(image)
-    ax.set_title(f"Run: {run}", loc='left', fontdict={'fontsize': 20, 'fontweight': 'bold'})  # This acts like a sub-caption
-
+    ax.set_title(f"Run: {run}", loc='left', fontsize=20, fontweight='bold')
     ax.axis('off')
-    plt.tight_layout(pad=0)
-    plt.show()
+
+# Optionally fine-tune spacing
+plt.subplots_adjust(hspace=0.05)  # reduce vertical gap
+plt.show()
 ```
 
 
@@ -391,4 +437,19 @@ ax.imshow(image)
 ax.axis('off')
 plt.tight_layout(pad=0)
 plt.show()
+```
+
+
+```{python}
+import os
+from IPython.display import Markdown, display
+
+supp_file = os.path.join(text_path, "supplementary.txt") 
+
+if os.path.exists(supp_file):
+
+    
+    # Read and print the text content
+    with open(supp_file, "r") as f:
+        display(Markdown(f.read()))
 ```
