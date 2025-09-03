@@ -884,7 +884,7 @@ def merge_to_NEI_emissions(gdf, cs_emis, NAN_FILL_VALUE=-9999, check_conservatio
 
 def plot_CCS_facility_emissions(df, output_dir):
     pollutants = ['VOC', 'NOx', 'NH3', 'SOx', 'PM2_5']
-    pollutants_old = [f'{pollutant}_old' for pollutant in pollutants]
+    pollutants_old = [f'{pollutant}_nei' for pollutant in pollutants]
 
     totals_new = {pollutant: df[pollutant].sum() for pollutant in pollutants}
     totals_old = {f'{pollutant}': df[f'{pollutant}'].sum() for pollutant in pollutants_old}
@@ -896,7 +896,7 @@ def plot_CCS_facility_emissions(df, output_dir):
         indices = np.arange(len(df))
         ax.bar(indices, df[pollutant], bar_width, label=f'{pollutant}')
         ax.bar(indices + bar_width, df[pollutants_old[i]], bar_width, label=f'{pollutants_old[i]}')
-        total_original = totals_old[f'{pollutant}_old']
+        total_original = totals_old[f'{pollutant}_nei']
         total_new = totals_new[f'{pollutant}']
         ax.set_title(f'{pollutant}\nTotal: {total_original:.3f} | New Total: {total_new:.3f} | Change: {(total_new - total_original):.3f} [tons]', fontsize=20)
         ax.set_xlabel('FIPS')
@@ -910,7 +910,7 @@ def plot_CCS_facility_emissions(df, output_dir):
     plt.savefig(plot_path)
     plt.close(fig)
 
-    net_changes = [totals_new[f'{pollutant}'] - totals_old[f'{pollutant}_old'] for pollutant in pollutants]
+    net_changes = [totals_new[f'{pollutant}'] - totals_old[f'{pollutant}_nei'] for pollutant in pollutants]
     colors = ['blue' if val < 0 else 'red' for val in net_changes]
     fig, ax = plt.subplots(figsize=(20, 10))
     ax.bar(pollutants, net_changes, color=colors)

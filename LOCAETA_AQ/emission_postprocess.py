@@ -23,7 +23,7 @@ def plot_spatial_distribution_percent_change_with_basemap(gdf, output_dir, natio
         ax = fig.add_subplot(gs[0, :19])
         
         col_current = f'{pollutant}'
-        col_old = f'{pollutant}_old'
+        col_old = f'{pollutant}_nei'
         
         if col_current not in gdf.columns or col_old not in gdf.columns:
             print(f'Columns {col_current} or {col_old} do not exist in the data.')
@@ -108,7 +108,7 @@ def plot_spatial_distribution_relative_difference_with_basemap(gdf, output_dir, 
         ax = fig.add_subplot(gs[0, :19])
         
         col_current = f'{pollutant}'
-        col_old = f'{pollutant}_old'
+        col_old = f'{pollutant}_nei'
 
         # Ensure both the current and "_old" columns exist in the GeoDataFrame
         if col_current not in gdf.columns or col_old not in gdf.columns:

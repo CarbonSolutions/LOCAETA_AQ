@@ -301,7 +301,7 @@ def plot_spatial_distribution_percent_change_with_basemap(gdf, field, output_dir
     gdf[ field+'_percent_change'] = (gdf[col_diff] / gdf[col_base]) * 100
 
     # Plot the spatial distribution of the percent change
-    vmin, vmax = -1, 1  # Fixed color scale from -50% to 50%
+    vmin, vmax = -1, 1 # -1, 1  # Fixed color scale from -50% to 50%
 
     gdf.plot(column=field+'_percent_change', cmap='coolwarm', vmin=vmin, vmax=vmax, legend=False, edgecolor='none', 
                 linewidth=0, ax=ax, markersize=30, alpha=0.8)  # Increase marker size and reduce transparency
@@ -367,6 +367,30 @@ def subset_state(gdf, state_fips):
     #print(gdf_co.head())
 
     return gdf_co
+
+def normalize_total_pop_by_area(gdf, pop_col="TotalPopD", area_col="area_km2"):
+    """
+    Normalize population by grid area.
+
+    Parameters:
+    - gdf: GeoDataFrame with population and geometry
+    - pop_col: Column name for total population (default: "TotalPopD")
+    - area_col: Optional column name to store the computed area in km² (default: "area_km2")
+
+    Returns:
+    - GeoDataFrame with a new column "TotalPopD_density" (population per km²)
+    """
+    # Ensure the GeoDataFrame has a projected CRS (for accurate area calculation)
+    if gdf.crs is None or not gdf.crs.is_projected:
+        raise ValueError("GeoDataFrame must have a projected CRS to calculate area accurately.")
+
+    # Calculate area in square kilometers
+    gdf[area_col] = gdf.geometry.area / 1e6  # from m² to km²
+
+    # Normalize population by area
+    gdf["TotalPopD_density"] = gdf[pop_col] / gdf[area_col]
+
+    return gdf
 
 def modify_geojson(geojson_data, column):
 
