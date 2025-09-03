@@ -1,0 +1,430 @@
+---
+title: "LOCAETA report: Electrification Scenarios for the Food & Agriculture sector in the US"
+format:
+  html:
+    embed-resources: true
+theme: cosmos
+
+author: Yunha Lee (yunha.lee@carbonsolutionsllc.com)
+date: today
+
+date-format: "MMMM D, YYYY"
+
+#  html:
+code-fold: true
+execute:
+  echo: false
+jupyter: python3
+
+
+---
+
+
+<style>
+.quarto-figure {
+  margin-bottom: 2em; /* Adjust as needed */
+}
+</style>
+
+```{python}
+#| warning: false
+
+import geopandas as gpd
+import pandas as pd
+
+# set run_name
+#run_list = ['current_easyhard', '2050_easyhard_noIRA_111D', '2050_easyhard_decarb95']
+run_list = ['current_easyhard_Food_Agr', '2050_easyhard_noIRA_111D_Food_Agr', '2050_easyhard_decarb95_Food_Agr']
+#run_list = ["current_2020"] # ["current_2020","decarb95_2050","highREcost_2050"] # ['TN_DataCenter_NOx_2ppm', 'TN_DataCenter_NOx_25ppm'] # ['LA_CCS', 'LA_CCS_noNH3']
+#run_list = ['CO_CCS', 'CO_CCS_wo_NH3_VOC', 'CO_Suncor_CCS_wo_NH3_VOC','CO_Cherokee_CCS_wo_NH3_VOC', 'NEI_no_Landfill_2001411']
+run_name = run_list[0]
+
+# Define all output paths
+emis_output_path = f"/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/emissions/{run_name}"
+inmap_output_path = f"/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/model_analysis"
+benmap_inc_output_path = f"/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/BenMAP/county/incidence_results/"
+benmap_value_output_path = f"/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/BenMAP/county/valuation_results/"
+text_path = f"/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/report_txt/{run_name}/"
+
+```
+
+
+# Introduction 
+```{python}
+from IPython.display import Markdown, display
+
+with open(f"{text_path}intro.txt", "r") as f:
+    intro_text = f.read()
+display(Markdown(intro_text))
+```
+
+
+# Emission Changes by Key Pollutants
+
+```{python}
+with open(f"{text_path}emis_description.txt", "r") as f:
+    emis_text = f.read()
+display(Markdown(emis_text))
+```
+
+
+
+```{python}
+
+#| label: fig-total-emissions-changes
+#| fig-cap: Air quality emissions from the data center in Memphis, TN
+
+import matplotlib.pyplot as plt
+import matplotlib.image as img
+
+
+img_path =f'{emis_output_path}/Total_Difference.png'
+#img_path = "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/emissions/current_2020/Total_Difference.png"
+image = img.imread(img_path)
+
+# Desired width in inches (adjust to fit page)
+fig_width = 8 
+fig_height = fig_width * image.shape[0] / image.shape[1]  # maintain aspect ratio
+
+fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+ax.imshow(image)
+ax.axis('off')
+plt.tight_layout(pad=0)
+plt.show()
+
+
+```
+
+
+# Modeling Approaches
+
+To evaluate the impacts on air quality and public health, we employed two well-established models: INMAP (Intervention Model for Air Pollution) and BenMAP (environmental BENefits Mapping and Analysis Program). InMAP is a reduced-complexity, Eulerian air quality model that estimates estimates annual-average concentrations of PM2.5 by simulating both primary and secondary PM formation. It is designed for emissions-to-health assessments and operates on a variable-resolution grid (~1 km in urban areas). @tbl-inmap-description outlines the InMAP simulation configurations used in this study.
+
+```{python}
+#| label: tbl-inmap-description
+#| tbl-cap: Description of INMAP simulations used in this study  
+#| tbl-colwidths: [20,60]
+
+import pandas as pd
+
+df = pd.read_csv(f'{text_path}simulations_description.csv')
+
+from great_tables import GT
+GT(df)
+```
+
+BenMAP is used to estimate the health outcomes and their monetized impacts attributable to changes in PM2.5 exposure. We considered six health endpoints and stratified the results by race and ethnicity when possible:
+- Asthma exacerbation: cough, wheezing, and shortness of breath
+- Workday loss
+- All-cause mortality (two methods used: **Method 1**: Di et al. and **Method 2**: Pope et al.)
+
+@tbl-benmap-description summarizes the health endpoints and valuation methods used in our BenMAP analysis. It used the InMAP outputs that are spatially aggregated to the county level to match BenMAP's resolution requirements.
+
+
+:::{.tbl #tbl-benmap-description}
+
+<table style="width:100%; border-collapse: collapse; font-size: 0.95em;">
+  <thead style="text-align: center; border-top: 2px solid #ccc; border-bottom: 2px solid #ccc">
+    <tr>
+      <th style="padding: 8px;">Health endpoint</th>
+      <th style="padding: 8px;">Race-ethnic stratified</th>
+      <th style="padding: 8px;">Reference</th>
+      <th style="padding: 8px;">Valuation method</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom: 2px solid #ccc;">
+      <td style="padding: 8px;" rowspan="3">
+        Asthma exacerbation
+        <ul style="margin: 0; padding-left: 18px;">
+          <li>Cough</li>
+          <li>Wheezing</li>
+          <li>Shortness of Breath</li>
+        </ul>
+      </td>
+      <td style="padding: 8px;" rowspan="3">All, Black</td>
+      <td style="padding: 8px;" rowspan="3">Ostro et al. (2001)<br>Age: 8–13</td>
+      <td style="padding: 8px;" rowspan="3">
+        WTP (Willingness to Pay): 1 symptom-day,<br>
+        Dickie and Ulery (2002)<br>
+        LogNormal | 0–17
+      </td>
+    </tr>
+    <tr style="border-bottom: 2px solid #ccc;"></tr>
+    <tr style="border-bottom: 2px solid #ccc;"></tr>
+
+    <tr style="border-bottom: 1px solid #ccc;">
+      <td style="padding: 8px;" rowspan="2">Mortality</td>
+      <td style="padding: 8px;" rowspan="2">All, Black, White, Asian,<br>Hispanic, and NatAmer</td>
+      <td style="padding: 8px;">**Method 1**: Di et al. (2017)<br>Age: over 64</td>
+      <td style="padding: 8px;" rowspan="2">
+        VSL (Value of Statistical Life), based on 26 value-of-life studies, with Cessation Lag, 3% d.r.<br>
+        Weibull | 0–99
+      </td>
+    </tr>
+    <tr style="border-bottom: 2px solid #ccc;">
+      <td style="padding: 8px;">**Method 2**: Pope et al. (2019)<br>Age: over 30</td>
+    </tr>
+
+    <tr style="border-bottom: 2px solid #ccc;">
+      <td style="padding: 8px;">Workday loss</td>
+      <td style="padding: 8px;">All</td>
+      <td style="padding: 8px;">Ostro (1987)<br>Age: 18–64</td>
+      <td style="padding: 8px;">
+        Median daily wage, county-specific<br>
+        None | 18–65
+      </td>
+    </tr>
+  </tbody>
+</table>
+Description of BenMAP health endpoints and valuation used in this study
+:::
+
+
+# Air Quality Impacts
+
+@fig-area-avg-all-runs presents the area-weighted average concentrations of various air pollutant species across different runs: all the values shown in this figures are also presented in @tbl-area-avg-all-runs. The vertical axis represents concentration changes in micrograms per cubic meter (μg/m³), with positive values indicating increases and negative values indicating decreases in pollutant concentrations. The horizontal axis displays nine air quality species: NH3 (ammonia), SOA (secondary organic aerosols), NOx (nitrogen oxides), SOx (sulfur oxides), PNH4 (particulate ammonium), PNO3 (particulate nitrate), PSO4 (particulate sulfate), PrimPM25 (primary PM2.5), and TotalPM25 (total PM2.5). It shows how each run scenario affects the atmospheric composition of different pollutants. The concentration changes, in terms of trend and mangnitude, align closely with the emission reductions. 
+
+```{python}
+
+#| label: fig-area-avg-all-runs
+#| fig-cap: "Change of area-weighted average of air quality species for all runs"
+
+import matplotlib.pyplot as plt
+import matplotlib.image as img
+
+
+img_path = f"{inmap_output_path}/{run_name}/area_weighted_averages_all_runs.png"
+image = img.imread(img_path)
+
+# Optional: dynamically scale down the image
+fig, ax = plt.subplots(figsize=(6, 4))  # Adjust this to control final figure size
+ax.imshow(image)
+ax.axis('off')
+plt.tight_layout(pad=0)
+plt.show()
+```
+
+
+```{python}
+
+#| label: tbl-area-avg-all-runs
+#| tbl-cap: "Change of area-weighted average of air quality species from all runs"
+import pandas as pd
+from great_tables import GT
+
+
+file_path = f"{inmap_output_path}/{run_name}/area_weighted_avg_for_all_runs.csv"
+area_df = pd.read_csv(file_path)
+
+GT(area_df)
+```
+
+Subsequent analysis focuses on total PM2.5 concentrations, which are the primary driver of health impacts. @fig-spatial-concentrations  presents spatial maps showing the percent changes in total PM2.5 concentrations across all runs. The color scale ranges from blue (representing decreases in PM2.5) to red (representing increases), with intensity indicating the magnitude of change.
+
+```{python}
+
+#| label: fig-spatial-concentrations
+#| fig-cap: "Spatial distribution of percent changes in total PM2.5 concentrations across all runs"
+
+import matplotlib.pyplot as plt
+import matplotlib.image as img
+import math
+
+
+# Height per subplot in inches
+height_per_plot = 6  # adjust smaller for tighter spacing
+fig, axes = plt.subplots(
+    len(run_list), 1,
+    figsize=(8, height_per_plot * len(run_list)),
+    constrained_layout=False
+)
+
+if len(run_list) == 1:
+    axes = [axes]  # ensure iterable
+
+for ax, run in zip(axes, run_list):
+    img_path = f"{inmap_output_path}/{run}/TotalPM25_Percent Change_with_basemap.png"
+    image = img.imread(img_path)
+
+    ax.imshow(image)
+    ax.set_title(f"Run: {run}", loc='left', fontsize=20, fontweight='bold')
+    ax.axis('off')
+
+# Optionally fine-tune spacing
+plt.subplots_adjust(hspace=0.05)  # reduce vertical gap
+plt.show()
+```
+
+
+# Public Health Impacts
+Comprehensive analysis of health impacts across runs are provided in this section, with results stratified by race-ethnicity and measured through the various health endpoints. Our goal is to collectively provide a multidimensional view of how various run scenarios affect public health outcomes across different demographic groups, measured both in health terms and economic value.
+
+@fig-health-impact-all-runs illustrates the absolute health benefits across runs for six key health endpoints: asthma exacerbation (cough, shortness of breath, and wheeze), mortality (calculated using two different methodologies by Di et al. and Pope et al.), and work loss days. The data is stratified primarily by race-ethnicity categories (ALL, BLACK, ASIAN, HISPANIC, NATAMER, and WHITE). The vertical axis represents health benefits, with positive values indicating improvements and negative values indicating negative impacts. Different runs are represented by different colored bars. All the values used in this figure can be found in @tbl-health-benefits.
+
+```{python}
+
+#| label: fig-health-impact-all-runs
+#| fig-cap: "Impact on health benefits across all runs"
+
+import matplotlib.pyplot as plt
+import matplotlib.image as img
+
+
+img_path = f"{benmap_inc_output_path}/{run_name}/Annual Health Benefits.png"
+image = img.imread(img_path)
+
+# Optional: dynamically scale down the image
+fig, ax = plt.subplots(figsize=(8, 4))  # Adjust this to control final figure size
+ax.imshow(image)
+ax.axis('off')
+plt.tight_layout(pad=0)
+plt.show()
+```
+
+```{python}
+
+#| label: tbl-health-benefits
+#| tbl-cap: "Values of health benefits from all runs"
+#
+import pandas as pd
+from great_tables import GT
+
+file_path = f"{benmap_inc_output_path}/{run_name}/Health_Benefit.csv"
+df = pd.read_csv(file_path)
+
+GT(df)
+```
+
+
+@fig-normalized-health-impact-all-runs presents the same health endpoints as @fig-health-impact-all-runs but normalizes the benefits by population size (per million people): : all the values used in this figure can be found in @tbl-normalized-health. This normalization allows for more equitable comparison across demographic groups of different sizes. The health endpoints and runs remain consistent with @fig-health-impact-all-runs. The normalization reveals per capita impacts, highlighting potential disparities in health benefits that might be obscured in absolute numbers.
+
+
+```{python}
+
+#| label: fig-normalized-health-impact-all-runs
+#| fig-cap: "Impact on health benefits normalized by the population (in miilion) across all runs"
+
+import matplotlib.pyplot as plt
+import matplotlib.image as img
+
+img_path = f"{benmap_inc_output_path}/{run_name}/Normalized Health Benefits  (per million).png"
+image = img.imread(img_path)
+
+# Optional: dynamically scale down the image
+fig, ax = plt.subplots(figsize=(8, 4))  # Adjust this to control final figure size
+ax.imshow(image)
+ax.axis('off')
+plt.tight_layout(pad=0)
+plt.show()
+```
+
+
+
+```{python}
+
+#| label: tbl-normalized-health
+#| tbl-cap: "Values of normalized health benefits from all runs"
+#
+import pandas as pd
+from great_tables import GT
+
+file_path = f"{benmap_inc_output_path}/{run_name}/Normalized_Health_Benefit_all_runs.csv"
+df = pd.read_csv(file_path)
+
+GT(df)
+```
+
+@fig-mortality-all-runs displays only the premature mortality results for all race-ethnicity groups from @fig-health-impact-all-runs, as mortality represents the most significant health impacts. The figure shows the annual number of avoided premature deaths and compares estimates computed using the two different mortality risk functions (Di et al. vs Pope et al.). 
+
+```{python}
+
+#| label: fig-mortality-all-runs
+#| fig-cap: "Annual number of avoided premature deaths across all runs"
+
+import matplotlib.pyplot as plt
+import matplotlib.image as img
+
+img_path = f"{benmap_inc_output_path}/{run_name}/Annual Health Benefits only mortality.png"
+image = img.imread(img_path)
+
+# Optional: dynamically scale down the image
+fig, ax = plt.subplots(figsize=(8, 4))  # Adjust this to control final figure size
+ax.imshow(image)
+ax.axis('off')
+plt.tight_layout(pad=0)
+plt.show()
+```
+
+@fig-monetized-health-impact-all-runs translates the health impacts into monetary values (in million dollars), providing an economic perspective on the health benefits of each run. The vertical axis shows monetized health benefits per million dollars, maintaining the same stratification by race-ethnicity and health endpoints as the previous figures: all the values used in this figure can be found in @tbl-monetized-health. Mortality is the primary contributor to the total menetary values. The two mortality estimate approaches (Di et al. vs Pope et al.) yield noticeably different results, which is also reflected in their respective health benefits estimates. This economic quantification enables cost-benefit analysis of the different run scenarios and highlights which interventions may provide the greatest economic return through health improvements. 
+
+
+```{python}
+
+#| label: fig-monetized-health-impact-all-runs
+#| fig-cap: "Monetized health benefits (in miilion dollars) across all runs"
+
+import matplotlib.pyplot as plt
+import matplotlib.image as img
+
+img_path = f"{benmap_value_output_path}/{run_name}/Monetized Annual Health Benefits  (million $).png"
+image = img.imread(img_path)
+
+# Optional: dynamically scale down the image
+fig, ax = plt.subplots(figsize=(8, 4))  # Adjust this to control final figure size
+ax.imshow(image)
+ax.axis('off')
+plt.tight_layout(pad=0)
+plt.show()
+```
+
+
+```{python}
+
+#| label: tbl-monetized-health
+#| tbl-cap: "Values of monetized health benefits from all runs"
+#
+import pandas as pd
+from great_tables import GT
+
+file_path = f"{benmap_value_output_path}/{run_name}/Monetized_Health_Benefit.csv"
+df = pd.read_csv(file_path)
+
+GT(df)
+```
+
+Because the total monetary value of health benefits is largely driven by reduction in mortality, we present the monetized health benefit by mortality separately in @fig-monetized-mortality-all-runs. As shown in @fig-mortality-all-runs, the choice of mortality risk functions - Di et al. vs Pope et al. - results in a signnificant difference in the estimated total monetaried benefits. 
+
+```{python}
+
+#| label: fig-monetized-mortality-all-runs
+#| fig-cap: "Monetized health benefits by mortality (in miilion dollars) for all runs"
+
+import matplotlib.pyplot as plt
+import matplotlib.image as img
+
+img_path = f"{benmap_value_output_path}/{run_name}/Monetized Annual Health Benefits  (million $) only mortality.png"
+image = img.imread(img_path)
+
+# Optional: dynamically scale down the image
+fig, ax = plt.subplots(figsize=(8, 4))  # Adjust this to control final figure size
+ax.imshow(image)
+ax.axis('off')
+plt.tight_layout(pad=0)
+plt.show()
+```
+
+
+```{python}
+import os
+from IPython.display import Markdown, display
+
+supp_file = os.path.join(text_path, "supplementary.txt") 
+
+if os.path.exists(supp_file):
+
+    
+    # Read and print the text content
+    with open(supp_file, "r") as f:
+        display(Markdown(f.read()))
+```
