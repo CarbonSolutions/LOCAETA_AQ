@@ -116,7 +116,7 @@ Brief steps:
 
 You can use this script (inmap-1.9.6-gridsplit/create_inmap_toml.ipynb) to run these steps in one shot.
 
-## Step 3: Analyze INMAP runs
+## Step 3: Analyze INMAP outputs
 ```
 python ./inmap_run_comparison.py 
 ```
