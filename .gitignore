@@ -1,7 +1,9 @@
+method_descriptions/
 LOCAETA.code-workspace
 notebooks/no_need/
 notebooks/.DS_Store
 outputs/
 .DS_Store
 __pycache__/
+LOCAETA-reports/
 .ipynb_checkpoints/
