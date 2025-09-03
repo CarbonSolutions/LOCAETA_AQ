@@ -134,7 +134,7 @@ python ./process_INMAP_for_BenMAP.py
 ```
 This will generate air quality files in csv for each INMAP run, which will be used as an input to BenMAP. The instruction to run BenMAP will be available in this repo: https://github.com/yunhal/BenMAP_batchmode_for_MAC
 
-In that repo, you will find this script (batchmode/run_benmap_Wine.ipynb) that will run BenMAP in batch mode. 
+In that repo, you will find this script (BenMAP_batchmode_for_MAC/batchmode/run_benmap_Wine.ipynb) that will run BenMAP in batch mode. 
 
 ## Step 5: Analyze BenMAP ouputs
 
