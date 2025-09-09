@@ -1,0 +1,63 @@
+ccs_emissions:
+  input:
+    ccs_raw_file: "/Users/yunhalee/Documents/LOCAETA/CS_emissions/USA-compiled-cobenefits-emissions-withSCC-v4.csv"
+    combined_NEI_emis_path: "/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp"
+
+  output:
+    ccs_clean_file: "/Users/yunhalee/Documents/LOCAETA/CS_emissions/USA-compiled-cobenefits-emissions-withSCC-v4_ghgrp_subpart_sum_test.csv"
+    output_dir: "/Users/yunhalee/Documents/LOCAETA/CS_emissions/test/"
+    plots_dir: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/emissions/test/"
+
+  crs:
+    target_crs: "+proj=lcc +lat_1=33.000000 +lat_2=45.000000 +lat_0=40.000000 +lon_0=-97.000000 +x_0=0 +y_0=0 +a=6370997.000000 +b=6370997.000000 +to_meter=1"
+
+  special_cases:
+    - type: "state_all_facilities"
+      run: true
+      fips: "22"
+      name: "Louisiana"
+
+    - type: "state_specific_facilities"
+      run: true
+      fips: "08"
+      name: "Colorado"
+      facilities_file: "/Users/yunhalee/Documents/LOCAETA/CS_emissions/final_output_1_manual_update_noLandfill.csv"
+
+    - type: "industrial_no_ccs"
+      run: true
+
+datacenter_emissions:
+  input: "/Users/yunhalee/Documents/LOCAETA/DataCenter_emissions/"
+  output: "/Users/yunhalee/Documents/LOCAETA/DataCenter_emissions/output/"
+  nei_file: "/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp"
+  crs: "EPSG:4326"
+  target_scenarios:
+    - current_2020
+    - highREcost_2050
+    - decarb95_2050
+  subregional_scenarios: ['CAISO','PJM_East','MISO_Central','MISO_South','NorthernGrid_West','SPP_North']
+  plots:
+    diagnostics: true
+    percent_change: true
+    distribution: false
+
+inmap:
+  run: true
+  toml_template: "./eval/nei2020Config_CO_CCS.toml"
+  output_dir: "./outputs/inmap/"
+  script_path: "../inmap-1.9.6-gridsplit/"
+
+analysis:
+  run: true
+  output_dir: "./outputs/analysis/"
+
+benmap:
+  run: true
+  analyze: true
+  output_dir: "./outputs/benmap/"
+  repo_path: "../BenMAP_batchmode_for_MAC/"
+
+report:
+  run: true
+  qmd_file: "./reports/LOCAETA_report.qmd"
+  output_dir: "./reports/out/"
