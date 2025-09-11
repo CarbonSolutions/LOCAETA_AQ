@@ -1,3 +1,17 @@
+nei_emissions:
+  input:
+    # directory with all each source directories created from the extracting NEI zip files obtained from https://gaftp.epa.gov/air/emismod/2020/2020emissions/
+    nei_raw_data_dir: '/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/2020ha2_cb6_20k/inputs/'
+    county_shapefile_path: "/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/emiss_shp2020/Census/cb_2020_us_county_500k.shp"
+    target_crs: "+proj=lcc +lat_1=33.000000 +lat_2=45.000000 +lat_0=40.000000 +lon_0=-97.000000 +x_0=0 +y_0=0 +a=6370997.000000 +b=6370997.000000 +to_meter=1"
+    netcdf_path : "/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/netcdf/annual/"
+  output:
+    output_dir: '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/test/'
+    plots_dir: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/emissions/NEI2020/"
+    combined_pt_source_file: "combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp"
+    state_emissions_sum: "total_emissions_by_state_and_species.csv" # debugging purpose
+
+
 ccs_emissions:
   input:
     ccs_raw_file: "/Users/yunhalee/Documents/LOCAETA/CS_emissions/USA-compiled-cobenefits-emissions-withSCC-v4.csv"
@@ -7,9 +21,6 @@ ccs_emissions:
     ccs_clean_file: "/Users/yunhalee/Documents/LOCAETA/CS_emissions/USA-compiled-cobenefits-emissions-withSCC-v4_ghgrp_subpart_sum_test.csv"
     output_dir: "/Users/yunhalee/Documents/LOCAETA/CS_emissions/test/"
     plots_dir: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/emissions/test/"
-
-  crs:
-    target_crs: "+proj=lcc +lat_1=33.000000 +lat_2=45.000000 +lat_0=40.000000 +lon_0=-97.000000 +x_0=0 +y_0=0 +a=6370997.000000 +b=6370997.000000 +to_meter=1"
 
   special_cases:
     - type: "state_all_facilities"
@@ -27,14 +38,18 @@ ccs_emissions:
       run: true
 
 datacenter_emissions:
-  input: "/Users/yunhalee/Documents/LOCAETA/DataCenter_emissions/"
-  output: "/Users/yunhalee/Documents/LOCAETA/DataCenter_emissions/output/"
-  nei_file: "/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp"
-  crs: "EPSG:4326"
+  input: 
+    datacenter_csv_dir: "/Users/yunhalee/Documents/LOCAETA/DataCenter_emissions/"
+    nei_file: "/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp"
+
+  output: 
+    outputdir: "/Users/yunhalee/Documents/LOCAETA/DataCenter_emissions/output/test/"
+    plots_dir:  "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/emissions/test/"
+
   target_scenarios:
     - current_2020
-    - highREcost_2050
-    - decarb95_2050
+    - 2050_noIRA_111D
+    - 2050_decarb95
   subregional_scenarios: ['CAISO','PJM_East','MISO_Central','MISO_South','NorthernGrid_West','SPP_North']
   plots:
     diagnostics: true
