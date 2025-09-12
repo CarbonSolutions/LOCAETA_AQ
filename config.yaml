@@ -11,7 +11,6 @@ nei_emissions:
     combined_pt_source_file: "combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp"
     state_emissions_sum: "total_emissions_by_state_and_species.csv" # debugging purpose
 
-
 ccs_emissions:
   input:
     ccs_raw_file: "/Users/yunhalee/Documents/LOCAETA/CS_emissions/USA-compiled-cobenefits-emissions-withSCC-v4.csv"
@@ -55,6 +54,16 @@ datacenter_emissions:
     diagnostics: true
     percent_change: true
     distribution: false
+
+electrification_emissions:
+  input:
+    overall_scenario: 'Food_Agr'
+    scenario_dir: '/Users/yunhalee/Documents/LOCAETA/Electrification/'
+    scenario_list: ["current_easyhard", "2050_easyhard_noIRA_111D", "2050_easyhard_decarb95"] 
+    combined_nei_file: '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp'
+  output:
+    output_dir: "/Users/yunhalee/Documents/LOCAETA/Electrification/test/"
+    plots_dir: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/emissions/test/"
 
 inmap:
   run: true
