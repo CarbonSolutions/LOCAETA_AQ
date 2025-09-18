@@ -1,0 +1,119 @@
+base_dirs:
+  project_root: &project_root "/Users/yunhalee/Documents/LOCAETA"
+  output_dir_root : &output_dir_root "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs"
+  inmap_root: &inmap_root "/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/inmap-1.9.6-gridsplit"
+
+  benmap_root: &benmap_root "/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP" 
+  nei_emissions_root: &nei_root "/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024"
+  nei_output_root: &nei_output_root "/Users/yunhalee/Documents/LOCAETA/evaldata_v1.6.1/2020_nei_emissions"
+
+  ccs_emissions_root: &ccs_root "/Users/yunhalee/Documents/LOCAETA/CCS_emissions"
+  datacenter_emissions_root: &datacenter_root "/Users/yunhalee/Documents/LOCAETA/DataCenter_emissions"
+  electrification_emissions_root: &electrification_root "/Users/yunhalee/Documents/LOCAETA/Electrification"
+
+  quarto_report: &report_root "/Users/yunhalee/Documents/LOCAETA/reports"
+
+master_workflow: 
+  scenario : datacenter_emissions
+  run_names: ['test']
+
+  emissions:
+    run_nei_emissions: true  # set "false" if the NEI shapefiles exists already
+
+  inmap:
+    run: true
+    toml_dir: *inmap_root/eval
+    toml_template: nei2020Config_template.toml
+    input_dir: *nei_output_root
+    
+    analyze: true
+    analysis_path:
+    output_dir: *output_dir_root/inmap 
+    convert_to_benmap: true
+
+  benmap:
+    run: true
+    input_dir: *benmap_root/inmap_output
+    model_path: *benmap_root/batchmode
+
+    analyze: true
+    output_dir: *output_dir_root/benmap
+
+  report:
+    run: true
+    qmd_file: *report_root/LOCAETA_report.qmd
+    output_dir: *report_root/out/
+
+########################
+### Emissions setup ####
+########################
+nei_emissions:
+  input:
+    # directory with all each source directories created from the extracting NEI zip files obtained from https://gaftp.epa.gov/air/emismod/2020/2020emissions/
+    nei_raw_data_dir: *nei_root/2020ha2_cb6_20k/inputs
+    county_shapefile_path: *nei_root/emiss_shp2020/Census/cb_2020_us_county_500k.shp
+    target_crs: "+proj=lcc +lat_1=33.000000 +lat_2=45.000000 +lat_0=40.000000 +lon_0=-97.000000 +x_0=0 +y_0=0 +a=6370997.000000 +b=6370997.000000 +to_meter=1"
+    netcdf_path : *nei_root/netcdf/annual
+  output:
+    output_dir: *nei_output_root
+    plots_dir: *output_dir_root/emissions/NEI2020
+    combined_pt_source_file: combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp
+    state_emissions_sum: "total_emissions_by_state_and_species.csv" # debugging purpose
+
+ccs_emissions:
+  input:
+    ccs_raw_file: *ccs_root/USA-compiled-cobenefits-emissions-withSCC-v4.csv
+# don't use    combined_NEI_emis_path: *nei_output_root/combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp
+
+  output:
+    ccs_clean_file: *ccs_root/USA-compiled-cobenefits-emissions-withSCC-v4_ghgrp_subpart_sum_test.csv
+    output_dir: *ccs_root
+    plots_dir: *output_dir_root/emissions
+
+  special_cases:
+    - type: "state_all_facilities"
+      run: true
+      fips: "22"
+      name: "Louisiana"
+
+    - type: "state_specific_facilities"
+      run: true
+      fips: "08"
+      name: "Colorado"
+      facilities_file: *ccs_root/final_output_1_manual_update_noLandfill.csv
+
+    - type: "industrial_no_ccs"
+      run: true
+
+datacenter_emissions:
+  input: 
+    datacenter_csv_dir: *datacenter_root
+# don't use    nei_file: *nei_output_root/combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp
+
+  output: 
+    output_dir: *datacenter_root
+    plots_dir: *output_dir_root/emissions
+
+  target_scenarios:
+    - current_2020
+    - 2050_noIRA_111D
+    - 2050_decarb95
+  subregional_scenarios: ['CAISO','PJM_East','MISO_Central','MISO_South','NorthernGrid_West','SPP_North']
+
+  plots:
+    diagnostics: true
+    percent_change: true
+    distribution: false
+
+electrification_emissions:
+  input:
+    overall_scenario: 'Food_Agr'
+    scenario_dir: *electrification_root
+    scenario_list: ["current_easyhard", "2050_easyhard_noIRA_111D", "2050_easyhard_decarb95"] 
+# don't use    combined_nei_file: *nei_output_root/combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp
+
+  output:
+    output_dir: *electrification_root
+    plots_dir: *output_dir_root/emissions
+
+

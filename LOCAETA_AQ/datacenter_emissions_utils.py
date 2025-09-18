@@ -237,14 +237,19 @@ class DataCenterEmissionProcessor:
         """Run DataCenter emissions plotting for all configured regions."""
 
         for scenario in config["target_scenarios"]:
+
+            scenario = str(scenario)
             # Example placeholder logic (replace with your mapping steps)
             print(f"Processing scenario: {scenario}")
 
-            base_emis_file = os.path.join(config['output']['outputdir'], f"{scenario}_base.shp")
+
+            base_emis_dir = os.path.join(config['output']['output_dir'], f"{scenario}_base")
+            base_emis_file = os.path.join(base_emis_dir, f"{scenario}_base.shp")
             gdf_base_emis = gpd.read_file(base_emis_file)
             gdf_base_emis.reset_index(drop=True, inplace=True)
 
-            sens_file = os.path.join(config['output']['outputdir'], f"{scenario}.shp")
+            sens_emis_dir = os.path.join(config['output']['output_dir'], f"{scenario}")
+            sens_file = os.path.join(sens_emis_dir, f"{scenario}.shp")
             gdf_sens_emis = gpd.read_file(sens_file)
             gdf_sens_emis.reset_index(drop=True, inplace=True)
 
@@ -291,7 +296,10 @@ class DataCenterEmissionProcessor:
             
             if config['subregional_scenarios']: 
                 for emis_region in config['subregional_scenarios']:
-                    sens_file = os.path.join(config['output']['outputdir'], f"{scenario}_{emis_region}.shp")
+
+                    emis_region = str(emis_region)
+                    sens_emis_dir = os.path.join(config['output']['output_dir'], f"{scenario}_{emis_region}")
+                    sens_file = os.path.join(sens_emis_dir , f"{scenario}_{emis_region}.shp")
                     gdf_sens_emis = gpd.read_file(sens_file)
                     gdf_sens_emis.reset_index(drop=True, inplace=True)
 
@@ -322,13 +330,14 @@ class DataCenterEmissionProcessor:
 
     def process_datacenter(self, config):
 
-        os.makedirs(config['output']['outputdir'], exist_ok=True)
+        os.makedirs(config['output']['output_dir'], exist_ok=True)
         os.makedirs(config['output']['plots_dir'], exist_ok=True)
 
         # Load NEI base data
-        nei_all_pt = self.load_nei(config['input']['nei_file'])
+        nei_all_pt = self.load_nei(config['combined_nei_file'])
 
         for scenario in config["target_scenarios"]:
+            scenario = str(scenario)
             # Example placeholder logic (replace with your mapping steps)
             print(f"Processing scenario: {scenario}")
 
@@ -355,13 +364,16 @@ class DataCenterEmissionProcessor:
                 else:
                     suffix = ""   # no suffix for final case
 
+                final_output_dir = os.path.join(config['output']['output_dir'], f"{scenario}{suffix}")
+                os.makedirs(final_output_dir, exist_ok=True)
+
                 if not mapped_df.empty:
-                    mapped_file = os.path.join(config['output']['outputdir'], f"{scenario}{suffix}.shp")
+                    mapped_file = os.path.join(final_output_dir, f"{scenario}{suffix}.shp")
                     mapped_df.to_file(mapped_file, driver="ESRI Shapefile")
                     print(f"Saved {mapped_file}")
 
                 if not unmapped_df.empty:
-                    rest_file = os.path.join(config['output']['outputdir'], f"{scenario}{suffix}_rest_NEI.shp")
+                    rest_file = os.path.join(final_output_dir, f"{scenario}{suffix}_rest_NEI.shp")
                     unmapped_df.to_file(rest_file, driver="ESRI Shapefile")
                     print(f"Saved {rest_file}")
 
@@ -372,10 +384,10 @@ class DataCenterEmissionProcessor:
                 plot_df = pd.concat(case_dfs, ignore_index=True)
 
             # diagnostic plot for each scenario
-            if config["plots"].get("diagnostics", False):
-                plot_dir = os.path.join(config['output']['plots_dir'], f"{scenario}")
-                os.makedirs(plot_dir, exist_ok=True)
-                self.plot_diagnostics(plot_df, scenario, plot_dir)
+            if config['output']["plots_diagnostics"]:
+                final_plots_dir = os.path.join(config['output']['plots_dir'], f"{scenario}")
+                os.makedirs(final_plots_dir, exist_ok=True)
+                self.plot_diagnostics(plot_df, scenario, final_plots_dir)
 
     def process_subregional_emis(self, config):
 
@@ -384,24 +396,42 @@ class DataCenterEmissionProcessor:
 
             for scenario in config["target_scenarios"]:
 
+                scenario = str(scenario)
+                
                 emission_summary = []
 
                 # Example placeholder logic (replace with your mapping steps)
                 print(f"Processing scenario: {scenario}")
 
                 # Read base emissions
-                base_emis =os.path.join(config['output']['outputdir'], f"{scenario}_base.shp")
+
+                base_emis_dir = os.path.join(config['output']['output_dir'], f"{scenario}_base")
+                base_emis =os.path.join(base_emis_dir, f"{scenario}_base.shp")
                 gdf_base = gpd.read_file(base_emis)
                 gdf_base.reset_index(drop=True, inplace=True)
 
                 # Read final emissions
-                final_emis =os.path.join(config['output']['outputdir'], f"{scenario}.shp")
+                final_emis_dir = os.path.join(config['output']['output_dir'], f"{scenario}")
+                final_emis =os.path.join(final_emis_dir, f"{scenario}.shp")
                 gdf_final = gpd.read_file(final_emis)
                 gdf_final.reset_index(drop=True, inplace=True)
 
+                print("debug base", base_emis)
+                print(gdf_base.head())
+
+                print("debug final", final_emis)
+                print(gdf_final.head())
+
+
+
                 for subset_region in config['subregional_scenarios']:
 
+                    subset_region = str(subset_region)
+
                     print("subset is happening for ", subset_region)
+
+                    print("subset_region =", subset_region, type(subset_region))
+                    print(gdf_final['cambium_ge'].unique())
 
                     base_subset = gdf_base[gdf_base['cambium_ge'] != subset_region]
                     final_subset = gdf_final[gdf_final['cambium_ge'] == subset_region]
@@ -427,7 +457,9 @@ class DataCenterEmissionProcessor:
                     else:
                         print (f"BAD : {subset_region} doesn't result in same total rows {base_subset.shape[0]} {final_subset.shape[0]}  {combined_gdf.shape[0]}")
 
-                    filename = os.path.join(config['output']['outputdir'], f"{scenario}_{subset_region}.shp")
+                    final_output_dir = os.path.join(config['output']['output_dir'], f"{scenario}_{subset_region}")
+                    os.makedirs(final_output_dir, exist_ok=True)
+                    filename = os.path.join(final_output_dir, f"{scenario}_{subset_region}.shp")
                     combined_gdf.to_file(filename, driver='ESRI Shapefile')
                     print(f"Saved {subset_region} emissions to {filename}")
 
@@ -435,7 +467,8 @@ class DataCenterEmissionProcessor:
                 summary_df = pd.DataFrame(emission_summary)
 
                 # Save to CSV
-                output_csv = os.path.join(config['output']['outputdir'], f'{scenario}_emission_summary_by_region.csv')
+                final_output_dir = os.path.join(config['output']['output_dir'], f"{scenario}")
+                output_csv = os.path.join(final_output_dir, f'{scenario}_emission_summary_by_region.csv')
                 summary_df.to_csv(output_csv, index=False)
 
 

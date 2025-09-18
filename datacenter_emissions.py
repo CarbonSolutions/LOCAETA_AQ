@@ -1,16 +1,18 @@
 import yaml
-from LOCAETA_AQ.datacenter_emissions_util import DataCenterEmissionProcessor
+import os
+from LOCAETA_AQ.datacenter_emissions_utils import DataCenterEmissionProcessor
+from LOCAETA_AQ.config_utils import load_config
 
-def load_config(yaml_file: str) -> dict:
-    with open(yaml_file, 'r') as f:
-        config = yaml.safe_load(f)
-    return config
 
-def main():
+def main(cfg):
 
-    # Configuration
-    cfg = load_config("config.yaml")
+    # Extract the relevant section from Configuration
     config = cfg['datacenter_emissions']
+    # Add combined NEI file from cfg
+    config['combined_nei_file'] = os.path.join(cfg['base_dirs']['nei_output_root'],
+                                                cfg['nei_emissions']['output']['combined_pt_source_file'])
+
+    combined_nei_file = cfg['nei_emissions']['output']['combined_pt_source_file']
 
     # Initialize processor
     processor = DataCenterEmissionProcessor(config)
@@ -25,4 +27,5 @@ def main():
     processor.run_datacenter_emissions_plots(config)
 
 if __name__ == "__main__":
-    main()
+    cfg = load_config("config.yaml")
+    main(cfg)
