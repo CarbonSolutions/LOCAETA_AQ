@@ -2,34 +2,35 @@ import yaml
 import geopandas as gpd
 import os
 import warnings
-from LOCAETA_AQ.electrification_emissions_util import ElectrificationEmissionProcessor
+from LOCAETA_AQ.electrification_emissions_utils import ElectrificationEmissionProcessor
+from LOCAETA_AQ.config_utils import load_config
+import logging
+
+# logging from run_workflow 
+logger = logging.getLogger(__name__)
 
 # Suppress all warnings
 warnings.filterwarnings('ignore')
 
-def load_config(yaml_file: str) -> dict:
-    with open(yaml_file, 'r') as f:
-        config = yaml.safe_load(f)
-    return config
+def main(cfg):
 
-def main():
-
-    # Configuration
-    cfg = load_config("config.yaml")
     config = cfg['electrification_emissions']
+    # Add combined NEI file from cfg
+    config['combined_nei_file'] = os.path.join(cfg['base_dirs']['nei_output_root'],
+                                                cfg['nei_emissions']['output']['combined_pt_source_file'])
 
     overall_scenario = config["input"]["overall_scenario"]
     scenario_list = config["input"]["scenario_list"]
 
     # Create output directories if not exists
-    os.makedirs(config['output']['output_dir'] + config["input"]["overall_scenario"], exist_ok=True)
-    os.makedirs(config['output']['plots_dir']+ config["input"]["overall_scenario"], exist_ok=True)
+    os.makedirs(os.path.join(config['output']['output_dir'], config["input"]["overall_scenario"]), exist_ok=True)
+    os.makedirs(os.path.join(config['output']['plots_dir'], config["input"]["overall_scenario"]), exist_ok=True)
 
     # Initialize processor
     processor = ElectrificationEmissionProcessor(config)
 
     # Read the point source emissions
-    nei_all_pt = gpd.read_file(config['input']['combined_nei_file'])
+    nei_all_pt = gpd.read_file(config['combined_nei_file'])
 
     # Reset index to ensure proper comparison
     nei_all_pt.reset_index(drop=True, inplace=True)
@@ -48,22 +49,38 @@ def main():
     else:
         scen_emis_list = {scen: scen for scen in scenario_list}
     
-    print(scen_emis_list)
+    logger.info(scen_emis_list)
 
     egrid, mapped_df, unmapped_df = None, None, None
     for scen_name, emis_name in scen_emis_list.items():
-        print(scen_name, emis_name)
+        logger.info(f"{scen_name}, {emis_name}")
         egrid, mapped_df, unmapped_df = processor.process_powerplant_scenario(
-            scen_name, emis_name, nei_all_pt, config)
+            scen_name, emis_name, nei_all_pt)
 
-    cs_emis = processor.process_non_powerplant(
-        scen_emis_list, unmapped_df, nei_all_pt, config)
+    processor.process_non_powerplant(
+        scen_emis_list, unmapped_df, nei_all_pt)
 
     # Plot 1: Base vs Final comparison
-    processor.compare_emissions(scen_emis_list, config)
+    processor.compare_emissions(scen_emis_list)
 
     # Plot 2: Compare shapefile emissions with original CSV
-    processor.compare_with_original(scen_emis_list, config)
+    processor.compare_with_original(scen_emis_list)
 
 if __name__ == "__main__":
-    main()
+    import logging
+    import yaml
+    from datetime import datetime
+
+    # start logger 
+    logfile = f"run_electrification_emissions_{datetime.now():%Y%m%d_%H%M%S}.log"
+    logging.basicConfig(
+        level=logging.INFO,  # or DEBUG
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[
+           # logging.StreamHandler(),
+            logging.FileHandler(logfile, mode="w")
+        ]
+    )
+    
+    cfg = load_config("config.yaml")
+    main(cfg)

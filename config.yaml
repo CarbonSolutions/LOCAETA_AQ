@@ -115,5 +115,5 @@ electrification_emissions:
       - 2050_easyhard_noIRA_111D
       - 2050_easyhard_decarb95
   output:
-    output_dir: "."
+    output_dir: output
     plots_dir: emissions # append to output_root in Python
