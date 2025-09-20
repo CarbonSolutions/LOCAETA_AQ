@@ -1,87 +1,119 @@
+base_dirs:
+  project_root: "/Users/yunhalee/Documents/LOCAETA"
+  output_root: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs"
+  inmap_root: "/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/inmap-1.9.6-gridsplit"
+  benmap_root: "/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP" 
+  nei_root: "/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024"
+  nei_output_root: &nei_output "/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions"
+  ccs_root: "/Users/yunhalee/Documents/LOCAETA/CCS_emissions"
+  datacenter_root: "/Users/yunhalee/Documents/LOCAETA/DataCenter_emissions"
+  electrification_root: "/Users/yunhalee/Documents/LOCAETA/Electrification"
+  report_root: "/Users/yunhalee/Documents/LOCAETA/reports"
+
+stages:
+  scenario: datacenter_emissions
+  run_names: 
+  - current_2020
+  - current_2020_base
+  - 2050_decarb95_base
+  nei: true
+  inmap: true
+  benmap: true
+  report: true
+
+inmap:
+  input:
+    toml_dir: eval                  # append to inmap_root in Python
+    toml_template: nei2020Config_template.toml
+    input_dir: *nei_output           
+  output:
+    output_dir: outputs            # append to inmap_root in Python
+    plots_dir: inmap               # append to output_root in Python
+
+benmap:
+  input:
+    input_dir: inmap_output         # under benmap_root
+    model_path: batchmode           # under benmap_root
+  output:
+  # output_dir is not defined, as all outputs are saved under the benmap_root/APVR 
+    plots_dir: benmap              # append to output_root in Python
+
+report:
+  input:
+    qmd_file: LOCAETA_report.qmd    # under report_root
+  output:
+    output_dir: out                 # under report_root
+  options:
+    render: true
+
+##########################
+### Emission Scenarios ###
+##########################
+
+# nei_emissions are basis for all scenarios
+# input directory names (e.g., "2020ha2_cb6_20k/inputs") follows the directories created from the extracting NEI zip files.
+# zip files are obtained from https://gaftp.epa.gov/air/emismod/2020/2020emissions/
 nei_emissions:
   input:
-    # directory with all each source directories created from the extracting NEI zip files obtained from https://gaftp.epa.gov/air/emismod/2020/2020emissions/
-    nei_raw_data_dir: '/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/2020ha2_cb6_20k/inputs/'
-    county_shapefile_path: "/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/emiss_shp2020/Census/cb_2020_us_county_500k.shp"
+    nei_raw_data_dir: 2020ha2_cb6_20k/inputs # append to nei_root in Python
+    county_shapefile_dir: emiss_shp2020/Census/cb_2020_us_county_500k.shp   # append to nei_root in Python
     target_crs: "+proj=lcc +lat_1=33.000000 +lat_2=45.000000 +lat_0=40.000000 +lon_0=-97.000000 +x_0=0 +y_0=0 +a=6370997.000000 +b=6370997.000000 +to_meter=1"
-    netcdf_path : "/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/netcdf/annual/"
+    netcdf_dir: netcdf/annual  # append to nei_root in Python
+    netcdf_filenames: 
+      - cb6_20k_onroad
+      - rail
   output:
-    output_dir: '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/test/'
-    plots_dir: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/emissions/NEI2020/"
-    combined_pt_source_file: "combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp"
-    state_emissions_sum: "total_emissions_by_state_and_species.csv" # debugging purpose
+    output_dir: *nei_output
+    plots_dir: emissions/NEI2020  # append to output_root in Python
+    combined_pt_source_file: combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp # nei_output_root in Python
+    state_emissions_sum: total_emissions_by_state_and_species.csv  # nei_output_root in Python
 
 ccs_emissions:
   input:
-    ccs_raw_file: "/Users/yunhalee/Documents/LOCAETA/CS_emissions/USA-compiled-cobenefits-emissions-withSCC-v4.csv"
-    combined_NEI_emis_path: "/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp"
-
+    ccs_raw_file: USA-compiled-cobenefits-emissions-withSCC-v4.csv  # append to ccs_root in Python
   output:
-    ccs_clean_file: "/Users/yunhalee/Documents/LOCAETA/CS_emissions/USA-compiled-cobenefits-emissions-withSCC-v4_ghgrp_subpart_sum_test.csv"
-    output_dir: "/Users/yunhalee/Documents/LOCAETA/CS_emissions/test/"
-    plots_dir: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/emissions/test/"
-
+    ccs_clean_file: USA-compiled-cobenefits-emissions-withSCC-v4_ghgrp_subpart_sum_test.csv # append to ccs_root in Python
+    output_dir: output 
+    plots_dir: emissions # append to output_root in Python
   special_cases:
-    - type: "state_all_facilities"
-      run: true
+    - type: state_all_facilities
       fips: "22"
       name: "Louisiana"
-
-    - type: "state_specific_facilities"
-      run: true
+    - type: state_specific_facilities
       fips: "08"
       name: "Colorado"
-      facilities_file: "/Users/yunhalee/Documents/LOCAETA/CS_emissions/final_output_1_manual_update_noLandfill.csv"
-
-    - type: "industrial_no_ccs"
-      run: true
+      facilities_file: final_output_1_manual_update_noLandfill.csv # append to ccs_root in Python
+    - type: industrial_no_ccs
 
 datacenter_emissions:
-  input: 
-    datacenter_csv_dir: "/Users/yunhalee/Documents/LOCAETA/DataCenter_emissions/"
-    nei_file: "/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp"
-
-  output: 
-    outputdir: "/Users/yunhalee/Documents/LOCAETA/DataCenter_emissions/output/test/"
-    plots_dir:  "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/emissions/test/"
-
+  input:
+    datacenter_csv_dir: "."
+  output:
+    output_dir: output
+    plots_dir: emissions  # append to output_root in Python
+    plots_diagnostics: true
+#    plots_percent_change: true
+#    plots_distribution: false
   target_scenarios:
     - current_2020
     - 2050_noIRA_111D
     - 2050_decarb95
-  subregional_scenarios: ['CAISO','PJM_East','MISO_Central','MISO_South','NorthernGrid_West','SPP_North']
-  plots:
-    diagnostics: true
-    percent_change: true
-    distribution: false
+  subregional_scenarios:
+    - CAISO
+    - PJM_East
+    - MISO_Central
+    - MISO_South
+    - NorthernGrid_West
+    - SPP_North
 
 electrification_emissions:
   input:
-    overall_scenario: 'Food_Agr'
-    scenario_dir: '/Users/yunhalee/Documents/LOCAETA/Electrification/'
-    scenario_list: ["current_easyhard", "2050_easyhard_noIRA_111D", "2050_easyhard_decarb95"] 
-    combined_nei_file: '/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions/combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp'
+    overall_scenario: Food_Agr
+    scenario_dir: "."
+    scenario_list:
+      - current_easyhard
+      - 2050_easyhard_noIRA_111D
+      - 2050_easyhard_decarb95
   output:
-    output_dir: "/Users/yunhalee/Documents/LOCAETA/Electrification/test/"
-    plots_dir: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/emissions/test/"
-
-inmap:
-  run: true
-  toml_template: "./eval/nei2020Config_CO_CCS.toml"
-  output_dir: "./outputs/inmap/"
-  script_path: "../inmap-1.9.6-gridsplit/"
-
-analysis:
-  run: true
-  output_dir: "./outputs/analysis/"
-
-benmap:
-  run: true
-  analyze: true
-  output_dir: "./outputs/benmap/"
-  repo_path: "../BenMAP_batchmode_for_MAC/"
-
-report:
-  run: true
-  qmd_file: "./reports/LOCAETA_report.qmd"
-  output_dir: "./reports/out/"
+    output_dir: "."
+    plots_dir: emissions # append to output_root in Python
