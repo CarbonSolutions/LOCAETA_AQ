@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 """
 CCS Emission Processing Script
 ==============================
@@ -48,22 +45,24 @@ import matplotlib.pyplot as plt
 from pyproj import CRS
 import yaml
 from LOCAETA_AQ.ccs_emissions_util import CCSEmissionProcessor
+from run_workflow import load_config
+import logging
+
+# logging from run_workflow 
+logger = logging.getLogger(__name__)
 
 # Suppress all warnings
 warnings.filterwarnings('ignore')
 
-def load_config(yaml_file: str) -> dict:
-    with open(yaml_file, 'r') as f:
-        config = yaml.safe_load(f)
-    return config
 
-def main():
+def main(cfg):
     """
     Main function to run the complete CCS emission processing workflow.
     """
     # Configuration
-    cfg = load_config("config.yaml")
     config = cfg['ccs_emissions']
+    # Add combined NEI file from cfg
+    config['combined_nei_file'] = cfg['nei_emissions']['output']['combined_pt_source_file']
 
     # Create output directories if not exists
     os.makedirs(config['output']['output_dir'], exist_ok=True)
@@ -83,7 +82,7 @@ def main():
     for missing in CCS_missing_species:
         missing_name = missing + "_out_subpart_tons"
         if missing_name not in cs_emis_clean.columns:
-            print(f"Computing missing species output: {missing_name}")
+            logger.info(f"Computing missing species output: {missing_name}")
             cs_emis_clean[missing_name] = (cs_emis_clean[missing + '_subpart_tons'].fillna(0) + 
                                          cs_emis_clean[missing + '_increase_SCC_tons'])
     
@@ -94,14 +93,14 @@ def main():
     # Save processed CCS data
     output_file = os.path.join(config['output']['ccs_clean_file'])
     cs_emis_clean.to_csv(output_file, index=False)
-    print(f"Saved processed CCS data to {output_file}")
+    logger.info(f"Saved processed CCS data to {output_file}")
     
     # Step 3: Load NEI data
-    gdf = processor.load_nei_data(config['input']['combined_NEI_emis_path'])
+    gdf = processor.load_nei_data(config['combined_nei_file'])
     
     # Add missing PM25_reduction_subpart_tons if needed
     if 'PM25_reduction_subpart_tons' not in cs_emis_clean.columns:
-        print('PM25_reduction_subpart_tons is missing, computing it now')
+        logger.info('PM25_reduction_subpart_tons is missing, computing it now')
         cs_emis_clean['PM25_reduction_subpart_tons'] = (cs_emis_clean['PM25CON_reduction_subpart_tons'] + 
                                                        cs_emis_clean['PM25FIL_reduction_subpart_tons'])
     
@@ -118,9 +117,9 @@ def main():
     final_with_ccs.drop(processor.CCS_changes_cols, axis=1, inplace=True)
     
     # Save whole USA CCS file
-    usa_ccs_file = os.path.join(config['output']['output_dir'], 'whole_USA_CCS.shp')
+    usa_ccs_file = os.path.join(config['output']['output_dir'], 'USA_CCS.shp')
     final_with_ccs.to_file(usa_ccs_file, driver='ESRI Shapefile')
-    print(f"Saved USA CCS data to {usa_ccs_file}")
+    logger.info(f"Saved USA CCS data to {usa_ccs_file}")
     
     # Step 8: Create visualizations for whole USA
     us_plots_dir = os.path.join(config['output']['plots_dir'], 'USA_CCS')
@@ -128,9 +127,9 @@ def main():
 
     # Step 9: Create version without VOC and NH3 increases
     final_no_voc_nh3 = processor.reset_voc_nh3_to_nei(final_with_ccs)
-    no_voc_nh3_file = os.path.join(config['output']['output_dir'], 'whole_USA_CCS_wo_NH3_VOC.shp')
+    no_voc_nh3_file = os.path.join(config['output']['output_dir'], 'USA_CCS_wo_NH3_VOC.shp')
     final_no_voc_nh3.to_file(no_voc_nh3_file, driver='ESRI Shapefile')
-    print(f"Saved USA CCS without VOC/NH3 increases to {no_voc_nh3_file}")
+    logger.info(f"Saved USA CCS without VOC/NH3 increases to {no_voc_nh3_file}")
     
 
     ########################################################################
@@ -170,30 +169,46 @@ def main():
                                driver='ESRI Shapefile')
     
     # Last step: Print final summary
-    print("\n" + "="*60)
-    print("PROCESSING COMPLETE - SUMMARY")
-    print("="*60)
+    logger.info("PROCESSING COMPLETE - SUMMARY")
     
     NEI_cols_renamed = ['VOC_nei', 'NOx_nei', 'NH3_nei', 'SOx_nei', 'PM2_5_nei']
     
-    print(f"\nOriginal NEI emissions sum:")
+    logger.info(f"\nOriginal NEI emissions sum:")
     nei_totals = gdf[processor.NEI_cols].sum()
     for i, col in enumerate(processor.NEI_cols):
-        print(f"  {col}: {nei_totals.iloc[i]:,.0f} tons")
+        logger.info(f"  {col}: {nei_totals.iloc[i]:,.0f} tons")
     
-    print(f"\nFinal CCS emissions sum:")
+    logger.info(f"\nFinal CCS emissions sum:")
     ccs_totals = final_with_ccs[processor.NEI_cols].sum()
     for i, col in enumerate(processor.NEI_cols):
-        print(f"  {col}: {ccs_totals.iloc[i]:,.0f} tons")
+        logger.info(f"  {col}: {ccs_totals.iloc[i]:,.0f} tons")
     
-    print(f"\nEmission differences (CCS - NEI):")
+    logger.info(f"\nEmission differences (CCS - NEI):")
     for i, col in enumerate(processor.NEI_cols):
         diff = ccs_totals.iloc[i] - nei_totals.iloc[i]
-        print(f"  {col}: {diff:,.0f} tons")
+        logger.info(f"  {col}: {diff:,.0f} tons")
     
-    print(f"\nVisualization plots created in {config['output']['plots_dir']}")
-    print("\nProcessing completed successfully!")
+    logger.info(f"\nVisualization plots created in {config['output']['plots_dir']}")
+    logger.info("\nProcessing completed successfully!")
 
 
 if __name__ == "__main__":
-    main()
+
+
+    import logging
+    import yaml
+    from datetime import datetime
+
+    # start logger 
+    logfile = f"run_ccs_emissions_{datetime.now():%Y%m%d_%H%M%S}.log"
+    logging.basicConfig(
+        level=logging.INFO,  # or DEBUG
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[
+           # logging.StreamHandler(),
+            logging.FileHandler(logfile, mode="w")
+        ]
+    )
+
+    cfg = load_config("config.yaml")
+    main(cfg)

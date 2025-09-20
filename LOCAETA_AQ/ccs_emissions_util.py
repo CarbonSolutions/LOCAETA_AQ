@@ -6,6 +6,12 @@ import warnings
 import geopandas as gpd
 import matplotlib.pyplot as plt
 from pyproj import CRS
+import logging
+# Suppress all warnings in jupyter notebook
+import warnings
+warnings.filterwarnings('ignore')
+
+logger = logging.getLogger(__name__)
 
 class CCSEmissionProcessor:
     """
@@ -41,20 +47,20 @@ class CCSEmissionProcessor:
         Returns:
             pd.DataFrame: Cleaned CCS data
         """
-        print("Loading and cleaning CCS data...")
+        logger.info("Loading and cleaning CCS data...")
         cs_emis = pd.read_csv(ccs_file_path, index_col=False)
         
-        print(f"Original CCS data shape: {cs_emis.shape}")
+        logger.info(f"Original CCS data shape: {cs_emis.shape}")
         
         # Remove rows with epa_subpart = -1
         indices_to_drop = cs_emis[cs_emis['epa_subpart'] == '-1'].index
         cs_emis.drop(indices_to_drop, inplace=True)
-        print(f"After dropping epa_subpart = -1: {cs_emis.shape}")
+        logger.info(f"After dropping epa_subpart = -1: {cs_emis.shape}")
         
         # Remove rows with missing SCC
         indices_to_drop = cs_emis[cs_emis['scc'].isna()].index
         cs_emis.drop(indices_to_drop, inplace=True)
-        print(f"After dropping missing SCC: {cs_emis.shape}")
+        logger.info(f"After dropping missing SCC: {cs_emis.shape}")
         
         return cs_emis
 
@@ -69,7 +75,7 @@ class CCSEmissionProcessor:
         Returns:
             pd.DataFrame: Deduplicated CCS data
         """
-        print("Handling duplicates...")
+        logger.info("Handling duplicates...")
         
         # Ensure SCC column is integer and rename columns
         cs_emis['scc'] = cs_emis['scc'].astype(int)
@@ -77,8 +83,8 @@ class CCSEmissionProcessor:
         
         # Find all duplicate rows, including the first occurrence
         all_duplicates = cs_emis[cs_emis.duplicated(keep=False)]
-        print("All duplicate rows:")
-        print(all_duplicates)
+        logger.info("All duplicate rows:")
+        logger.info(all_duplicates)
         
         # Identify duplicates
         duplicate_keys = (
@@ -90,7 +96,7 @@ class CCSEmissionProcessor:
         duplicates = cs_emis.merge(duplicate_keys, on=['EIS_ID', 'SCC'], how='inner')
         duplicates['row_key'] = duplicates.index  # Track original index
         
-        print(duplicates.shape, cs_emis.shape)
+        logger.info(f"{duplicates.shape}, {cs_emis.shape}")
         
         # Case 1: Multiple ghgrp_facility_id for the same NEI (EIS_ID + SCC)
         case1_keys = (
@@ -115,15 +121,15 @@ class CCSEmissionProcessor:
         case2 = case_others.merge(case2_keys, on=['EIS_ID', 'SCC'])
         case2_row_keys = set(case2['row_key'])
         
-        print(case1.shape, case2.shape)
-        print("Duplicates head:")
-        print(duplicates.head())
+        logger.info(f"{case1.shape}, {case2.shape}")
+        logger.info("Duplicates head:")
+        logger.info(duplicates.head())
         
         combined_case_row_keys = case1_row_keys.union(case2_row_keys)
-        print("Total unique rows in Case 1 or Case 2:", len(combined_case_row_keys))
+        logger.info(f"Total unique rows in Case 1 or Case 2:, {len(combined_case_row_keys)}")
         
         unexplained = duplicates[~duplicates['row_key'].isin(combined_case_row_keys)]
-        print("Unexplained duplicates:", unexplained.shape[0])
+        logger.info(f"Unexplained duplicates:, {unexplained.shape[0]}")
         
         # Define species names
         species_to_sum = ['VOC', 'NH3']
@@ -175,8 +181,8 @@ class CCSEmissionProcessor:
             ref = group.iloc[0]
             consistent = all(values_consistent(group, col) for col in CCS_cols if col not in exclude_consistency_check)
             if not consistent:
-                print(f"❌ Inconsistent values for group: {key}")
-                print(get_diff_columns(group[CCS_cols]))
+                logger.info(f"❌ Inconsistent values for group: {key}")
+                logger.info(get_diff_columns(group[CCS_cols]))
                 raise ValueError(f"Inconsistent species values in group: {key}")
             
             summed_row = ref.copy()
@@ -191,7 +197,7 @@ class CCSEmissionProcessor:
         cs_emis_final.drop(columns='row_key', inplace=True)
         
         # Step 5: Sanity check
-        print("\n==== 🔍 CCS_cols Sum Check ====")
+        logger.info("\n==== 🔍 CCS_cols Sum Check ====")
         before = cs_emis[CCS_cols].sum()
         after = cs_emis_final[CCS_cols].sum()
         diff = after - before
@@ -201,11 +207,11 @@ class CCSEmissionProcessor:
             'After': after,
             'Diff': diff
         })
-        print(check_df)
+        logger.info(check_df)
         
         # Check row counts
-        print(f"\nOriginal rows: {cs_emis.shape[0]}, Final rows: {cs_emis_final.shape[0]}")
-        print(f"Duplicates handled: {duplicated_rows.shape[0] - dedup_df.shape[0]}")
+        logger.info(f"\nOriginal rows: {cs_emis.shape[0]}, Final rows: {cs_emis_final.shape[0]}")
+        logger.info(f"Duplicates handled: {duplicated_rows.shape[0] - dedup_df.shape[0]}")
         
         # Verification step from original code
         # Step 1: Sum from non-duplicated rows
@@ -227,8 +233,8 @@ class CCSEmissionProcessor:
             'Diff': final_sum - (non_dup_sum + first_dup_sum)
         })
         
-        print("\n=== 🔍 Emission Verification ===")
-        print(verify_df)
+        logger.info("\n=== 🔍 Emission Verification ===")
+        logger.info(verify_df)
         
         return cs_emis_final
     
@@ -242,7 +248,7 @@ class CCSEmissionProcessor:
         Returns:
             gpd.GeoDataFrame: NEI emission data
         """
-        print("Loading NEI data...")
+        logger.info("Loading NEI data...")
         gdf = gpd.read_file(nei_file_path)
         return gdf
     
@@ -254,7 +260,7 @@ class CCSEmissionProcessor:
             gdf (gpd.GeoDataFrame): NEI data
             cs_emis (pd.DataFrame): CCS data
         """
-        print("Verifying emissions consistency...")
+        logger.info("Verifying emissions consistency...")
         
         key_cols = ['EIS_ID', 'SCC']
         
@@ -282,13 +288,13 @@ class CCSEmissionProcessor:
             mismatch_mask = ~match_mask
             
             if mismatch_mask.any():
-                print(f"\n⚠️ Mismatched values for {nei_col} vs {ccs_col}:")
-                print(compare_df.loc[mismatch_mask, key_cols + [nei_col, ccs_col]])
-                print(compare_df.loc[mismatch_mask, [nei_col, ccs_col]].sum())
+                logger.info(f"\n⚠️ Mismatched values for {nei_col} vs {ccs_col}:")
+                logger.info(compare_df.loc[mismatch_mask, key_cols + [nei_col, ccs_col]])
+                logger.info(compare_df.loc[mismatch_mask, [nei_col, ccs_col]].sum())
 
         # Compare the net difference (between NEI and CCS subpart) to the changes of CCS emissions. 
         for chg_col, ccs_col in zip(self.CCS_changes_cols, self.CCS_subpart_cols):
-            print(compare_df.loc[mismatch_mask, [chg_col, ccs_col]].sum())
+            logger.info(compare_df.loc[mismatch_mask, [chg_col, ccs_col]].sum())
 
     def merge_ccs_with_nei(self, gdf, cs_emis):
         """
@@ -301,7 +307,7 @@ class CCSEmissionProcessor:
         Returns:
             gpd.GeoDataFrame: Merged data with CCS changes allocated
         """
-        print("Merging CCS with NEI data...")
+        logger.info("Merging CCS with NEI data...")
         
         key_cols = ['EIS_ID', 'SCC']
         gdf_copy = gdf.copy()
@@ -342,7 +348,7 @@ class CCSEmissionProcessor:
                     group[ccs_col] = ccs_val / n
             return group
         
-        print("Allocating CCS changes to matched groups...")
+        logger.info("Allocating CCS changes to matched groups...")
         gdf_matched_allocated = gdf_matched.groupby(key_cols, group_keys=False).apply(allocate)
         
         # Drop helper columns
@@ -362,7 +368,7 @@ class CCSEmissionProcessor:
                                         indicator=True).query('_merge == "left_only"').drop(columns='_merge')
         
         if not unmatched_cs_emis.empty:
-            print(f"Adding {len(unmatched_cs_emis)} unmatched CCS emissions...")
+            logger.info(f"Adding {len(unmatched_cs_emis)} unmatched CCS emissions...")
             
             # Get facility info from final based on EIS_ID
             rest_cols = [col for col in final.columns if col not in self.CCS_changes_cols + ['SCC', 'EIS_ID']]
@@ -400,7 +406,7 @@ class CCSEmissionProcessor:
         Returns:
             gpd.GeoDataFrame: Data with final CCS emissions computed
         """
-        print("Computing final CCS emissions...")
+        logger.info("Computing final CCS emissions...")
         
         # Save original NEI columns and compute new CCS emissions
         for nei_col, ccs_col in zip(self.NEI_cols, self.CCS_changes_cols):
@@ -419,8 +425,8 @@ class CCSEmissionProcessor:
             ccs_total = final_df[ccs_col].sum()
             diff_dict[ccs_col] = ccs_total - nei_total
         
-        print("Emission differences (CCS - NEI):")
-        print(diff_dict)
+        logger.info("Emission differences (CCS - NEI):")
+        logger.info(diff_dict)
         
         return final_df
     
@@ -436,7 +442,7 @@ class CCSEmissionProcessor:
         Returns:
             tuple: (state_subset, other_states)
         """
-        print(f"Creating {state_name} subset...")
+        logger.info(f"Creating {state_name} subset...")
         
         # Identify state rows using FIPS
         is_state = gdf_with_ccs['FIPS'].str.startswith(state_fips_prefix)
@@ -464,7 +470,7 @@ class CCSEmissionProcessor:
         Returns:
             tuple: (co_subset, remaining_data)
         """
-        print("Creating CO CCS subset...")
+        logger.info("Creating CO CCS subset...")
         
         # Load CO CCS old data to get EIS_ID and SCC
         co_ccs_old = pd.read_csv(co_ccs_file_path)
@@ -488,7 +494,7 @@ class CCSEmissionProcessor:
             gdf_rest[f"{ccs_col}_ccs"] = gdf_rest[ccs_col]
             gdf_rest[ccs_col] = gdf_rest[nei_col]
         
-        print(f"CO subset facilities: {len(gdf_subset['EIS_ID'].unique())}")
+        logger.info(f"CO subset facilities: {len(gdf_subset['EIS_ID'].unique())}")
         
         return gdf_subset, gdf_rest
     
@@ -502,7 +508,7 @@ class CCSEmissionProcessor:
         Returns:
             gpd.GeoDataFrame: Data with VOC and NH3 reset to NEI levels
         """
-        print("Resetting VOC and NH3 emissions to NEI levels...")
+        logger.info("Resetting VOC and NH3 emissions to NEI levels...")
         
         gdf_copy = gdf.copy()  # copy first
         for sp in ['VOC', 'NH3']:
@@ -521,7 +527,7 @@ class CCSEmissionProcessor:
         Returns:
             gpd.GeoDataFrame: Data without CCS facilities
         """
-        print("Excluding CCS facilities...")
+        logger.info("Excluding CCS facilities...")
         
         # Merge with indicator to identify CCS facilities
         merged = gdf_with_ccs.merge(cs_emis[['EIS_ID', 'SCC']], 
@@ -530,8 +536,8 @@ class CCSEmissionProcessor:
         # Keep only non-CCS facilities
         gdf_remaining = merged[merged['_merge'] == 'left_only'].drop('_merge', axis=1)
         
-        print(f"Original facilities: {gdf_with_ccs.shape[0]}")
-        print(f"Remaining after exclusion: {gdf_remaining.shape[0]}")
+        logger.info(f"Original facilities: {gdf_with_ccs.shape[0]}")
+        logger.info(f"Remaining after exclusion: {gdf_remaining.shape[0]}")
         
         return gdf_remaining
     
@@ -544,7 +550,7 @@ class CCSEmissionProcessor:
             output_dir (str): Output directory for plots
             title_prefix (str): Prefix for plot titles
         """
-        print(f"Creating visualizations for {title_prefix}...")
+        logger.info(f"Creating visualizations for {title_prefix}...")
         
         os.makedirs(output_dir, exist_ok=True)
         
@@ -646,7 +652,7 @@ class CCSEmissionProcessor:
         
 
 
-        print(f"Visualizations saved to {output_dir}")
+        logger.info(f"Visualizations saved to {output_dir}")
     
     def _check_conservation(self, cs_emis, final_df, check_name):
         """
@@ -660,17 +666,17 @@ class CCSEmissionProcessor:
         total_sum_original = cs_emis[self.CCS_changes_cols].sum()
         total_sum_allocated = final_df[self.CCS_changes_cols].sum()
         
-        print(f"\n=== {check_name} ===")
-        print("Original Total CCS Emissions:")
-        print(total_sum_original)
-        print("Allocated Total CCS Emissions:")
-        print(total_sum_allocated)
+        logger.info(f"\n=== {check_name} ===")
+        logger.info("Original Total CCS Emissions:")
+        logger.info(total_sum_original)
+        logger.info("Allocated Total CCS Emissions:")
+        logger.info(total_sum_allocated)
         
         rel_diff = abs(total_sum_original - total_sum_allocated) / abs(total_sum_original)
-        print("Relative Difference:")
-        print(rel_diff)
+        logger.info("Relative Difference:")
+        logger.info(rel_diff)
         
         if any(rel_diff > 0.0001):
-            print("⚠️ CONSERVATION WARNING!")
+            logger.info("⚠️ CONSERVATION WARNING!")
         else:
-            print("✅ CONSERVATION PASSED!")
+            logger.info("✅ CONSERVATION PASSED!")
