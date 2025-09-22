@@ -105,6 +105,81 @@ class DataCenterEmissionProcessor:
 
         return nei_all_pt_final
 
+
+
+    def symlink_shapefile(self, src_base, dst_base):
+        """
+        Create symbolic links for all component files of an ESRI Shapefile.
+
+        Args:
+        src_base : str
+            Path to the source shapefile base name 
+        dst_base : str
+            Path to the destination shapefile base name 
+
+        Notes
+        -----
+        - If a component file does not exist for the source shapefile, it will raise an error.
+        - If the destination link already exists, it will remove.
+        - The symlinks will point to absolute paths of the source components.
+        """
+        shp_file = f"{src_base}.shp"
+        if not os.path.exists(shp_file):
+            raise FileNotFoundError(f"Source shapefile not found: {shp_file}")
+
+        for ext in ["shp", "shx", "dbf", "prj", "cpg"]:
+            src = f"{src_base}.{ext}"
+            dst = f"{dst_base}.{ext}"
+            if os.path.exists(src):
+                if os.path.islink(dst) or os.path.exists(dst):
+                    os.remove(dst)
+                os.symlink(os.path.abspath(src), dst)
+                logger.info(f"Symlink is created for {dst}")
+
+    def create_rest_nei_emissions_symlinks(self):
+        """
+        Create symlinks for rest_NEI emissions across scenarios.
+        
+        Parameters
+        ----------
+        scen_emis_list : dict
+            Mapping of scenario name → emission name.
+        """
+
+        for scenario in self.config["target_scenarios"]:
+            scenario = str(scenario)
+            logger.info(f"Processing scenario: {scenario}")
+
+            for is_base in [False, True]:
+
+                # suffix handling
+                if is_base:
+                    suffix = "_base"
+                else:
+                    suffix = ""   # no suffix for final case
+
+                run_name = f"{scenario}{suffix}"
+
+                if run_name == 'current_2020':
+                    src_file_path = os.path.join(self.config['output']['output_dir'], run_name, f"{run_name}_rest_NEI")
+
+                    if not os.path.exists(src_file_path + ".shp"):
+                        raise FileNotFoundError(f"Source shapefile missing: {src_file_path}.shp")
+                else:
+                    dst_output_path = os.path.join(self.config['output']['output_dir'], run_name, f"{run_name}_rest_NEI")
+
+                    self.symlink_shapefile(src_file_path, dst_output_path)
+
+            if self.config['subregional_scenarios']: 
+                for emis_region in self.config['subregional_scenarios']:
+                    
+                    emis_region = str(emis_region)
+                    run_name = f"{scenario}_{emis_region}"
+                    dst_output_path = os.path.join(self.config['output']['output_dir'], run_name, f"{run_name}_rest_NEI")
+                    self.symlink_shapefile(src_file_path, dst_output_path)
+
+        logger.info("✅ Symlink creation completed for all scenarios.")
+
     def plot_diagnostics(self, gdf, scenario, output_dir):
         """Plot before/after emission sums for quick validation."""
 

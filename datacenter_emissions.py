@@ -25,6 +25,9 @@ def main(cfg):
     # create regional data center emissions, if defined in config.yaml
     processor.process_subregional_emis()
 
+    # create symbolic link for "rest_NEI" emission file, whichs stays same among runs
+    processor.create_rest_nei_emissions_symlinks()
+
     # plot total emissions for nei, base and final
     processor.run_datacenter_emissions_plots()
 
