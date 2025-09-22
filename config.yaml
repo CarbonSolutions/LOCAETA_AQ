@@ -108,7 +108,7 @@ datacenter_emissions:
 
 electrification_emissions:
   input:
-    overall_scenario: Food_Agr
+    overall_scenario: Full_USA
     scenario_dir: "."
     scenario_list:
       - current_easyhard

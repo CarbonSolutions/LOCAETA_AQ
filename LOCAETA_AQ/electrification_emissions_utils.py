@@ -449,8 +449,10 @@ class ElectrificationEmissionProcessor:
     # process other facilities emissions
     def process_non_powerplant(self,  scen_emis_list, unmapped_df, nei_all_pt):
 
+
+        first_scen, first_emis = next(iter(scen_emis_list.items()))
         csv_input_dir = os.path.join(self.config["input"]["scenario_dir"], self.config["input"]["overall_scenario"])
-        output_dir = os.path.join(self.config["output"]["output_dir"], self.config["input"]["overall_scenario"], "common_files")
+        output_dir = os.path.join(self.config["output"]["output_dir"], self.config["input"]["overall_scenario"], first_scen)
         os.makedirs(output_dir, exist_ok=True)
 
         """Process non-powerplant emissions (CCS facilities)."""
@@ -467,7 +469,6 @@ class ElectrificationEmissionProcessor:
             logger.info(f"Duplicates found in CCS emissions:\n, {duplicates}")
 
         # Check overlap with powerplant EIS_IDs
-        first_scen, first_emis = next(iter(scen_emis_list.items()))
         egrid_file = os.path.join(csv_input_dir, f"pp_{first_scen}.csv")
         egrid = pd.read_csv(egrid_file)
         egrid.rename(columns={"eis": "EIS_ID", "scc": "SCC"}, inplace=True)
@@ -520,6 +521,84 @@ class ElectrificationEmissionProcessor:
                     unmapped_df.to_file(rest_filename, driver='ESRI Shapefile')
                     logger.info(f"Saved unmapped NEI data to {rest_filename}")
 
+    def symlink_shapefile(self, src_base, dst_base):
+        """
+        Create symbolic links for all component files of an ESRI Shapefile.
+
+        Args:
+        src_base : str
+            Path to the source shapefile base name 
+        dst_base : str
+            Path to the destination shapefile base name 
+
+        Notes
+        -----
+        - If a component file does not exist for the source shapefile, it will raise an error.
+        - If the destination link already exists, it will remove.
+        - The symlinks will point to absolute paths of the source components.
+        """
+        shp_file = f"{src_base}.shp"
+        if not os.path.exists(shp_file):
+            raise FileNotFoundError(f"Source shapefile not found: {shp_file}")
+
+        for ext in ["shp", "shx", "dbf", "prj", "cpg"]:
+            src = f"{src_base}.{ext}"
+            dst = f"{dst_base}.{ext}"
+            if os.path.exists(src):
+                if os.path.islink(dst) or os.path.exists(dst):
+                    os.remove(dst)
+                os.symlink(os.path.abspath(src), dst)
+                logger.info(f"Symlink is created for {dst}")
+
+    def create_non_powerplant_symlinks(self, scen_emis_list):
+        """
+        Create symlinks for non-powerplant emissions across scenarios.
+        
+        Parameters
+        ----------
+        scen_emis_list : dict
+            Mapping of scenario name → emission name.
+        """
+
+        src_non_pp_file_base = None
+        src_rest_file_base = None
+
+        for i, (scen_name, emis_name) in enumerate(scen_emis_list.items()):
+            logger.info(f"Processing scenario={scen_name}, emission={emis_name}")
+            scenario_dir = os.path.join(
+                self.config["output"]["output_dir"],
+                self.config["input"]["overall_scenario"],
+                scen_name
+            )
+            os.makedirs(scenario_dir, exist_ok=True)
+
+            for is_base in [True, False]:
+                suffix = "_base" if is_base else ""
+
+                non_pp_path = os.path.join(scenario_dir, f"{emis_name}{suffix}")
+                rest_path = os.path.join(scenario_dir, f"{emis_name}_rest_NEI")
+
+                if i == 0:
+                    if is_base:
+                        src_non_pp_file_base = non_pp_path
+                        src_rest_file_base = rest_path
+                        if not os.path.exists(src_non_pp_file_base + ".shp"):
+                            raise FileNotFoundError(f"Source shapefile missing: {src_non_pp_file_base}.shp")
+                        if not os.path.exists(src_rest_file_base + ".shp"):
+                            raise FileNotFoundError(f"Source shapefile missing: {src_rest_file_base}.shp")
+                    else:
+                        src_non_pp_file_final = non_pp_path
+                        if not os.path.exists(src_non_pp_file_final + ".shp"):
+                            raise FileNotFoundError(f"Source shapefile missing: {src_non_pp_file_final}.shp")
+                else:
+                    # Later scenarios → symlink back to first scenario
+                    if is_base:
+                        self.symlink_shapefile(src_non_pp_file_base, non_pp_path)
+                    else:
+                        self.symlink_shapefile(src_non_pp_file_final, non_pp_path)
+                        self.symlink_shapefile(src_rest_file_base, rest_path)
+
+        logger.info("✅ Symlink creation completed for all scenarios.")
 
     # -------------------------
     # Plotting functions
@@ -527,8 +606,6 @@ class ElectrificationEmissionProcessor:
 
     def process_emissions(self, emis_dir_path, emis_name, is_powerplant=True):
         """Process emissions for a given case (powerplant or non-powerplant)."""
-
-        emis_dir_path = os.path.join(self.config['output']['output_dir'], self.config["input"]["overall_scenario"])
 
         overall_scenario = self.config["input"]["overall_scenario"]
 
@@ -538,13 +615,9 @@ class ElectrificationEmissionProcessor:
             file_path2 = os.path.join(emis_dir_path, f'{emis_name}_pp.shp')
             df_name = f'powerplants: {emis_name}'
         else:
-            if overall_scenario != "Full_USA":
-                file_path1 = os.path.join(emis_dir_path, f'current_easyhard_{overall_scenario}_base.shp')
-                file_path2 = os.path.join(emis_dir_path, f'current_easyhard_{overall_scenario}.shp')
-            else:
-                file_path1 = os.path.join(emis_dir_path, 'current_easyhard_base.shp')
-                file_path2 = os.path.join(emis_dir_path, 'current_easyhard.shp')
-            df_name = 'others_facilities: same in all runs'
+            file_path1 = os.path.join(emis_dir_path, f'{emis_name}_base.shp')
+            file_path2 = os.path.join(emis_dir_path, f'{emis_name}.shp')
+            df_name = 'others_facilities: same for all runs'
 
         # read and clean
         final_emis1 = gpd.read_file(file_path1).reset_index(drop=True)
@@ -600,20 +673,19 @@ class ElectrificationEmissionProcessor:
     def compare_emissions(self, scen_emis_list):
 
         """comparing powerplant and non-powerplant emissions."""
-
-        emis_dir_path = os.path.join(self.config['output']['output_dir'], self.config["input"]["overall_scenario"])
-
         overall_scenario = self.config["input"]["overall_scenario"]
 
         compare_all = []
 
         # case 1: powerplants
-        for emis_name in scen_emis_list.values():
+        for i, (scen_name, emis_name) in enumerate(scen_emis_list.items()):
+            emis_dir_path = os.path.join(self.config['output']['output_dir'], self.config["input"]["overall_scenario"], scen_name)
             df_compare = self.process_emissions(emis_dir_path, emis_name, is_powerplant=True)
             compare_all.append(df_compare)
 
-        # case 2: non-powerplants
-        df_compare = self.process_emissions(emis_dir_path, None, is_powerplant=False)
+        # non powerplant emissions are all same, so it doesn't matter which directory gets read.
+        print(f"Debug before calling {emis_dir_path}; {emis_name}")
+        df_compare = self.process_emissions(emis_dir_path, emis_name, is_powerplant=False)
         compare_all.append(df_compare)
 
         # combine
@@ -628,6 +700,7 @@ class ElectrificationEmissionProcessor:
         # pivot
         final_diff_emis = df_all.pivot_table(index=df_all.index, columns="source", values="final-base")
 
+        print("debugging final_diff_emis ", final_diff_emis)
         # column order
         new_cols = [f'powerplants: {emis_name}' for emis_name in scen_emis_list.values()]
         new_cols.append('others_facilities: same for all runs')
@@ -647,8 +720,6 @@ class ElectrificationEmissionProcessor:
         """Compare shapefile emissions with original CSV emissions."""
 
         overall_scenario = self.config["input"]["overall_scenario"]
-        emis_dir_path =os.path.join(self.config['output']['output_dir'], self.config["input"]["overall_scenario"])
-
         csv_input_dir = os.path.join(self.config["input"]["scenario_dir"], self.config["input"]["overall_scenario"])
 
         pollutant_final_map = {
@@ -664,27 +735,32 @@ class ElectrificationEmissionProcessor:
             'VOC': 'VOC_tons_base',
             'PM2_5': 'PM2.5_tons_base'}
             
-        for scen_name, emis_name in scen_emis_list.items():
+        for i, (scen_name, emis_name) in enumerate(scen_emis_list.items()):
+
+            emis_dir_path =os.path.join(self.config['output']['output_dir'], 
+                                        self.config["input"]["overall_scenario"], 
+                                        scen_name)
 
             for is_base_emission in [True, False]:
+                # Determine file suffixes and pollutant map
                 if is_base_emission:
                     pollutant_map = pollutant_base_map
                     file_path1 = os.path.join(emis_dir_path, f'{emis_name}_pp_base.shp')
-                    file_path2 = os.path.join(emis_dir_path, 'current_easyhard_base.shp')
-                    if overall_scenario != 'Full_USA':
-                        file_path2 = os.path.join(emis_dir_path, f'current_easyhard_{overall_scenario}_base.shp')
+                    file2_suffix = "_base"
                 else:
                     pollutant_map = pollutant_final_map
                     file_path1 = os.path.join(emis_dir_path, f'{emis_name}_pp.shp')
-                    file_path2 = os.path.join(emis_dir_path, 'current_easyhard.shp')
-                    if overall_scenario != 'Full_USA':
-                        file_path2 = os.path.join(emis_dir_path, f'current_easyhard_{overall_scenario}.shp')
+                    file2_suffix = ""
 
-                # read shapefiles
+                # Assign file_path2 only for the first scenario
+                if i == 0:
+                    file_path2 = os.path.join(emis_dir_path, f'{emis_name}{file2_suffix}.shp')
+                    final_emis2 = gpd.read_file(file_path2).reset_index(drop=True)
+
+                # Read shapefile 1
                 final_emis1 = gpd.read_file(file_path1).reset_index(drop=True)
-                final_emis2 = gpd.read_file(file_path2).reset_index(drop=True)
 
-                # read original CSV
+                # Read original CSVs
                 original_file1 = os.path.join(csv_input_dir, f'pp_{scen_name}.csv')
                 original_emis1 = pd.read_csv(original_file1)
                 original_emis1 = self.reformat_powerplant(original_emis1)

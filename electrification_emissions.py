@@ -59,6 +59,8 @@ def main(cfg):
 
     processor.process_non_powerplant(
         scen_emis_list, unmapped_df, nei_all_pt)
+    
+    processor.create_non_powerplant_symlinks(scen_emis_list)
 
     # Plot 1: Base vs Final comparison
     processor.compare_emissions(scen_emis_list)
