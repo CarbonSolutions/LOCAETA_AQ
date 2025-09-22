@@ -213,18 +213,18 @@ class CCSEmissionProcessor:
         logger.info(f"\nOriginal rows: {cs_emis.shape[0]}, Final rows: {cs_emis_final.shape[0]}")
         logger.info(f"Duplicates handled: {duplicated_rows.shape[0] - dedup_df.shape[0]}")
         
-        # Verification step from original code
-        # Step 1: Sum from non-duplicated rows
+        # Step 6: Verification step from original code
+        # Sum from non-duplicated rows
         non_dup_sum = non_duplicated_rows[CCS_cols].sum()
         
-        # Step 2: For duplicated groups, get the first row only
+        # For duplicated groups, get the first row only
         first_of_duplicates = duplicated_rows.groupby(['EIS_ID', 'SCC'], as_index=False).first()
         first_dup_sum = first_of_duplicates[CCS_cols].sum()
         
-        # Step 3: Compare to full final deduplicated dataframe
+        # Compare to full final deduplicated dataframe
         final_sum = cs_emis_final[CCS_cols].sum()
         
-        # Step 4: Combine and compare
+        # Combine and compare
         verify_df = pd.DataFrame({
             'Non-Duplicated': non_dup_sum,
             'First of Duplicates': first_dup_sum,
@@ -235,7 +235,27 @@ class CCSEmissionProcessor:
         
         logger.info("\n=== 🔍 Emission Verification ===")
         logger.info(verify_df)
-        
+
+
+        # Step 7: Add missing species after verification is done
+        CCS_missing_species = ['VOC', 'NH3']
+        for missing in CCS_missing_species:
+            missing_name = missing + "_out_subpart_tons"
+            if missing_name not in cs_emis_final.columns:
+                logger.info(f"Computing missing species output: {missing_name}")
+                cs_emis_final[missing_name] = (cs_emis_final[missing + '_subpart_tons'].fillna(0) + 
+                                            cs_emis_final[missing + '_increase_SCC_tons'])
+                
+        # Add missing PM25_reduction_subpart_tons if needed
+        if 'PM25_reduction_subpart_tons' not in cs_emis_final.columns:
+            logger.info('PM25_reduction_subpart_tons is missing, computing it now')
+            cs_emis_final['PM25_reduction_subpart_tons'] = (cs_emis_final['PM25CON_reduction_subpart_tons'] + 
+                                                        cs_emis_final['PM25FIL_reduction_subpart_tons'])
+            
+        # Step 8: Drop unnecessary columns
+        columns_to_drop = [col for col in cs_emis_final.columns if "CO2" in col or "cost_" in col]
+        cs_emis_final.drop(columns=columns_to_drop, inplace=True)
+
         return cs_emis_final
     
     def load_nei_data(self, nei_file_path):
@@ -391,44 +411,30 @@ class CCSEmissionProcessor:
             
             final = pd.concat([final, unmatched_with_rest], ignore_index=True)
         
+            # Save original NEI columns and compute new CCS emissions
+            for nei_col, ccs_col in zip(self.NEI_cols, self.CCS_changes_cols):
+                final[f'{nei_col}_nei'] = final[nei_col]
+                
+                if nei_col in ['NH3', 'VOC']:
+                    final[nei_col] = final[f'{nei_col}_nei'] + final[ccs_col].fillna(0)
+                else:
+                    final[nei_col] = final[f'{nei_col}_nei'] - final[ccs_col].fillna(0)
+            
+            # Compute total difference for each pollutant
+            NEI_cols_renamed = ['VOC_nei', 'NOx_nei', 'NH3_nei', 'SOx_nei', 'PM2_5_nei']
+            diff_dict = {}
+            for nei_col, ccs_col in zip(NEI_cols_renamed, self.NEI_cols):
+                nei_total = final[nei_col].sum()
+                ccs_total = final[ccs_col].sum()
+                diff_dict[ccs_col] = ccs_total - nei_total
+            
+            logger.info("Emission differences (CCS - NEI):")
+            logger.info(diff_dict)
+
         # Conservation check
         self._check_conservation(cs_emis, final, "FINAL CONSERVATION CHECK")
         
         return final
-    
-    def compute_final_emissions(self, final_df):
-        """
-        Compute final CCS emissions based on NEI emissions and CCS changes.
-        
-        Args:
-            final_df (gpd.GeoDataFrame): Data with NEI and CCS changes
-            
-        Returns:
-            gpd.GeoDataFrame: Data with final CCS emissions computed
-        """
-        logger.info("Computing final CCS emissions...")
-        
-        # Save original NEI columns and compute new CCS emissions
-        for nei_col, ccs_col in zip(self.NEI_cols, self.CCS_changes_cols):
-            final_df[f'{nei_col}_nei'] = final_df[nei_col]
-            
-            if nei_col in ['NH3', 'VOC']:
-                final_df[nei_col] = final_df[f'{nei_col}_nei'] + final_df[ccs_col].fillna(0)
-            else:
-                final_df[nei_col] = final_df[f'{nei_col}_nei'] - final_df[ccs_col].fillna(0)
-        
-        # Compute total difference for each pollutant
-        NEI_cols_renamed = ['VOC_nei', 'NOx_nei', 'NH3_nei', 'SOx_nei', 'PM2_5_nei']
-        diff_dict = {}
-        for nei_col, ccs_col in zip(NEI_cols_renamed, self.NEI_cols):
-            nei_total = final_df[nei_col].sum()
-            ccs_total = final_df[ccs_col].sum()
-            diff_dict[ccs_col] = ccs_total - nei_total
-        
-        logger.info("Emission differences (CCS - NEI):")
-        logger.info(diff_dict)
-        
-        return final_df
     
     def create_state_subset(self, gdf_with_ccs, state_fips_prefix, state_name):
         """
@@ -459,13 +465,13 @@ class CCSEmissionProcessor:
         
         return gdf_state, gdf_other
     
-    def create_co_ccs_subset(self, gdf_with_ccs, co_ccs_file_path):
+    def create_state_specific_facilities_subset(self, gdf_with_ccs, co_ccs_file_path):
         """
-        Create CO CCS subset based on specific facility list.
+        Create a subset of data for a specific state with specific facility list.
         
         Args:
             gdf_with_ccs (gpd.GeoDataFrame): Full CCS data
-            co_ccs_file_path (str): Path to CO CCS facility data
+            co_ccs_file_path (str): Path to CCS facility data for a given state (here it is Colorado)
             
         Returns:
             tuple: (co_subset, remaining_data)
@@ -541,6 +547,50 @@ class CCSEmissionProcessor:
         
         return gdf_remaining
     
+    def save_case_output(self, gdf, file_name, output_dir, dir_name):
+        """Save GeoDataFrame as shapefile and log message.
+        
+        Args:
+            gdf (gpd.GeoDataFrame): Data to save 
+            file_name : the output file name
+            output_dir (str): Output directory for output files
+            dir_name : output directory name (typically run name)
+        """
+        case_dir = os.path.join(output_dir, dir_name)
+        os.makedirs(case_dir, exist_ok=True)
+        gdf.to_file(os.path.join(case_dir, f'{file_name}.shp'), driver='ESRI Shapefile')
+        logger.info(f"Saved {file_name} final emissions")
+        return case_dir
+
+    def symlink_shapefile(self, src_base, dst_base):
+        """
+        Create symbolic links for all component files of an ESRI Shapefile.
+
+        Args:
+        src_base : str
+            Path to the source shapefile base name 
+        dst_base : str
+            Path to the destination shapefile base name 
+
+        Notes
+        -----
+        - If a component file does not exist for the source shapefile, it will raise an error.
+        - If the destination link already exists, it will remove.
+        - The symlinks will point to absolute paths of the source components.
+        """
+        shp_file = f"{src_base}.shp"
+        if not os.path.exists(shp_file):
+            raise FileNotFoundError(f"Source shapefile not found: {shp_file}")
+
+        for ext in ["shp", "shx", "dbf", "prj", "cpg"]:
+            src = f"{src_base}.{ext}"
+            dst = f"{dst_base}.{ext}"
+            if os.path.exists(src):
+                if os.path.islink(dst) or os.path.exists(dst):
+                    os.remove(dst)
+                os.symlink(os.path.abspath(src), dst)
+                logger.info(f"Symlink is created for {dst}")
+
     def create_visualizations(self, gdf, output_dir, title_prefix=""):
         """
         Create emission difference visualizations.

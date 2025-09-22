@@ -36,16 +36,9 @@ Case 3. Two subparts (C and D), which result in different NH3 and VOC emissions 
 """
 
 import os
-import sys
-import pandas as pd
-import numpy as np
 import warnings
-import geopandas as gpd
-import matplotlib.pyplot as plt
-from pyproj import CRS
-import yaml
 from LOCAETA_AQ.ccs_emissions_util import CCSEmissionProcessor
-from run_workflow import load_config
+from LOCAETA_AQ.config_utils import load_config
 import logging
 
 # logging from run_workflow 
@@ -72,125 +65,87 @@ def main(cfg):
     processor = CCSEmissionProcessor(config)
     
     # Step 1: Load and clean CCS data
-    cs_emis_raw = processor.load_and_clean_ccs_data(config['input']['ccs_raw_file'])
+    cs_emis_raw = processor.load_and_clean_ccs_data(config['input']['ccs_raw_file_dir'])
     
-    # Step 2: Handle duplicates
+    # Step 2: Handle duplicates and missing columns and clean up the unnecessary columns
     cs_emis_clean = processor.handle_duplicates(cs_emis_raw)
     
-    # Add missing species if needed
-    CCS_missing_species = ['VOC', 'NH3']
-    for missing in CCS_missing_species:
-        missing_name = missing + "_out_subpart_tons"
-        if missing_name not in cs_emis_clean.columns:
-            logger.info(f"Computing missing species output: {missing_name}")
-            cs_emis_clean[missing_name] = (cs_emis_clean[missing + '_subpart_tons'].fillna(0) + 
-                                         cs_emis_clean[missing + '_increase_SCC_tons'])
-    
-    # Drop unnecessary columns
-    columns_to_drop = [col for col in cs_emis_clean.columns if "CO2" in col or "cost_" in col]
-    cs_emis_clean.drop(columns=columns_to_drop, inplace=True)
-    
     # Save processed CCS data
-    output_file = os.path.join(config['output']['ccs_clean_file'])
+    output_file = os.path.join(config['output']['ccs_clean_file_dir'])
     cs_emis_clean.to_csv(output_file, index=False)
     logger.info(f"Saved processed CCS data to {output_file}")
     
     # Step 3: Load NEI data
+    config['combined_nei_file'] = os.path.join(cfg['base_dirs']['nei_output_root'],
+                                                cfg['nei_emissions']['output']['combined_pt_source_file'])
     gdf = processor.load_nei_data(config['combined_nei_file'])
-    
-    # Add missing PM25_reduction_subpart_tons if needed
-    if 'PM25_reduction_subpart_tons' not in cs_emis_clean.columns:
-        logger.info('PM25_reduction_subpart_tons is missing, computing it now')
-        cs_emis_clean['PM25_reduction_subpart_tons'] = (cs_emis_clean['PM25CON_reduction_subpart_tons'] + 
-                                                       cs_emis_clean['PM25FIL_reduction_subpart_tons'])
     
     # Step 4: Verify emissions consistency
     processor.verify_emissions_consistency(gdf, cs_emis_clean)
     
     # Step 5: Merge CCS with NEI data
-    final_df = processor.merge_ccs_with_nei(gdf, cs_emis_clean)
+    final_with_ccs = processor.merge_ccs_with_nei(gdf, cs_emis_clean)
     
-    # Step 6: Compute final CCS emissions
-    final_with_ccs = processor.compute_final_emissions(final_df)
-    
-    # Step 7: Drop CCS change columns and save main output
+    # Step 6: Drop CCS change columns and save main output
     final_with_ccs.drop(processor.CCS_changes_cols, axis=1, inplace=True)
     
-    # Save whole USA CCS file
-    usa_ccs_file = os.path.join(config['output']['output_dir'], 'USA_CCS.shp')
-    final_with_ccs.to_file(usa_ccs_file, driver='ESRI Shapefile')
-    logger.info(f"Saved USA CCS data to {usa_ccs_file}")
-    
+    # Step 7: Save whole USA CCS file
+    run_name = 'USA_CCS'
+    #processor.save_case_output(final_with_ccs, run_name, config['output']['output_dir'], run_name)
+
     # Step 8: Create visualizations for whole USA
-    us_plots_dir = os.path.join(config['output']['plots_dir'], 'USA_CCS')
-    processor.create_visualizations(final_with_ccs, us_plots_dir, "USA ")
+    processor.create_visualizations(final_with_ccs, os.path.join(config['output']['plots_dir'], run_name), "USA ")
 
     # Step 9: Create version without VOC and NH3 increases
     final_no_voc_nh3 = processor.reset_voc_nh3_to_nei(final_with_ccs)
-    no_voc_nh3_file = os.path.join(config['output']['output_dir'], 'USA_CCS_wo_NH3_VOC.shp')
-    final_no_voc_nh3.to_file(no_voc_nh3_file, driver='ESRI Shapefile')
-    logger.info(f"Saved USA CCS without VOC/NH3 increases to {no_voc_nh3_file}")
-    
+    run_name_nv = f"{run_name}_wo_NH3_VOC"
+    #processor.save_case_output(final_no_voc_nh3, run_name_nv, config['output']['output_dir'], run_name_nv)
 
     ########################################################################
-    # Special case 1: Create Louisiana (LA) subset (FIPS starts with '22')
+    # Special cases starts
     ########################################################################
 
     for case in config['special_cases']:
-        if not case.get('run', False):
-            continue  # Skip if not running
-
         ctype = case['type']
 
-        if ctype == "state_all_facilities":
-            gdf_subset, gdf_rest = processor.create_state_subset(final_with_ccs, case['fips'], case['name'])
-            gdf_subset.to_file(os.path.join(config['output']['output_dir'], f"{case['name']}_CCS.shp"), driver='ESRI Shapefile')
-            gdf_subset_no_voc_nh3 = processor.reset_voc_nh3_to_nei(gdf_subset)
-            gdf_subset_no_voc_nh3.to_file(os.path.join(config['output']['output_dir'], f"{case['name']}_CCS_wo_NH3_VOC.shp"), driver='ESRI Shapefile')
-            gdf_rest.to_file(os.path.join(config['output']['output_dir'], f"USA_CCS_without_{case['name']}.shp"), driver='ESRI Shapefile')
-            processor.create_visualizations(gdf_subset,
-                                            os.path.join(config['output']['plots_dir'], f"{case['name']}_CCS"),
-                                            case['name'] + " ")
+        logger.info(f"PROCESSING {ctype} emissions now")
+        if ctype == "industrial_no_ccs":
 
-        elif ctype == "state_specific_facilities":
-            facilities_file = case['facilities_file']
-            gdf_subset, gdf_rest = processor.create_co_ccs_subset(final_with_ccs, facilities_file)
-            gdf_subset.to_file(os.path.join(config['output']['output_dir'], f"{case['name']}_CCS.shp"), driver='ESRI Shapefile')
-            gdf_subset_no_voc_nh3 = processor.reset_voc_nh3_to_nei(gdf_subset)
-            gdf_subset_no_voc_nh3.to_file(os.path.join(config['output']['output_dir'], f"{case['name']}_CCS_wo_NH3_VOC.shp"), driver='ESRI Shapefile')
-            gdf_rest.to_file(os.path.join(config['output']['output_dir'], f"USA_CCS_without_{case['name']}_CCS.shp"), driver='ESRI Shapefile')
-            processor.create_visualizations(gdf_subset,
-                                            os.path.join(config['output']['plots_dir'], f"{case['name']}_CCS"),
-                                            case['name'] + " ")
-
-        elif ctype == "industrial_no_ccs":
+            run_name = 'USA_CCS_without_CCS_facilities'
             gdf_no_ccs = processor.exclude_ccs_facilities(final_with_ccs, cs_emis_clean)
-            gdf_no_ccs.to_file(os.path.join(config['output']['output_dir'], 'USA_CCS_without_CCS_facilities.shp'),
-                               driver='ESRI Shapefile')
-    
-    # Last step: Print final summary
-    logger.info("PROCESSING COMPLETE - SUMMARY")
-    
-    NEI_cols_renamed = ['VOC_nei', 'NOx_nei', 'NH3_nei', 'SOx_nei', 'PM2_5_nei']
-    
-    logger.info(f"\nOriginal NEI emissions sum:")
-    nei_totals = gdf[processor.NEI_cols].sum()
-    for i, col in enumerate(processor.NEI_cols):
-        logger.info(f"  {col}: {nei_totals.iloc[i]:,.0f} tons")
-    
-    logger.info(f"\nFinal CCS emissions sum:")
-    ccs_totals = final_with_ccs[processor.NEI_cols].sum()
-    for i, col in enumerate(processor.NEI_cols):
-        logger.info(f"  {col}: {ccs_totals.iloc[i]:,.0f} tons")
-    
-    logger.info(f"\nEmission differences (CCS - NEI):")
-    for i, col in enumerate(processor.NEI_cols):
-        diff = ccs_totals.iloc[i] - nei_totals.iloc[i]
-        logger.info(f"  {col}: {diff:,.0f} tons")
-    
-    logger.info(f"\nVisualization plots created in {config['output']['plots_dir']}")
-    logger.info("\nProcessing completed successfully!")
+            processor.save_case_output(gdf_no_ccs, run_name, config['output']['output_dir'], run_name)
 
+        elif ctype in {"state_all_facilities", "state_specific_facilities"}:
+            if ctype == "state_all_facilities":
+                gdf_subset, gdf_rest = processor.create_state_subset(final_with_ccs, case['fips'], case['name'])
+    
+            elif ctype == "state_specific_facilities":
+                facilities_file = case['facilities_file_dir']
+                gdf_subset, gdf_rest = processor.create_state_specific_facilities_subset(final_with_ccs, facilities_file)
+
+            # Save subset and rest
+            run_name = f"{case['name']}_CCS"
+            processor.save_case_output(gdf_subset, run_name, config['output']['output_dir'], run_name)
+            processor.save_case_output(gdf_rest, f"USA_CCS_without_{run_name}", config['output']['output_dir'], run_name)
+
+            # Save subset without NH3/VOC
+            run_name_nv = f"{case['name']}_CCS_wo_NH3_VOC"
+            gdf_subset_no_voc_nh3 = processor.reset_voc_nh3_to_nei(gdf_subset)
+            processor.save_case_output(gdf_subset_no_voc_nh3, run_name_nv, config['output']['output_dir'],run_name_nv)
+
+            # Instead of saving gdf_rest again, symlink it
+            src_base = os.path.join(config['output']['output_dir'], run_name, f"USA_CCS_without_{run_name}")
+            dst_base = os.path.join(config['output']['output_dir'], run_name_nv, f"USA_CCS_without_{run_name_nv}")
+            processor.symlink_shapefile(src_base, dst_base)
+
+            # Plots
+            processor.create_visualizations(
+                gdf_subset,
+                os.path.join(config['output']['plots_dir'], run_name),
+                case['name'] + " "
+            )
+        
+    logger.info("PROCESSING COMPLETE")
 
 if __name__ == "__main__":
 

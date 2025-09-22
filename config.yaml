@@ -70,19 +70,19 @@ nei_emissions:
 
 ccs_emissions:
   input:
-    ccs_raw_file: USA-compiled-cobenefits-emissions-withSCC-v4.csv  # append to ccs_root in Python
+    ccs_raw_file_dir: USA-compiled-cobenefits-emissions-withSCC-v4.csv  # append to ccs_root in Python
   output:
-    ccs_clean_file: USA-compiled-cobenefits-emissions-withSCC-v4_ghgrp_subpart_sum_test.csv # append to ccs_root in Python
+    ccs_clean_file_dir: USA-compiled-cobenefits-emissions-withSCC-v4_ghgrp_subpart_sum_test.csv # append to ccs_root in Python
     output_dir: output 
     plots_dir: emissions # append to output_root in Python
   special_cases:
     - type: state_all_facilities
       fips: "22"
-      name: "Louisiana"
+      name: "LA" # State abbreviation 
     - type: state_specific_facilities
       fips: "08"
-      name: "Colorado"
-      facilities_file: final_output_1_manual_update_noLandfill.csv # append to ccs_root in Python
+      name: "CO" # State abbreviation 
+      facilities_file_dir: final_output_1_manual_update_noLandfill.csv # append to ccs_root in Python
     - type: industrial_no_ccs
 
 datacenter_emissions:
