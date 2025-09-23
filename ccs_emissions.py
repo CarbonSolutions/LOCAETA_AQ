@@ -91,7 +91,7 @@ def main(cfg):
     
     # Step 7: Save whole USA CCS file
     run_name = config['target_scenario']
-    #processor.save_case_output(final_with_ccs, run_name, config['output']['output_dir'], run_name)
+    processor.save_case_output(final_with_ccs, run_name, config['output']['output_dir'], run_name)
 
     # Step 8: Create visualizations for whole USA
     name_only = run_name.split('_')[0] # get USA from USA_CCS
@@ -100,7 +100,7 @@ def main(cfg):
     # Step 9: Create version without VOC and NH3 increases
     final_no_voc_nh3 = processor.reset_voc_nh3_to_nei(final_with_ccs)
     run_name_nv = f"{run_name}_wo_NH3_VOC"
-    #processor.save_case_output(final_no_voc_nh3, run_name_nv, config['output']['output_dir'], run_name_nv)
+    processor.save_case_output(final_no_voc_nh3, run_name_nv, config['output']['output_dir'], run_name_nv)
 
     ########################################################################
     # Special cases starts
@@ -112,7 +112,7 @@ def main(cfg):
         logger.info(f"PROCESSING {ctype} emissions now")
         if ctype == "industrial_no_ccs":
 
-            run_name = 'USA_CCS_without_CCS_facilities'
+            run_name = f'{config['target_scenario']}_without_CCS_facilities'
             gdf_no_ccs = processor.exclude_ccs_facilities(final_with_ccs, cs_emis_clean)
             processor.save_case_output(gdf_no_ccs, run_name, config['output']['output_dir'], run_name)
 
