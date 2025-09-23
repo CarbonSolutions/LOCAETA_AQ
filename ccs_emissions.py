@@ -127,7 +127,7 @@ def main(cfg):
             # Save subset and rest
             run_name = f"{case['name']}_CCS"
             processor.save_case_output(gdf_subset, run_name, config['output']['output_dir'], run_name)
-            processor.save_case_output(gdf_rest, f"USA_CCS_without_{run_name}", config['output']['output_dir'], run_name)
+            processor.save_case_output(gdf_rest, f"{config['target_scenario']}_without_{run_name}", config['output']['output_dir'], run_name)
 
             # Save subset without NH3/VOC
             run_name_nv = f"{case['name']}_CCS_wo_NH3_VOC"
@@ -135,8 +135,8 @@ def main(cfg):
             processor.save_case_output(gdf_subset_no_voc_nh3, run_name_nv, config['output']['output_dir'],run_name_nv)
 
             # Instead of saving gdf_rest again, symlink it
-            src_base = os.path.join(config['output']['output_dir'], run_name, f"USA_CCS_without_{run_name}")
-            dst_base = os.path.join(config['output']['output_dir'], run_name_nv, f"USA_CCS_without_{run_name_nv}")
+            src_base = os.path.join(config['output']['output_dir'], run_name, f"{config['target_scenario']}_without_{run_name}")
+            dst_base = os.path.join(config['output']['output_dir'], run_name_nv, f"{config['target_scenario']}_without_{run_name_nv}")
             processor.symlink_shapefile(src_base, dst_base)
 
             # Plots
