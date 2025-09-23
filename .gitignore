@@ -6,4 +6,5 @@ outputs/
 .DS_Store
 __pycache__/
 LOCAETA-reports/
+*log
 .ipynb_checkpoints/

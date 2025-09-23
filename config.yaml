@@ -11,15 +11,17 @@ base_dirs:
   report_root: "/Users/yunhalee/Documents/LOCAETA/reports"
 
 stages:
-  scenario: datacenter_emissions
+  scenario: datacenter_emissions # name must match with the available emissions below
   run_names: 
-  - current_2020
-  - current_2020_base
-  - 2050_decarb95_base
-  nei: true
-  inmap: true
-  benmap: true
-  report: true
+    - current_2020
+    - 2050_decarb95
+  separate_case_per_each_run: # Use this to get CAMBIUM region specific run
+    - CAISO
+    - PJM_East
+  run_nei: true
+  run_inmap: true
+  run_benmap: true
+  run_report: true
 
 inmap:
   input:
@@ -68,6 +70,7 @@ nei_emissions:
     plots_dir: emissions/NEI2020  # append to output_root in Python
     combined_pt_source_file: combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp # nei_output_root in Python
     state_emissions_sum: total_emissions_by_state_and_species.csv  # nei_output_root in Python
+  has_own_base_emission: false
 
 ccs_emissions:
   input:
@@ -86,9 +89,8 @@ ccs_emissions:
       name: "CO" # State abbreviation 
       facilities_file_dir: final_output_1_manual_update_noLandfill.csv # append to ccs_root in Python
     - type: industrial_no_ccs
-  extra_info:
-    is_its_own_base_case: false # NEI2020 is the base for ccs_emissions 
-    note:  "each scenario also have 'wo_NH3_VOC' emissions"
+  has_own_base_emission: false # NEI2020 is the base for ccs_emissions 
+  note:  "each scenario also have 'wo_NH3_VOC' emissions"
 
 datacenter_emissions:
   input:
@@ -110,9 +112,8 @@ datacenter_emissions:
     - MISO_South
     - NorthernGrid_West
     - SPP_North
-  extra_info:
-    is_its_own_base_case: true # each target_scenario has their own base emissions
-    note:  "CAMBIUM regional scenarios are per each target_scenario"
+  has_own_base_emission: true # each target_scenario has their own base emissions
+  note:  "CAMBIUM regional scenarios are per each target_scenario"
 
 electrification_emissions:
   input:
@@ -125,6 +126,5 @@ electrification_emissions:
     - current_easyhard
     - 2050_easyhard_noIRA_111D
     - 2050_easyhard_decarb95
-  extra_info:
-    is_its_own_base_case: true # each target_scenario has their own base emissions
-    note:  "target_scenario emissions are under the master_scenario directory"
+  has_own_base_emission: true  # each target_scenario has their own base emissions
+  note:  "target_scenario emissions are under the master_scenario directory"
