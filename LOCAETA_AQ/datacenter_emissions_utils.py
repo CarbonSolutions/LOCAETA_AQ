@@ -146,7 +146,7 @@ class DataCenterEmissionProcessor:
             Mapping of scenario name → emission name.
         """
 
-        for scenario in self.config["target_scenarios"]:
+        for scenario in self.config["target_scenario"]:
             scenario = str(scenario)
             logger.info(f"Processing scenario: {scenario}")
 
@@ -170,8 +170,8 @@ class DataCenterEmissionProcessor:
 
                     self.symlink_shapefile(src_file_path, dst_output_path)
 
-            if self.config['subregional_scenarios']: 
-                for emis_region in self.config['subregional_scenarios']:
+            if self.config['separate_scenario']: 
+                for emis_region in self.config['separate_scenario']:
                     
                     emis_region = str(emis_region)
                     run_name = f"{scenario}_{emis_region}"
@@ -317,7 +317,7 @@ class DataCenterEmissionProcessor:
     def run_datacenter_emissions_plots(self):
         """Run DataCenter emissions plotting for all configured regions."""
 
-        for scenario in self.config["target_scenarios"]:
+        for scenario in self.config["target_scenario"]:
 
             scenario = str(scenario)
             # Example placeholder logic (replace with your mapping steps)
@@ -375,8 +375,8 @@ class DataCenterEmissionProcessor:
 
             self.plot_diff_emis(scenario_output_dir, diff_combined, scenario)
             
-            if self.config['subregional_scenarios']: 
-                for emis_region in self.config['subregional_scenarios']:
+            if self.config['separate_scenario']: 
+                for emis_region in self.config['separate_scenario']:
 
                     emis_region = str(emis_region)
                     sens_emis_dir = os.path.join(self.config['output']['output_dir'], f"{scenario}_{emis_region}")
@@ -417,12 +417,12 @@ class DataCenterEmissionProcessor:
         # Load NEI base data
         nei_all_pt = self.load_nei(self.config['combined_nei_file'])
 
-        for scenario in self.config["target_scenarios"]:
+        for scenario in self.config["target_scenario"]:
             scenario = str(scenario)
             # Example placeholder logic (replace with your mapping steps)
             logger.info(f"Processing scenario: {scenario}")
 
-            dc_file = os.path.join(self.config['input']['datacenter_csv_dir'], f"300MW_national_{scenario}.csv")
+            dc_file = os.path.join(self.config['input']['raw_csv_dir'], f"300MW_national_{scenario}.csv")
             egrid = pd.read_csv(dc_file)
             egrid = self.reformat_datacenter(egrid)
 
@@ -473,9 +473,9 @@ class DataCenterEmissionProcessor:
     def process_subregional_emis(self):
 
         # if subregional_scenarios are not empty, process the subregional_scenarios
-        if self.config['subregional_scenarios']: 
+        if self.config['separate_scenario']: 
 
-            for scenario in self.config["target_scenarios"]:
+            for scenario in self.config["target_scenario"]:
 
                 scenario = str(scenario)
 
@@ -497,7 +497,7 @@ class DataCenterEmissionProcessor:
                 gdf_final = gpd.read_file(final_emis)
                 gdf_final.reset_index(drop=True, inplace=True)
 
-                for subset_region in self.config['subregional_scenarios']:
+                for subset_region in self.config['separate_scenario']:
 
                     subset_region = str(subset_region)
 

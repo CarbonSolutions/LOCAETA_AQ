@@ -15,7 +15,6 @@ def main(cfg):
     config['combined_nei_file'] = os.path.join(cfg['base_dirs']['nei_output_root'],
                                                 cfg['nei_emissions']['output']['combined_pt_source_file'])
 
-    print(config['output']['output_dir'])
     # Initialize processor
     processor = DataCenterEmissionProcessor(config)
 

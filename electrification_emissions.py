@@ -19,12 +19,12 @@ def main(cfg):
     config['combined_nei_file'] = os.path.join(cfg['base_dirs']['nei_output_root'],
                                                 cfg['nei_emissions']['output']['combined_pt_source_file'])
 
-    overall_scenario = config["input"]["overall_scenario"]
-    scenario_list = config["input"]["scenario_list"]
+    overall_scenario = config['master_scenario']
+    scenario_list = config['target_scenario']
 
     # Create output directories if not exists
-    os.makedirs(os.path.join(config['output']['output_dir'], config["input"]["overall_scenario"]), exist_ok=True)
-    os.makedirs(os.path.join(config['output']['plots_dir'], config["input"]["overall_scenario"]), exist_ok=True)
+    os.makedirs(os.path.join(config['output']['output_dir'], config['master_scenario']), exist_ok=True)
+    os.makedirs(os.path.join(config['output']['plots_dir'], config['master_scenario']), exist_ok=True)
 
     # Initialize processor
     processor = ElectrificationEmissionProcessor(config)

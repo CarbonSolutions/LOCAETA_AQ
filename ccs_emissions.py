@@ -65,7 +65,7 @@ def main(cfg):
     processor = CCSEmissionProcessor(config)
     
     # Step 1: Load and clean CCS data
-    cs_emis_raw = processor.load_and_clean_ccs_data(config['input']['ccs_raw_file_dir'])
+    cs_emis_raw = processor.load_and_clean_ccs_data(config['input']['raw_csv_dir'])
     
     # Step 2: Handle duplicates and missing columns and clean up the unnecessary columns
     cs_emis_clean = processor.handle_duplicates(cs_emis_raw)
@@ -90,11 +90,12 @@ def main(cfg):
     final_with_ccs.drop(processor.CCS_changes_cols, axis=1, inplace=True)
     
     # Step 7: Save whole USA CCS file
-    run_name = 'USA_CCS'
+    run_name = config['target_scenario']
     #processor.save_case_output(final_with_ccs, run_name, config['output']['output_dir'], run_name)
 
     # Step 8: Create visualizations for whole USA
-    processor.create_visualizations(final_with_ccs, os.path.join(config['output']['plots_dir'], run_name), "USA ")
+    name_only = run_name.split('_')[0] # get USA from USA_CCS
+    processor.create_visualizations(final_with_ccs, os.path.join(config['output']['plots_dir'], run_name), name_only + " ")
 
     # Step 9: Create version without VOC and NH3 increases
     final_no_voc_nh3 = processor.reset_voc_nh3_to_nei(final_with_ccs)
@@ -105,7 +106,7 @@ def main(cfg):
     # Special cases starts
     ########################################################################
 
-    for case in config['special_cases']:
+    for case in config['separate_scenario']:
         ctype = case['type']
 
         logger.info(f"PROCESSING {ctype} emissions now")

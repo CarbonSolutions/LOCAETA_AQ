@@ -357,7 +357,6 @@ class NEIEmissionProcessor:
         # Concatenate all GeoDataFrames
         gdf_combined = gpd.GeoDataFrame(pd.concat(gdf_list, ignore_index=True), crs=gdf_list[0].crs)
         final_output = os.path.join(self.config['output']['output_dir'], self.config['output']['combined_pt_source_file'])
-        print(final_output)
         gdf_combined.to_file(final_output)
         logger.info(f"Shapefile saved as {final_output}")
 
