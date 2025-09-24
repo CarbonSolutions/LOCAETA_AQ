@@ -256,43 +256,6 @@ class INMAP_Analyzer:
             gdf = gdf.set_crs('EPSG:4269', allow_override=True)
         return gdf
 
-    def plot_difference_map(self, gdf1, gdf2, field, output_dir, year):
-    # NOT USED
-        if gdf1.crs != gdf2.crs:
-            gdf2 = gdf2.to_crs(gdf1.crs)
-
-        gdf1 = gdf1.rename(columns={field: f'{field}_1'})
-        gdf2 = gdf2.rename(columns={field: f'{field}_2'})
-        joined_gdf = gpd.sjoin(gdf1, gdf2, how="inner", op='intersects')
-        joined_gdf['difference'] = joined_gdf[f'{field}_1'] - joined_gdf[f'{field}_2']
-
-        color_map = mcolors.LinearSegmentedColormap.from_list(
-            'custom_colormap',
-            ['blue', 'white', 'red']
-        )
-        norm = mcolors.BoundaryNorm([-50, -20, -10, -5, -1, 1, 5, 10, 20, 50], color_map.N)
-
-        fig, ax = plt.subplots(1, 1, figsize=(15, 10), subplot_kw={'projection': ccrs.LambertConformal()})
-
-        gdf1.plot(ax=ax, facecolor='none', edgecolor='gray', linewidth=0.5, transform=ccrs.PlateCarree())
-        joined_gdf.plot(column='difference', cmap=color_map, linewidth=0.0, ax=ax, edgecolor='none', norm=norm, legend=False, transform=ccrs.PlateCarree(), alpha=0.9)
-
-        ax.add_feature(cfeature.COASTLINE)
-        ax.add_feature(cfeature.BORDERS, linestyle=':')
-        ax.add_feature(cfeature.STATES, linestyle=':', edgecolor='gray')
-
-        sm = plt.cm.ScalarMappable(cmap=color_map, norm=norm)
-        sm._A = []
-        cbar = fig.colorbar(sm, ax=ax, orientation='horizontal', pad=0.05, aspect=50)
-        cbar.set_label('Difference in PM2.5 Concentration')
-        ax.set_title(f'Difference in PM2.5 Concentration between Two Runs ({year})', fontsize=16)
-
-        # Set the extent to cover the CONUS region
-        ax.set_extent([-125, -66.5, 24, 50], crs=ccrs.PlateCarree())
-
-        plt.savefig(os.path.join(output_dir, f'difference_pm25_map_{year}.png'), dpi=300, bbox_inches='tight')
-
-
     # Function to plot the percent change of each field and its "_base" version with a basemap
     def plot_spatial_distribution_percent_change_with_basemap(self, gdf, field, output_dir):
         
@@ -349,12 +312,11 @@ class INMAP_Analyzer:
     def subset_state(self, gdf, state_fips):
 
         # read county polygon information from this shapefile (needed for non-point sources)
-        shapefile_path = "/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024/emiss_shp2020/Census/cb_2020_us_county_500k.shp"
+        shapefile_path = self.cfg["nei_emissions"]['input']['county_shapefile_dir']
         gdf_fips = gpd.read_file(shapefile_path)
 
         # this is necessary for basemap plotting
         gdf_fips = gdf_fips.to_crs(epsg=3857)
-
         target_proj = gdf.crs
 
         if gdf_fips.crs != target_proj:
