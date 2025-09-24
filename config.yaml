@@ -13,9 +13,9 @@ base_dirs:
 stages:
   scenario: datacenter_emissions # name must match with the available emissions below
   run_names: 
-    - current_2020
-    - 2050_decarb95
-  run_only_base_run: true
+    - current_2020_base
+    - 2050_decarb95_base
+  skip_base_run: true # 
   run_only_separate_case: false # if the runs in run_names are already available, set this true, so it can skip running them again
   separate_case_per_each_run: # Use this to get CAMBIUM region specific run
   #  - CAISO

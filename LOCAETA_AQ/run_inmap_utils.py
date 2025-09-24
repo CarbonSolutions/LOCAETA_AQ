@@ -229,17 +229,18 @@ done
         for target_run_name in run_names:
             output_base, run_name = self.get_emission_paths(scenario, target_run_name)
 
-            if not self.cfg["stages"]["run_only_separate_case"] and not self.cfg["stages"]["run_only_base_run"]: 
+            if not self.cfg["stages"]["run_only_separate_case"]: 
                 emis_file_path = self.get_emis_file_list(output_base, run_name)
                 inmap_run_file_output = os.path.join(self.cfg["inmap"]["input"]["toml_dir"], f"nei2020Config_{run_name}.toml")
                 run_infos.append({"run_name": run_name, "emis_file_path": emis_file_path, "inmap_run_file_output": inmap_run_file_output})
 
             # Base emissions
-            if self.cfg["stages"]["run_only_base_run"] or self.cfg[scenario]['has_own_base_emission']:
-                base_run_name = run_name + "_base"
-                emis_file_path_base = self.get_emis_file_list(output_base, base_run_name)
-                inmap_run_file_output_base = os.path.join(self.cfg["inmap"]["input"]["toml_dir"], f"nei2020Config_{base_run_name}.toml")
-                run_infos.append({"run_name": base_run_name, "emis_file_path": emis_file_path_base, "inmap_run_file_output": inmap_run_file_output_base})
+            if self.cfg[scenario]['has_own_base_emission']:
+                if not self.cfg["stages"]["skip_base_run"]: 
+                    base_run_name = run_name + "_base"
+                    emis_file_path_base = self.get_emis_file_list(output_base, base_run_name)
+                    inmap_run_file_output_base = os.path.join(self.cfg["inmap"]["input"]["toml_dir"], f"nei2020Config_{base_run_name}.toml")
+                    run_infos.append({"run_name": base_run_name, "emis_file_path": emis_file_path_base, "inmap_run_file_output": inmap_run_file_output_base})
     
             # Separate cases
             separate_cases = self.cfg.get('stages', {}).get('separate_case_per_each_run') or []
