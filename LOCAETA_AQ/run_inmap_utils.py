@@ -191,7 +191,7 @@ for i in "${{!runs[@]}}"; do
 
     echo "=== Starting run: $run_name ==="
     mkdir -p "outputs/$run_name"
-#    ./inmap run steady -s --config "$toml_path"
+    ./inmap run steady -s --config "$toml_path"
     echo "=== Finished run: $run_name ==="
 done
 """
