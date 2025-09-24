@@ -11,17 +11,17 @@ base_dirs:
   report_root: "/Users/yunhalee/Documents/LOCAETA/reports"
 
 stages:
-  scenario: datacenter_emissions # name must match with the available emissions below
+  scenario: ccs_emissions # name must match with the available emissions below
   run_names: 
-    - current_2020
-    - 2050_decarb95
+    - USA_CCS
+    - LA_CCS
   separate_case_per_each_run: # Use this to get CAMBIUM region specific run
-    - CAISO
-    - PJM_East
+#    - CAISO
   run_nei: true
   run_inmap: true
+  analyze_inmap: true
   run_benmap: true
-  run_report: true
+  run_report: false
 
 inmap:
   input:
@@ -31,13 +31,15 @@ inmap:
   output:
     output_dir: outputs            # append to inmap_root in Python
     plots_dir: inmap               # append to output_root in Python
+  default_base_run: base_nei2020_jun2025 # inmap run name 
+
 
 benmap:
   input:
     input_dir: inmap_output         # under benmap_root
     model_path: batchmode           # under benmap_root
   output:
-  # output_dir is not defined, as all outputs are saved under the benmap_root/APVR 
+  # output_dir doesn't need to be defined, as all outputs are saved under the benmap_root/APVR 
     plots_dir: benmap              # append to output_root in Python
 
 report:
@@ -70,6 +72,7 @@ nei_emissions:
     plots_dir: emissions/NEI2020  # append to output_root in Python
     combined_pt_source_file: combined_NEI2020_pt_oilgas_ptegu_ptnonipm_w_sectors.shp # nei_output_root in Python
     state_emissions_sum: total_emissions_by_state_and_species.csv  # nei_output_root in Python
+  target_scenario : base_nei2020_sep2025
   has_own_base_emission: false
 
 ccs_emissions:

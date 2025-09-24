@@ -72,6 +72,13 @@ class INMAP_Processor:
                 scen = str(scen)
                 allowed.add(scen)
                 allowed.add(f"{scen}_base")
+
+        elif get_emission == "nei_emissions":
+            # target_scenario is a single string
+            base = config.get("target_scenario")
+            if base:
+                allowed.add(base)
+
         # Validate
         if run_name not in allowed:
             raise ValueError(f"Invalid run_names {run_name} for {get_emission}. Allowed: {sorted(allowed)}")
@@ -184,7 +191,7 @@ for i in "${{!runs[@]}}"; do
 
     echo "=== Starting run: $run_name ==="
     mkdir -p "outputs/$run_name"
-    ./inmap run steady -s --config "$toml_path"
+#    ./inmap run steady -s --config "$toml_path"
     echo "=== Finished run: $run_name ==="
 done
 """
@@ -233,7 +240,9 @@ done
                 run_infos.append({"run_name": base_run_name, "emis_file_path": emis_file_path_base, "inmap_run_file_output": inmap_run_file_output_base})
 
             # Separate cases
-            for case_name in self.cfg['stages'].get('separate_case_per_each_run', []):
+            separate_cases = self.cfg.get('stages', {}).get('separate_case_per_each_run') or []
+            for case_name in separate_cases:
+            #for case_name in self.cfg['stages'].get('separate_case_per_each_run', []):
                 output_base, run_name_case = self.get_emission_paths(scenario, f"{target_run_name}_{case_name}")
                 emis_file_path_case = self.get_emis_file_list(output_base, run_name_case)
                 inmap_run_file_output_case = os.path.join(self.cfg["inmap"]["input"]["toml_dir"], f"nei2020Config_{run_name_case}.toml")
