@@ -168,26 +168,26 @@ class INMAP_Processor:
         # Build the Bash script
         bash_template = f"""#!/bin/bash
 
-    cd "{inmap_root}" || exit 1
+cd "{inmap_root}" || exit 1
 
-    runs=(
-    {runs_str}
-    )
+runs=(
+{runs_str}
+)
 
-    tomls=(
-    {toml_mapping_str}
-    )
+tomls=(
+{toml_mapping_str}
+)
 
-    for i in "${{!runs[@]}}"; do
-        run_name="${{runs[$i]}}"
-        toml_path="${{tomls[$i]}}"
+for i in "${{!runs[@]}}"; do
+    run_name="${{runs[$i]}}"
+    toml_path="${{tomls[$i]}}"
 
-        echo "=== Starting run: $run_name ==="
-        mkdir -p "outputs/$run_name"
-        ./inmap run steady -s --config "$toml_path"
-        echo "=== Finished run: $run_name ==="
-    done
-    """
+    echo "=== Starting run: $run_name ==="
+    mkdir -p "outputs/$run_name"
+    ./inmap run steady -s --config "$toml_path"
+    echo "=== Finished run: $run_name ==="
+done
+"""
 
         with open(bash_script_path, "w") as f:
             f.write(bash_template)
@@ -195,7 +195,7 @@ class INMAP_Processor:
         os.chmod(bash_script_path, 0o755)
 
         # --- Execute Bash script ---
-        #temp subprocess.run(["caffeinate", "-i", bash_script_path], check=True)
+        subprocess.run(["caffeinate", "-i", bash_script_path], check=True)
 
     def collect_run_infos(self, scenario, run_names):
         """
