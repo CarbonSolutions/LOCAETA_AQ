@@ -11,12 +11,15 @@ base_dirs:
   report_root: "/Users/yunhalee/Documents/LOCAETA/reports"
 
 stages:
-  scenario: ccs_emissions # name must match with the available emissions below
+  scenario: datacenter_emissions # name must match with the available emissions below
   run_names: 
-    - USA_CCS
-    - LA_CCS
+    - current_2020
+    - 2050_decarb95
+  run_only_base_run: true
+  run_only_separate_case: false # if the runs in run_names are already available, set this true, so it can skip running them again
   separate_case_per_each_run: # Use this to get CAMBIUM region specific run
-#    - CAISO
+  #  - CAISO
+  #  - PJM_East
   run_nei: true
   run_inmap: true
   analyze_inmap: true
@@ -31,8 +34,14 @@ inmap:
   output:
     output_dir: outputs            # append to inmap_root in Python
     plots_dir: inmap               # append to output_root in Python
-  default_base_run: base_nei2020_jun2025 # inmap run name 
-
+  analyze:
+    default_base_run: base_nei2020_jun2025 # inmap run name 
+    map_only_these_state_regions:  # Don't use this for the CONUS runs
+      # LA: # Set with two letter state 
+      #   - "22" # Corresponding FIPS (must be in string)
+      #   - "05" # Neighboring FIPS, if needed 
+      #   - "28"
+      #   - "48" 
 
 benmap:
   input:
