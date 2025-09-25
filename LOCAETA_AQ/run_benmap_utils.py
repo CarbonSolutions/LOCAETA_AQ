@@ -5,6 +5,8 @@ import numpy as np
 import logging
 import warnings
 import os
+from .run_inmap_utils import INMAP_Processor
+
 # logging from run_workflow 
 logger = logging.getLogger(__name__)
 
@@ -99,18 +101,17 @@ class Benmap_Processor:
         windows_path = unix_path #s.replace('/', '\\')  # Convert to Windows-style backslashes
         return "Z:" + windows_path  # Prepend Z: for Wine
 
-    def build_output_pairs(self, run_pairs, scenario, grid_level, target_year):
+    def build_output_pairs(self, scenario, run_names, grid_level, target_year):
         """
-        Build dictionary mapping each run_name to its base and sensitivity output CSV paths.
+        Build dictionary mapping each run_name to its base and sensitivity output CSV paths,
+        without needing to call collect_analysis_infos() first.
 
         Parameters
         ----------
-        run_pairs : dict
-            Dictionary of run_name -> {"base": <base shapefile path>, "sens": <sensitivity shapefile path>}
-        cfg : dict
-            Configuration dictionary.
         scenario : str
-            Scenario name (used to check config).
+            Scenario key (e.g., 'datacenter_emissions', 'ccs_emissions').
+        run_names : list of str
+            List of run names to process.
         grid_level : str
             Grid level string (e.g., 'county', 'tract').
         target_year : str or int
@@ -122,29 +123,40 @@ class Benmap_Processor:
             Dictionary of run_name -> {"base": <base_csv_filename>, "sens": <sens_csv_filename>}
         """
         output_pairs = {}
+        run_inmap_obj = INMAP_Processor(self.cfg)
+        output_base = self.cfg['inmap']['output']['output_dir']
 
-        for run_name, paths in run_pairs.items():
-            base_path = paths["base"]
+        for target_run_name in run_names:
+            _, run_name = run_inmap_obj.get_emission_paths(scenario, target_run_name)
+            sens_run_output = os.path.join(output_base, run_name)
 
-            # --- Base run ---
-            if not self.cfg[scenario]['has_own_base_emission']:
-                default_base_run = self.cfg['inmap']['analyze']['default_base_run']
-                if default_base_run not in base_path:
-                    raise ValueError(f"The file is NOT an expected base run: {base_path}")
-                base_output_csv_path = f"{default_base_run}_{grid_level}_inmap_{target_year}_pm25"
+            # --- Base emissions ---
+            if self.cfg[scenario]['has_own_base_emission']:
+                base_run_name = f"{run_name}_base"
+                base_output_csv_path = f"{base_run_name}_{grid_level}_inmap_{target_year}_pm25"
             else:
-                base_run_name = os.path.basename(os.path.dirname(base_path))
-                if "base" in base_run_name:
-                    base_output_csv_path = f"{base_run_name}_{grid_level}_inmap_{target_year}_pm25"
-                else:
-                    raise FileExistsError(f"The file name is NOT an expected base run: {base_run_name}" )
+                default_base_run = self.cfg['inmap']['analyze']['default_base_run']
+                base_output_csv_path = f"{default_base_run}_{grid_level}_inmap_{target_year}_pm25"
+
             # --- Sensitivity run ---
             sens_output_csv_path = f"control_{run_name}_{grid_level}_inmap_{target_year}_pm25"
 
-            # --- Store in dictionary ---
+            # --- Store main run ---
             output_pairs[run_name] = {
                 "base": base_output_csv_path,
                 "sens": sens_output_csv_path,
             }
+
+            # --- Handle separate cases (if any) ---
+            separate_cases = self.cfg.get('stages', {}).get('separate_case_per_each_run') or []
+            for case_name in separate_cases:
+                _, run_name_case = run_inmap_obj.get_emission_paths(scenario, f"{target_run_name}_{case_name}")
+                sens_run_output_case = os.path.join(output_base, run_name_case)
+                sens_output_csv_path_case = f"control_{run_name_case}_{grid_level}_inmap_{target_year}_pm25"
+
+                output_pairs[run_name_case] = {
+                    "base": base_output_csv_path,
+                    "sens": sens_output_csv_path_case,
+                }
 
         return output_pairs
