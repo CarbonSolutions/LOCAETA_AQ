@@ -45,7 +45,7 @@ if __name__ == "__main__":
     from datetime import datetime
 
     # start logger 
-    logfile = f"run_inmap_{datetime.now():%Y%m%d_%H%M%S}.log"
+    logfile = f"log_files/run_inmap_{datetime.now():%Y%m%d_%H%M%S}.log"
     logging.basicConfig(
         level=logging.INFO,  # or DEBUG
         format="%(asctime)s [%(levelname)s] %(message)s",

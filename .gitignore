@@ -8,3 +8,4 @@ __pycache__/
 LOCAETA-reports/
 *log
 .ipynb_checkpoints/
+log_files/
