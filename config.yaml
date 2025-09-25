@@ -13,13 +13,12 @@ base_dirs:
 stages:
   scenario: datacenter_emissions # name must match with the available emissions below
   run_names: 
-    - current_2020_base
-    - 2050_decarb95_base
-  skip_base_run: true # 
+    - current_2020
+  skip_base_run: true    # You can also use this to run only base by using run_names with base runs and setting this true. 
   run_only_separate_case: false # if the runs in run_names are already available, set this true, so it can skip running them again
   separate_case_per_each_run: # Use this to get CAMBIUM region specific run
-  #  - CAISO
-  #  - PJM_East
+    - CAISO
+    - PJM_East
   run_nei: true
   run_inmap: true
   analyze_inmap: true
@@ -46,7 +45,14 @@ inmap:
 benmap:
   input:
     input_dir: inmap_output         # under benmap_root
-    model_path: batchmode           # under benmap_root
+    batchmode_dir: batchmode           # under benmap_root
+    benmap_exe: "C:\\Program Files (x86)\\BenMAP-CE\\BenMAP.exe"
+    ctlx_template: 'control_template_inmap_2020_pm25_wine.ctlx'
+    base_ctlx_template: 'base_template_inmap_2020_pm25_wine.ctlx'
+  default_setup: # don't change this setup 
+    grid_level : county  # or 'tracts' 
+    target_year : 2020
+    shapefile_dir: grids/County/County.shp # under benmap_root
   output:
   # output_dir doesn't need to be defined, as all outputs are saved under the benmap_root/APVR 
     plots_dir: benmap              # append to output_root in Python
