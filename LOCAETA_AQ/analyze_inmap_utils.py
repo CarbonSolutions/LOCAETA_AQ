@@ -44,7 +44,7 @@ class INMAP_Analyzer:
         gdf_base = self.load_shapefile(base_path)
         gdf_sens = self.load_shapefile(sens_path)
 
-        print(f"Processing {run_name} - Base: {base_path}, Sensitivity: {sens_path}")
+        logger.info(f"Processing {run_name} - Base: {base_path}, Sensitivity: {sens_path}")
 
         gdf_diff = gdf_base[['geometry']].copy()  # Copy only the geometry column
         columns = gdf_base.columns.difference(['geometry', 'FIPS'])
@@ -74,7 +74,7 @@ class INMAP_Analyzer:
     def compute_and_print_summaries(self, gdf_diff, columns, area_weight_list, output_dir):
         # Compute column sums for health benefits
         column_sums = gdf_diff[columns].sum()
-        print("Column Sums:\n", column_sums)
+        logger.info(f"Column Sums:\n, {column_sums}")
 
         # Compute area-weighted averages for AQ benefits
         gdf_diff['area'] = gdf_diff.geometry.area
@@ -83,21 +83,21 @@ class INMAP_Analyzer:
         for field in area_weight_list:
             area_weighted_averages[field] = (gdf_diff[field] * gdf_diff['area']).sum() / gdf_diff['area'].sum()
 
-        print("Area-Weighted Averages [ug m-3]:")
+        logger.info("Area-Weighted Averages [ug m-3]:")
         for key, value in area_weighted_averages.items():
-            print(f"{key}: {value}")
+            logger.info(f"{key}: {value}")
 
         # Save area-weighted averages to CSV
         output_file = os.path.join(output_dir, "area_weighted_averages.csv")
         df = pd.DataFrame(area_weighted_averages.items(), columns=["Species", "Area-Weighted Average"])
         df.to_csv(output_file, index=False)
-        print(f"Saved area-weighted averages to {output_file}")
+        logger.info(f"Saved area-weighted averages to {output_file}")
 
         # Save column sums to CSV
         output_file = os.path.join(output_dir, "mortality_sums.csv")
         #df = pd.DataFrame(column_sums.items(), columns=["Species", "Area-Weighted Average"])
         column_sums.to_csv(output_file, index=True)
-        print(f"Saved column sums to {output_file}")
+        logger.info(f"Saved column sums to {output_file}")
 
         return column_sums, area_weighted_averages
 
@@ -269,7 +269,7 @@ class INMAP_Analyzer:
 
         # Ensure both the current and "_old" columns exist in the GeoDataFrame
         if col_diff not in gdf.columns or col_base not in gdf.columns:
-            print(f'Columns {col_diff} or {col_base} do not exist in the data.')
+            raise ValueError(f'Columns {col_diff} or {col_base} do not exist in the data.')
         
         # Calculate the percent change, avoiding division by zero
         gdf[ field+'_percent_change'] = (gdf[col_diff] / gdf[col_base]) * 100
@@ -320,7 +320,7 @@ class INMAP_Analyzer:
         target_proj = gdf.crs
 
         if gdf_fips.crs != target_proj:
-            print(f"Reprojecting from {gdf_fips.crs} to {target_proj}")
+            logger.info(f"Reprojecting from {gdf_fips.crs} to {target_proj}")
             gdf_fips = gdf_fips.to_crs(target_proj)
 
         # Ensure state_fips is a list
@@ -337,7 +337,7 @@ class INMAP_Analyzer:
         gdf_co = gdf[gdf.intersects(state_geom)]
 
         # check new dataset
-        #print(gdf_co.head())
+        #logger.info(gdf_co.head())
 
         return gdf_co
 
@@ -419,18 +419,18 @@ class INMAP_Analyzer:
             with open(filename, 'w') as f:
                 f.write(modified_geojson)
 
-            print(f"GeoJSON data for column '{column}' has been saved to '{filename}'.")
+            logger.info(f"GeoJSON data for column '{column}' has been saved to '{filename}'.")
 
 
     def compare_pm25_mortality_changes(self, gdf_diff,output_dir, run_name): 
 
         sign_match = np.sign(gdf_diff['TotalPM25']) == np.sign(gdf_diff['TotalPopD'])
         mismatch_percentage = (1 - sign_match.mean()) * 100
-        print(f"{mismatch_percentage:.2f}% of the observations have mismatched signs for TotalPM25 and TotalPopD.")
+        logger.info(f"{mismatch_percentage:.2f}% of the observations have mismatched signs for TotalPM25 and TotalPopD.")
 
         magnitude_ratio = gdf_diff['TotalPM25'].abs() / gdf_diff['TotalPopD'].abs()  
         median_ratio = magnitude_ratio.median()
-        print(f"The median absolute magnitude ratio (TotalPM25 / TotalPopD) is: {median_ratio:.2f}")
+        logger.info(f"The median absolute magnitude ratio (TotalPM25 / TotalPopD) is: {median_ratio:.2f}")
 
         plt.figure(figsize=(10, 6))
         plt.scatter(gdf_diff['TotalPopD'], gdf_diff['TotalPM25'], alpha=0.5)
@@ -504,7 +504,7 @@ class INMAP_Analyzer:
     def setup_output_dirs(self, config):
         """Ensure output directories exist and return paths."""
         output_dir = config['output']['plots_dir']
-        json_output_path = os.path.join(output_dir, "JSON")
+        json_output_path = config['output']['json_dir']
         os.makedirs(output_dir, exist_ok=True)
         os.makedirs(json_output_path, exist_ok=True)
         return output_dir, json_output_path
@@ -638,18 +638,14 @@ class INMAP_Analyzer:
         elif grid_level == 'county':  
             gdf_grids = gdf_grids.rename(columns={'FIPS': 'ID'})
             
-
-        print("CRS of inmap:", inmap.crs)
-        print("CRS of gdf_grids before conversion:", gdf_grids.crs)
+        logger.info(f"Original CRS inmap: {inmap.crs} and CRS gdf_grids: {gdf_grids.crs}")
         
         # BenMAP's preferred projection for area calculation
         projection = ccrs.AlbersEqualArea(central_longitude=-96, central_latitude=23, standard_parallels=(29.5, 45.5))
         
         gdf_grids =  gdf_grids.to_crs(projection) 
         inmap = inmap.to_crs(projection) 
-        
-        print("CRS of inmap after geographic conversion:", inmap.crs)
-        print("CRS of gdf_grids after geographic conversion:", gdf_grids.crs)
+        logger.info(f"after geographic conversion, CRS inmap: {inmap.crs} and CRS gdf_grids: {gdf_grids.crs}")
         
         # Compute the intersection area for area-weighted concentrations
         inmap_with_grids = self.calculate_grid_intersected_areas(inmap, gdf_grids)
@@ -661,16 +657,13 @@ class INMAP_Analyzer:
         self.save_grid_shapefile(grid_level_gdf, output_shapefile_path)
         self.save_AQ_csv(grid_level_gdf, output_csv_path)
         
-        print(f"Shapefile and CSV for {inmap_output_path} have been saved successfully.")
+        logger.info(f"Shapefile and CSV for {inmap_output_path} have been saved successfully.")
         
         return inmap, grid_level_gdf
 
     def plot_pm25_original_and_reshaped_results(self, inmap, grid_level_gdf, output_prefix, output_dir, grid_level):
 
-        # Debugging: Print the min and max of the PM2.5 values
-        print("InMAP TotalPM25 min:", inmap['TotalPM25'].min(), "max:", inmap['TotalPM25'].max())
-        print("Grid-level PM2.5 min:", grid_level_gdf['area_weighted_avg_TotalPM25'].min(), "max:", grid_level_gdf['area_weighted_avg_TotalPM25'].max())
-        
+
         # Calculate statistics for InMAP
         inmap_min = inmap['TotalPM25'].min()
         inmap_max = inmap['TotalPM25'].max()

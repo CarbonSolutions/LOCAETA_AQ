@@ -23,7 +23,10 @@ def main(cfg):
     run_names = cfg['stages']['run_names']
 
     logger.info(f"Analyzing INMAP outputs for {scenario}: {run_names}")
-    
+
+    # Setup directories
+    output_dir, json_output_dir = processor.setup_output_dirs(config)
+
     # Optional state filtering for mapping
     state_regions = config.get('analyze', {}).get('map_only_these_state_regions') or {}
 
@@ -58,11 +61,17 @@ def main(cfg):
         logger.info(f"  Base run: {base_run}")
         logger.info(f"  Control run: {control_run}")
 
+        # Create per-run output dirs
+        run_output_dir = os.path.join(output_dir, run_name)
+        run_json_output_dir = os.path.join(json_output_dir, run_name)
+        os.makedirs(run_output_dir, exist_ok=True)
+        os.makedirs(run_json_output_dir, exist_ok=True)
+
         for benmap_output in benmap_output_type:
 
             benmap_output_file = f'{benmap_root}/APVR/{control_run}-{benmap_output}.csv'
-            output_dir = f"{benmap_output_dir}/{run_name}"
-            os.makedirs(output_dir, exist_ok=True)
+            benmap_output_dir = f"{benmap_output_dir}/{run_name}"
+            os.makedirs(benmap_output_dir, exist_ok=True)
 
             # STEP 1: Process BenMAP output and merge with grid
             final_df = processor.process_benmap_output(benmap_output_file, grid_gdf, benmap_output)
@@ -74,42 +83,15 @@ def main(cfg):
                 # Subset the final DataFrame based on the chosen state or national
                 final_df_subset = processor.subset_data(final_df, state_fips)
 
-                logger.info(f"Processing data for: {region_name}")
+                # STEP 2a: Aggregation and Save summary  
+                processor.analyze_region(final_df_subset, region_name, benmap_output, run_output_dir)
 
-                # === Aggregate ===
-                if benmap_output == 'incidence':
-                    # Group by ['Endpoint', 'Pollutant', 'Author', 'Race'] and calculate the sum of 'Mean'
-                    race_grouped_sum = final_df_subset.groupby(['Endpoint', 'Pollutant', 'Author', 'Race']).agg({'Mean': 'sum', "Population":"sum"}).reset_index()
-                    race_grouped_sum['Mean_per_Pop'] = race_grouped_sum['Mean'] / race_grouped_sum['Population'] * 1000000  # Scale by 1,000,000 for readability
+                # STEP 3: Create spatial plots
+                processor.plot_region_maps(final_df_subset, region_name, benmap_output, run_output_dir)
 
-                    # Creating a table to show the values in the barplots
-                    table_columns = ['Endpoint', 'Race', 'Mean', 'Mean_per_Pop']
-
-                else:
-                    # Group by ['Endpoint', 'Pollutant', 'Author', 'Race'] and calculate the sum of 'Mean'
-                    race_grouped_sum = final_df_subset.groupby(['Endpoint', 'Pollutant', 'Author', 'Race']).agg({'Mean': 'sum'}).reset_index()
-
-                    # Creating a table to show the values in the barplots
-                    table_columns = ['Endpoint', 'Race', 'Mean']
-
-                # Save summary table
-                processor.create_csv(race_grouped_sum, table_columns, f'Summary Table Health Benefits by Race in {region_name}', output_dir)
-
-                # STEP 3: Create spatial plots ===
-                grouped = final_df_subset.groupby(['Endpoint', 'Pollutant', 'Author'])
-
-                for (endpoint, pollutant, author), group in grouped:
-                    # Due to the long running time, only map for mortality 
-                    if "Mortality" in endpoint:
-                        logger.info(f"Creating mortality maps for {endpoint} ({benmap_output})")
-
-                        # Mean plot
-                        processor.plot_spatial_distribution_benmap_with_basemap(group, "Mean", output_dir, region_name)
-                
-                    if benmap_output == 'incidence':
-                        group['Mean_per_Pop'] = group.apply(lambda row: row['Mean'] / row['Population'] * 1000000, axis=1)  # Scale by 1,000,000 for readability
-                        if "Mortality" in endpoint:
-                            processor.plot_spatial_distribution_benmap_with_basemap(group, "Mean_per_Pop", output_dir, region_name)
+            # STEP 4: Creat JSON output from BenMAP output 
+            # Note : Don't call this before STEP 2 (because final_df gets modified during the call)
+            processor.save_grouped_benmap_json(final_df, run_json_output_dir, benmap_output)
 
     logger.info("BenMAP analysis completed successfully.")
 

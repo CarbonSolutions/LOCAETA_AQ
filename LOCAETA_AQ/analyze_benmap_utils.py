@@ -47,6 +47,13 @@ class Benmap_Analyzer:
             return final_df[final_df['STATE_FIPS'].isin(all_fips)]
         return final_df
 
+    def setup_output_dirs(self, config):
+        """Ensure output directories exist and return paths."""
+        output_dir = config['output']['plots_dir']
+        json_output_path = config['output']['json_dir']
+        os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(json_output_path, exist_ok=True)
+        return output_dir, json_output_path
 
     def process_benmap_output(self, benmap_output_file, grid_gdf, benmap_output):
         """
@@ -79,12 +86,12 @@ class Benmap_Analyzer:
         # Select relevant columns
         if benmap_output == 'incidence':
             columns_to_keep = [
-                'Endpoint', 'Pollutant', 'Author', 'Race', 'Ethnicity',
+                'Endpoint', 'Author', 'Race', 'Ethnicity',
                 'STATE_FIPS', 'CNTY_FIPS', 'Row', 'Col', 'Mean', 'Population', 'geometry'
             ]
         else:
             columns_to_keep = [
-                'Endpoint', 'Pollutant', 'Author', 'Race', 'Ethnicity',
+                'Endpoint', 'Author', 'Race', 'Ethnicity',
                 'STATE_FIPS', 'CNTY_FIPS', 'Row', 'Col', 'Mean', 'geometry'
             ]
 
@@ -120,7 +127,7 @@ class Benmap_Analyzer:
         
         logger.info(f"CSV file saved at {file_path}")
 
-    def plot_spatial_distribution_benmap_with_basemap(self, gdf, field, output_dir, region_name):
+    def plot_spatial_distribution_benmap_with_basemap(self, gdf, field, output_dir, region_name, benmap_output):
 
         # Define the preferred race order
         race_order = ["ALL", "BLACK", "WHITE", "ASIAN", "NATAMER", "HISPANIC"]
@@ -220,18 +227,87 @@ class Benmap_Analyzer:
                 plt.subplots_adjust(left=0.1, right=0.85, top=0.9, bottom=0.2)
 
                 # Save the figure for each endpoint-race combination
-                output_filename = f'{field}_{endpoint}_{race}_{region_name}_with_basemap.png'
+                output_filename = f'{benmap_output}_{field}_{endpoint}_{race}_{region_name}_with_basemap.png'
                 output_path = os.path.join(output_dir, output_filename)
                 plt.savefig(output_path, dpi=300, bbox_inches='tight')
                 plt.close()
 
                 logger.info(f'Saved: {output_path}')
 
-    def modify_geojson(self, geojson_data, column):
+    def analyze_region(self, final_df_subset, region_name, benmap_output, output_dir):
+        """
+        Aggregate results by race and optionally compute incidence per population.
+        """
+        logger.info(f"Analyzing region: {region_name}")
 
-        geojson_dict = json.loads(geojson_data)
+        # --- Aggregate ---
+        agg_dict = {"Mean": "sum"}
+        if benmap_output == "incidence":
+            agg_dict["Population"] = "sum"
+
+        race_grouped_sum = (
+            final_df_subset.groupby(["Endpoint", "Author", "Race"])
+            .agg(agg_dict)
+            .reset_index()
+        )
+
+        # Compute Mean_per_Pop if applicable
+        if "Population" in race_grouped_sum.columns:
+            race_grouped_sum["Mean_per_Pop"] = (
+                race_grouped_sum["Mean"] / race_grouped_sum["Population"] * 1000000
+            )
+
+        # Define table columns for CSV export
+        table_columns = ["Endpoint", "Race", "Mean"]
+        if "Mean_per_Pop" in race_grouped_sum.columns:
+            table_columns.append("Mean_per_Pop")
+
+        # Save summary table
+        self.create_csv(
+            race_grouped_sum,
+            table_columns,
+            f"{benmap_output}_Summary_Table_Health_Benefits_by_Race_in_{region_name}",
+            output_dir,
+        )
+
+        return race_grouped_sum
+
+    def plot_region_maps(self, final_df_subset, region_name, benmap_output, output_dir):
+        """
+        Create spatial maps for mortality endpoints.
+        """
+        grouped = final_df_subset.groupby(["Endpoint", "Author"])
+
+        for (endpoint, author), group in grouped:
+            if "Mortality" in endpoint:
+                logger.info(f"Plotting mortality maps for {endpoint} {benmap_output}")
+
+                # Plot Mean map
+                self.plot_spatial_distribution_benmap_with_basemap(
+                    group, "Mean", output_dir, region_name, benmap_output
+                )
+
+                # Plot Mean_per_Pop map (only for incidence)
+                if benmap_output == "incidence" and "Population" in group.columns:
+                    group["Mean_per_Pop"] = (
+                        group["Mean"] / group["Population"] * 1000000
+                    )
+                    self.plot_spatial_distribution_benmap_with_basemap(
+                        group, "Mean_per_Pop", output_dir, region_name, benmap_output
+                    )
+
+
+    def convert_group_to_geojson(self, group):
+        """Convert a GeoDataFrame group to a list of GeoJSON features."""
+        features = json.loads(group.to_json())['features']
+        for feature in features:
+            # Rename 'Mean' to 'Quantity'
+            feature['properties']['Quantity'] = feature['properties'].pop('Mean')
+        return features
+
+    def save_grouped_benmap_json(self, gdf, webdata_output_dir, benmap_output, threshold=1e-2):
+        """Save a single JSON file with Endpoint and Race groupings."""
         
-        # Display properties to add to each feature
         display_properties = {
             'color': '#808080',
             'weight': 1,
@@ -243,42 +319,42 @@ class Benmap_Analyzer:
             'legendEntry': 'none'
         }
 
-        # Add displayProperties at the top level
-        geojson_dict['displayProperties'] = display_properties
+        if benmap_output == 'incidence':
+            gdf.drop(columns=['STATE_FIPS', 'CNTY_FIPS', 'Population' ], inplace=True)
+            quantity_descriptor = 'Health Benefits of'
+        else:
+            gdf.drop(columns=['STATE_FIPS', 'CNTY_FIPS'], inplace=True)
+            quantity_descriptor = 'Monetized Health Benefits of'
 
-        if column == 'TotalPopD':
-            geojson_dict['QuantityDescriptor'] = "Changes in total premature deaths"
-        elif column == 'TotalPM25':
-            geojson_dict['QuantityDescriptor'] = "Changes in surface PM2.5 concentrations"
-        
-        # Rename the quantity column to "Quantity"
-        for feature in geojson_dict['features']:
-            feature['properties']['Quantity'] = feature['properties'].pop(column)
-        
-        modified_geojson = json.dumps(geojson_dict, indent=2)
-        modified_geojson = f"var INMAP_{column} = {modified_geojson};"
-        
-        return modified_geojson
+        if 'Monetized' in quantity_descriptor:
+            # Filter out small values
+            gdf_filtered = gdf[gdf['Mean'].abs() >= 1e3]
+        else: 
+            # Filter out small values
+            gdf_filtered = gdf[gdf['Mean'].abs() >= threshold]
 
+        grouped = gdf_filtered.groupby(['Endpoint', 'Race'])
 
-    def save_benmap_json(self, gdf_diff, columns_to_save, webdata_path):
+        data_dict = {}
+        for (endpoint, race), group in grouped:
+            features = self.convert_group_to_geojson(group[['geometry', 'Mean']].copy())
+            if endpoint not in data_dict:
+                data_dict[endpoint] = {}
 
-        for column in columns_to_save:
+            data_dict[endpoint][race] = {
+                "QuantityDescriptor": f"{quantity_descriptor} for {endpoint} in {race} group",
+                "features": features
+            }
 
-            gdf_column = gdf_diff[['geometry', column]].copy()
-            
-            if column == 'TotalPopD':
-                threshold = 0
-            elif column == 'TotalPM25':
-                threshold = 0.0000001
+        final_json = {
+            "displayProperties": display_properties,
+            "data": data_dict
+        }
 
-            gdf_filtered = gdf_column[(gdf_column[column].abs() > threshold)]
+        filename = os.path.join(webdata_output_dir, f'BenMAP_{benmap_output}.json')
 
-            geojson_data = gdf_filtered.to_json()
-            modified_geojson =self.modify_geojson(geojson_data, column)
+        with open(filename, 'w') as f:
+            json.dump(final_json, f, indent=2)
 
-            filename = os.path.join(webdata_path, f'INMAP_{column}.json')
-            with open(filename, 'w') as f:
-                f.write(modified_geojson)
+        logger.info(f"Grouped GeoJSON saved to '{filename}'.")
 
-            logger.info(f"GeoJSON data for column '{column}' has been saved to '{filename}'.")

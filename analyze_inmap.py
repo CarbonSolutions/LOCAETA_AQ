@@ -22,63 +22,59 @@ def main(cfg):
     scenario = cfg['stages']['scenario']
     run_names = cfg['stages']['run_names']
     logger.info(f"Analyzing INMAP outputs for {scenario}: {run_names}")
-    
+
     # Setup directories
     output_dir, json_output_dir = processor.setup_output_dirs(config)
-
+    
     # Optional state filtering for mapping
     state_regions = config.get('analyze', {}).get('map_only_these_state_regions') or {}
-    print(state_regions)
 
     # Collect run info
     run_pairs = processor.collect_analysis_infos(scenario, run_names)
-
-    print(f"starting {run_pairs}")
 
     # Constants for INMAP variables
     inmap_to_geojson = ['TotalPopD', 'TotalPM25', 'TotalPopD_density']
     inmap_columns = ['AsianD', 'BlackD', 'LatinoD', 'NativeD', 'WhitNoLatD', 'TotalPopD']
     source_receptor_columns = ['deathsK', 'deathsL']
 
-    # for run_name, paths in run_pairs.items():
+    for run_name, paths in run_pairs.items():
 
-    #     print(f"starting {run_name}, {paths}")
-    #     gdf_diff, output_type, columns_list, area_weight_list = processor.process_one_run(
-    #         run_name, paths, config,
-    #         inmap_columns, source_receptor_columns
-    #     )
+        logger.info(f"starting {run_name}, {paths}")
+        gdf_diff, output_type, columns_list, area_weight_list = processor.process_one_run(
+            run_name, paths, config,
+            inmap_columns, source_receptor_columns
+        )
 
-    #     print(f"The data is from an {output_type} output.")
+        logger.info(f"The data is from an {output_type} output.")
 
-    #     # Create per-run output dirs
-    #     run_output_dir = os.path.join(output_dir, run_name)
-    #     run_json_output_path = os.path.join(json_output_dir, run_name)
-    #     os.makedirs(run_output_dir, exist_ok=True)
-    #     os.makedirs(run_json_output_path, exist_ok=True)
+        # Create per-run output dirs
+        run_output_dir = os.path.join(output_dir, run_name)
+        run_json_output_path = os.path.join(json_output_dir, run_name)
+        os.makedirs(run_output_dir, exist_ok=True)
+        os.makedirs(run_json_output_path, exist_ok=True)
 
-    #     # Handle special inmap_run processing
-    #     if output_type == 'inmap_run':
-    #         gdf_diff = processor.handle_inmap_run(gdf_diff, run_output_dir, run_name)
+        # Handle special inmap_run processing
+        if output_type == 'inmap_run':
+            gdf_diff = processor.handle_inmap_run(gdf_diff, run_output_dir, run_name)
 
-    #         for v in inmap_to_geojson:
-    #             processor.create_interactive_map(gdf_diff, v, run_output_dir)
-    #             if v != 'TotalPopD_density':
-    #                 processor.plot_for_states( gdf_diff, v, run_output_dir, state_regions)
+            for v in inmap_to_geojson:
+                processor.create_interactive_map(gdf_diff, v, run_output_dir)
+                if v != 'TotalPopD_density':
+                    processor.plot_for_states( gdf_diff, v, run_output_dir, state_regions)
 
-    #     # Summaries + plots
-    #     column_sums, area_weighted_averages = processor.compute_and_print_summaries(
-    #         gdf_diff, columns_list, area_weight_list, run_output_dir
-    #     )
-    #     processor.barplot_health_aq_benefits(area_weighted_averages, column_sums, run_output_dir)
+        # Summaries + plots
+        column_sums, area_weighted_averages = processor.compute_and_print_summaries(
+            gdf_diff, columns_list, area_weight_list, run_output_dir
+        )
+        processor.barplot_health_aq_benefits(area_weighted_averages, column_sums, run_output_dir)
 
-    #     # Save GeoJSON
-    #     processor.save_json_outputs(gdf_diff, inmap_to_geojson, run_json_output_path, state_regions)
+        # Save GeoJSON
+        processor.save_json_outputs(gdf_diff, inmap_to_geojson, run_json_output_path, state_regions)
 
 
     ######################################
     # convert INMAP output to BenMAP input
     ######################################
-    inmap_output_dir = cfg["inmap"]["output"]["output_dir"]
     benmap_AQ_input_dir = cfg["benmap"]["input"]["input_dir"]
 
     # default setup for benmap 
@@ -93,6 +89,7 @@ def main(cfg):
         if base_path not in unique_base_paths.values():  # only keep first occurrence
             unique_base_paths[run_name] = base_path
     
+    logger.info(unique_base_paths)
     # --- Handle base runs ---
     if not cfg[scenario]['has_own_base_emission']:
         default_base_run = cfg['inmap']['analyze']['default_base_run']
@@ -100,7 +97,7 @@ def main(cfg):
         if len(unique_base_paths) == 1 :
             run_name, base_path = next(iter(unique_base_paths.items()))
             if default_base_run in base_path:
-                print(f"default base run is used: {base_path}")
+                logger.info(f"default base run is used: {base_path}")
                 base_output_csv_path = f"{benmap_AQ_input_dir}/{default_base_run}_{grid_level}_inmap_{target_year}_pm25.csv"
                 processor.process_and_plot(base_path, grid_shapefile_path, base_output_csv_path, run_name, benmap_AQ_input_dir, grid_level)
             else:
@@ -108,25 +105,22 @@ def main(cfg):
         else:
             raise ValueError(f"When the default_base_run is used, there must be exactly 1 unique base: {unique_base_paths}")
     else:
-        print(f"multiple base run are used")
+        logger.info(f"multiple base run are used")
         for run_name, base_path in unique_base_paths.items():
-            base_path = paths["base"]  
             base_run_name = os.path.basename(os.path.dirname(base_path))
-            print("debugging", base_run_name)
+            logger.info(f"Checking base_run, {base_run_name}")
+
             if "base" in base_run_name:
                 base_output_csv_path = f"{benmap_AQ_input_dir}/{base_run_name}_{grid_level}_inmap_{target_year}_pm25.csv"
                 processor.process_and_plot(base_path, grid_shapefile_path, base_output_csv_path, run_name, benmap_AQ_input_dir, grid_level)
             else:
                 raise FileExistsError(f"The file name is NOT an expected base run: {base_run_name}" )
-    
-            print("debugging base_csv:", run_name, base_output_csv_path)
 
     # --- Handle sensitivity runs (always per run_name) ---
     for run_name, paths in run_pairs.items():
-
         sens_path = paths["sens"]
+        logger.info(f"Checking sens_run, {sens_path}")
         sens_output_csv_path = f"{benmap_AQ_input_dir}/control_{run_name}_{grid_level}_inmap_{target_year}_pm25.csv"
-        print("debugging sens_csv:", run_name, sens_output_csv_path)
         processor.process_and_plot(sens_path, grid_shapefile_path, sens_output_csv_path, run_name, benmap_AQ_input_dir, grid_level)
 
 if __name__ == "__main__":

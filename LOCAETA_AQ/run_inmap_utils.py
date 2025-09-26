@@ -68,10 +68,16 @@ class INMAP_Processor:
                     allowed.add(f"{scen}_{region}")
 
         elif get_emission == "electrification_emissions":
-            for scen in config.get("target_scenario", []):
-                scen = str(scen)
-                allowed.add(scen)
-                allowed.add(f"{scen}_base")
+            
+            for overall_scenario in ['Full_USA', 'Food_Agr']:
+                for scen in config.get("target_scenario", []):
+                    scen = str(scen)
+
+                    if overall_scenario != "Full_USA":
+                        scen = f"{str(scen)}_{overall_scenario}"
+
+                    allowed.add(scen)
+                    allowed.add(f"{scen}_base")
 
         elif get_emission == "nei_emissions":
             # target_scenario is a single string
@@ -191,7 +197,7 @@ for i in "${{!runs[@]}}"; do
 
     echo "=== Starting run: $run_name ==="
     mkdir -p "outputs/$run_name"
-    ./inmap run steady -s --config "$toml_path"
+#    ./inmap run steady -s --config "$toml_path"
     echo "=== Finished run: $run_name ==="
 done
 """
@@ -225,6 +231,8 @@ done
                 - 'inmap_run_file_output': str
         """
         run_infos = []
+
+
 
         for target_run_name in run_names:
             output_base, run_name = self.get_emission_paths(scenario, target_run_name)

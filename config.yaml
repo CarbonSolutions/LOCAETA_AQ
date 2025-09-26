@@ -14,16 +14,15 @@ stages:
   scenario: datacenter_emissions # name must match with the available emissions below
   run_names: 
     - current_2020
-  skip_base_run: true    # You can also use this to run only base by using run_names with base runs and setting this true. 
+  skip_base_run: false    # You can also use this to run only base by using run_names with base runs and setting this true. 
   run_only_separate_case: false # if the runs in run_names are already available, set this true, so it can skip running them again
   separate_case_per_each_run: # Use this to get CAMBIUM region specific run
     - CAISO
-    - PJM_East
-  run_nei: true
+  run_nei: false
   run_inmap: true
   analyze_inmap: true
   run_benmap: true
-  run_report: false
+  run_report: true
 
 inmap:
   input:
@@ -33,6 +32,7 @@ inmap:
   output:
     output_dir: outputs            # append to inmap_root in Python
     plots_dir: inmap               # append to output_root in Python
+    json_dir: JSON
   analyze:
     default_base_run: base_nei2020_jun2025 # inmap run name 
     map_only_these_state_regions:  # Don't use this for the CONUS runs
@@ -56,12 +56,14 @@ benmap:
   output:
   #  output_dir doesn't need to be defined, as all outputs are saved under the benmap_root/APVR 
     plots_dir: benmap              # append to output_root in Python
+    json_dir: JSON
 
 report:
   input:
     qmd_file: LOCAETA_report.qmd    # under report_root
   output:
     output_dir: out                 # under report_root
+    plots_dir: report
   options:
     render: true
 

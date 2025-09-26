@@ -1,11 +1,12 @@
 import os
-import sys
 import warnings
-from LOCAETA_AQ.analyze_inmap_utils import INMAP_Analyzer 
 from LOCAETA_AQ.run_benmap_utils import Benmap_Processor 
 from LOCAETA_AQ.config_utils import load_config
 import logging
 import subprocess
+
+# logging from run_workflow 
+logger = logging.getLogger(__name__)
 
 # Suppress all warnings
 warnings.filterwarnings('ignore')
@@ -15,7 +16,6 @@ def main(cfg):
 
     # Initialize processor
     processor = Benmap_Processor(cfg)
-    inmap_processor = INMAP_Analyzer(cfg)
 
     config = cfg["benmap"]
     scenario = cfg['stages']['scenario']
@@ -34,10 +34,7 @@ def main(cfg):
     default_base_run = cfg['inmap']['analyze']['default_base_run']
 
     # Collect run info
-    run_pairs = inmap_processor.collect_analysis_infos(scenario, run_names)
-
-    # Reprocess run_pairs to have benmap AQ output CSV file names ---
-    output_pairs = processor.build_output_pairs(run_pairs, scenario, grid_level, target_year)
+    output_pairs = processor.build_output_pairs(scenario, run_names, grid_level, target_year)
 
     # grid_level should be capitalize for BenMAP
     grid_level =  config['default_setup']['grid_level'].capitalize() # 'county' # or 'tracts' 
@@ -58,7 +55,8 @@ def main(cfg):
         control_run = paths["sens"]
         base_run = paths["base"]
 
-        print(f"starting benmap model : {run_name}, {base_run}, {control_run}")
+        logger.info(f"starting benmap model : {run_name}, base: {base_run}, control: {control_run}")
+
         # Skip re-processing the default base run after the first time
         if default_base_run in base_run and process_once:
             continue

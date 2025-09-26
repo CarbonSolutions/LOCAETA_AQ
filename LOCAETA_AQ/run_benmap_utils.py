@@ -42,7 +42,7 @@ class Benmap_Processor:
         content = content.replace('{base_run}', base_run)
         content = content.replace('{grid_level}', grid_level)
 
-        print("AQG debug", output_path)
+        logger.info(f"Creating base AQG output: {output_path}")
         # Write the modified content to a new file
         with open(output_path, 'w') as f:
             f.write(content)
@@ -58,7 +58,7 @@ class Benmap_Processor:
         content = content.replace('{control_run}', control_run)
         content = content.replace('{grid_level}', grid_level)
 
-        print("AQG debug", output_path)
+        logger.info(f"Creating control AQG output: {output_path}")
         # Write the modified content to a new file
         with open(output_path, 'w') as f:
             f.write(content)
@@ -76,6 +76,7 @@ class Benmap_Processor:
         content = content.replace('{control_run}', control_run)
         content = content.replace('{base_run}', base_run)
 
+        logger.info(f"Creating CFG output: {output_path}")
         # Write the modified content to a new file
         with open(output_path, 'w') as f:
             f.write(content)
@@ -92,6 +93,7 @@ class Benmap_Processor:
         content = content.replace('{control_run}', control_run)
         content = content.replace('{grid_level}', grid_level)
 
+        logger.info(f"Creating APV output: {output_path}")
         # Write the modified content to a new file
         with open(output_path, 'w') as f:
             f.write(content)
@@ -124,11 +126,9 @@ class Benmap_Processor:
         """
         output_pairs = {}
         run_inmap_obj = INMAP_Processor(self.cfg)
-        output_base = self.cfg['inmap']['output']['output_dir']
 
         for target_run_name in run_names:
             _, run_name = run_inmap_obj.get_emission_paths(scenario, target_run_name)
-            sens_run_output = os.path.join(output_base, run_name)
 
             # --- Base emissions ---
             if self.cfg[scenario]['has_own_base_emission']:
@@ -151,7 +151,6 @@ class Benmap_Processor:
             separate_cases = self.cfg.get('stages', {}).get('separate_case_per_each_run') or []
             for case_name in separate_cases:
                 _, run_name_case = run_inmap_obj.get_emission_paths(scenario, f"{target_run_name}_{case_name}")
-                sens_run_output_case = os.path.join(output_base, run_name_case)
                 sens_output_csv_path_case = f"control_{run_name_case}_{grid_level}_inmap_{target_year}_pm25"
 
                 output_pairs[run_name_case] = {
