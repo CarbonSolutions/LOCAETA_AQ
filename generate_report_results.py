@@ -1,0 +1,106 @@
+
+import os
+import pandas as pd
+import warnings
+import logging
+from LOCAETA_AQ.report_utils import report_processor
+from LOCAETA_AQ.run_benmap_utils import Benmap_Processor 
+from LOCAETA_AQ.config_utils import load_config
+
+# logging from run_workflow 
+logger = logging.getLogger(__name__)
+
+warnings.filterwarnings('ignore')
+
+def main(cfg):
+
+    # Initialize processor
+    processor = report_processor(cfg)
+
+    config = cfg["report"]
+    scenario = cfg['stages']['scenario']
+    run_names = cfg['stages']['run_names']
+    grid_level =  cfg['benmap']['default_setup']['grid_level'] 
+    target_year =cfg['benmap']['default_setup']['target_year'] 
+
+    logger.info(f"Generating combine results for scenario : {scenario}")
+
+    run_benmap_processor = Benmap_Processor(cfg)
+    # Collect run info
+    output_pairs = run_benmap_processor.build_output_pairs(scenario, run_names, grid_level, target_year)
+    logger.info(f"starting {output_pairs}")
+     
+    # output_directories
+    inmap_ouput_root = cfg["inmap"]["output"]["plots_dir"]
+    benmap_output_root = cfg["benmap"]["output"]["plots_dir"]
+    report_plots_dir = os.path.join(cfg["report"]["output"]["plots_dir"], scenario)
+    os.makedirs(report_plots_dir, exist_ok=True) 
+
+    combined_df = None
+
+    inmap_target_file = 'area_weighted_averages.csv'
+    inmap_final_output = 'area_weighted_averages_all_runs'
+
+    benmap_output_type =['incidence' , 'valuation']
+
+    run_names = output_pairs.keys()
+
+    # Step 1: INMAP combined results
+    for run in run_names:
+        output_path = os.path.join(inmap_ouput_root, run)
+        df = pd.read_csv(os.path.join(output_path, inmap_target_file))
+
+        df.rename(columns={"Area-Weighted Average": run}, inplace=True)
+
+        # Merge on 'Species' column
+        if combined_df is None:
+            combined_df = df  # First dataframe, set as base
+        else:
+            combined_df = pd.merge(combined_df, df, on="Species", how="outer")
+
+    # Generate combined bar plots
+    processor.plot_area_weighted_average_all_runs(combined_df, run_names, report_plots_dir, f"{inmap_final_output}.png") 
+    # Save the mean concentrations from all runs in inmap_final_output
+    processor.save_area_weighted_avg_for_all_runs (combined_df, report_plots_dir, f"{inmap_final_output}.csv")
+
+    # Step 2: BenMAP combined results
+    for benmap_output in benmap_output_type:
+        combined_df = None
+        combined_df_normalized = None
+
+        benmap_target_file = f'{benmap_output}_Summary_Table_Health_Benefits_by_Race_in_Nation.csv'
+
+        for run in run_names:
+            logger.info(f"Processing run: {run}")
+            df_mean, df_normalized = processor.read_and_prepare_benmap_csv(run, benmap_output_root, benmap_target_file, benmap_output)
+
+            combined_df = processor.merge_benmap_dfs(combined_df, df_mean)
+            if benmap_output == 'incidence' and df_normalized is not None:
+                combined_df_normalized = processor.merge_benmap_dfs(combined_df_normalized, df_normalized)
+
+        logger.info(f"Combined DataFrame for {benmap_output}:\n{combined_df}")
+        if benmap_output == 'incidence':
+            logger.info(f"Combined Normalized DataFrame for {benmap_output}:\n{combined_df_normalized}")
+
+        # Save and plot results
+        processor.save_and_plot_results(combined_df, combined_df_normalized, benmap_output, report_plots_dir)
+
+if __name__ == "__main__":
+
+    import logging
+    import yaml
+    from datetime import datetime
+
+    # start logger 
+    logfile = f"log_files/generate_report_results_{datetime.now():%Y%m%d_%H%M%S}.log"
+    logging.basicConfig(
+        level=logging.INFO,  # or DEBUG
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[
+           # logging.StreamHandler(),
+            logging.FileHandler(logfile, mode="w")
+        ]
+    )
+    
+    cfg = load_config("config.yaml")
+    main(cfg)
