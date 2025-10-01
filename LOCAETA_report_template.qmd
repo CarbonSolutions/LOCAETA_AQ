@@ -81,8 +81,11 @@ elif scenario == "ccs_emissions":
   scen_name = "Carbon Capture and Storage scenario"
 elif scenario == "electrification_emissions": 
   scen_name = "Electrification scenario"
+else:
+  raise ValueError
 
-display(Markdown(f"<h1>Report for {report_run} under {scen_name} </h1>"))
+display(Markdown(f"<h1><b>{scen_name} report</b></h1>"))
+display(Markdown(f"{report_run} run"))
 
 ```
 
