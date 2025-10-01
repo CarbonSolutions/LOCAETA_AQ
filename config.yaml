@@ -8,21 +8,26 @@ base_dirs:
   ccs_root: "/Users/yunhalee/Documents/LOCAETA/CCS_emissions"
   datacenter_root: "/Users/yunhalee/Documents/LOCAETA/DataCenter_emissions"
   electrification_root: "/Users/yunhalee/Documents/LOCAETA/Electrification"
-  report_root: "/Users/yunhalee/Documents/LOCAETA/reports"
+  main_root: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ"
+  report_root: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/quarto_reports"
 
 stages:
   scenario: datacenter_emissions # name must match with the available emissions below
   run_names: 
     - current_2020
+  report_run: current_2020  # available report_run: ['USA_CCS', 'LA_CCS','CO_CCS', 'current_2020', '2050_decarb95', '2050_noIRA_111D','current_easyhard','current_easyhard_Food_Agr']
   skip_base_run: false    # You can also use this to run only base by using run_names with base runs and setting this true. 
   run_only_separate_case: false # if the runs in run_names are already available, set this true, so it can skip running them again
   separate_case_per_each_run: # Use this to get CAMBIUM region specific run
+    - PJM_East
     - CAISO
   run_nei: false
   run_inmap: true
   analyze_inmap: true
   run_benmap: true
-  run_report: true
+  analyze_benmap: true
+  generate_report_results: true 
+  render_quarto_report: true
 
 inmap:
   input:
@@ -59,13 +64,12 @@ benmap:
     json_dir: JSON
 
 report:
+# available scenarios to choose ['USA_CCS', 'LA_CCS','CO_CCS', 'current_2020', '2050_decarb95', '2050_noIRA_111D','current_easyhard','current_easyhard_Food_Agr']
   input:
-    qmd_file: LOCAETA_report.qmd    # under report_root
+    qmd_template: LOCAETA_report_template.qmd    # under report_root
   output:
-    output_dir: out                 # under report_root
+    output_dir: final_reports                 # under report_root
     plots_dir: report
-  options:
-    render: true
 
 ##########################
 ### Emission Scenarios ###
@@ -141,7 +145,7 @@ electrification_emissions:
   output:
     output_dir: output
     plots_dir: emissions # append to output_root in Python
-  master_scenario: Full_USA # set Full_USA or Food_Agr 
+  master_scenario: Food_Agr  # Full_USA # set Full_USA or Food_Agr 
   target_scenario:
     - current_easyhard
     - 2050_easyhard_noIRA_111D

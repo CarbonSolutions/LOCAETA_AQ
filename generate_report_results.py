@@ -19,6 +19,7 @@ def main(cfg):
 
     config = cfg["report"]
     scenario = cfg['stages']['scenario']
+    report_run = cfg['stages']['report_run']
     run_names = cfg['stages']['run_names']
     grid_level =  cfg['benmap']['default_setup']['grid_level'] 
     target_year =cfg['benmap']['default_setup']['target_year'] 
@@ -33,7 +34,7 @@ def main(cfg):
     # output_directories
     inmap_ouput_root = cfg["inmap"]["output"]["plots_dir"]
     benmap_output_root = cfg["benmap"]["output"]["plots_dir"]
-    report_plots_dir = os.path.join(cfg["report"]["output"]["plots_dir"], scenario)
+    report_plots_dir = os.path.join(cfg["report"]["output"]["plots_dir"], report_run)
     os.makedirs(report_plots_dir, exist_ok=True) 
 
     combined_df = None
@@ -84,6 +85,34 @@ def main(cfg):
 
         # Save and plot results
         processor.save_and_plot_results(combined_df, combined_df_normalized, benmap_output, report_plots_dir)
+
+    # Step 3: Linking overall emissions figure
+    emis_plot_dir =os.path.join(cfg['base_dirs']['output_root'], 'emissions')
+
+    if report_run in ['current_easyhard','current_easyhard_Food_Agr']: # "electrification_emissions"
+        src_emis_plot_dir = os.path.join(emis_plot_dir, report_run)
+        src_file_name = 'Total_Difference.png'
+
+    elif report_run in ['current_2020', '2050_decarb95', '2050_noIRA_111D']:  # "datacenter_emissions" 
+        src_emis_plot_dir = os.path.join(emis_plot_dir, report_run)
+        src_file_name = 'Total_Difference.png'
+
+    elif report_run in ['USA_CCS', 'LA_CCS', 'CO_CCS']: # == "ccs_emissions":
+        src_emis_plot_dir = os.path.join(emis_plot_dir, report_run)
+        src_file_name = "NEI_vs_CCS_vs_zero_out_emissions_all_industrial_facilities.png"
+    else:
+        raise ValueError (f"Error in generate_report_results: no matching emissions for {report_run}")
+    
+    src_plot_file = f"{src_emis_plot_dir}/{src_file_name}"
+    if not os.path.exists(src_plot_file):
+        raise FileNotFoundError(f"Source figure file not found: {src_plot_file}")
+
+    dst_file = f"{report_plots_dir}/overall_emis_plot.png"
+    # Check if the symlink exists before attempting to remove it
+    if os.path.islink(dst_file):
+        os.remove(dst_file)
+        logger.info(f"Removed existing symlink '{dst_file}'")
+    os.symlink(os.path.abspath(src_plot_file), dst_file)
 
 if __name__ == "__main__":
 
