@@ -73,6 +73,9 @@ run_list = output_pairs.keys()
 # Convert run_list to a proper list if it's dict_keys
 run_list = list(run_list) if not isinstance(run_list, list) else run_list
 
+```
+
+```{python}
 from IPython.display import Markdown, display
 
 if scenario == "datacenter_emissions": 
@@ -84,11 +87,19 @@ elif scenario == "electrification_emissions":
 else:
   raise ValueError
 
-display(Markdown(f"<h1><b>{scen_name} report</b></h1>"))
-display(Markdown(f"{report_run} run"))
-
+display(Markdown(f"""
+<div style="
+  background: linear-gradient(90deg, #2E86C1, #5DADE2);
+  color:white;
+  padding:25px 10px;
+  text-align:center;
+  border-radius:10px;
+  margin:20px 0;">
+  <h1 style='margin:0; font-size:2.2em;'>{scen_name} Report</h1>
+  <h3 style='margin:5px 0 0;'>Run: {report_run}</h3>
+</div>
+"""))
 ```
-
 
 # Introduction 
 ```{python}
