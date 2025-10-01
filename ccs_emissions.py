@@ -112,7 +112,7 @@ def main(cfg):
         logger.info(f"PROCESSING {ctype} emissions now")
         if ctype == "industrial_no_ccs":
 
-            run_name = f'{config['target_scenario']}_without_CCS_facilities'
+            run_name = f'{config["target_scenario"]}_without_CCS_facilities'
             gdf_no_ccs = processor.exclude_ccs_facilities(final_with_ccs, cs_emis_clean)
             processor.save_case_output(gdf_no_ccs, run_name, config['output']['output_dir'], run_name)
 

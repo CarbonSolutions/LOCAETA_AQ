@@ -691,7 +691,7 @@ class ElectrificationEmissionProcessor:
 
         # setup output dir
         output_dir = os.path.join(
-            self.config['output']['plots_dir'], self.config['master_scenario'],
+            self.config['output']['plots_dir'], # self.config['master_scenario'],
             list(scen_emis_list.values())[0])
         os.makedirs(output_dir, exist_ok=True)
 
@@ -810,7 +810,7 @@ class ElectrificationEmissionProcessor:
 
                 # setup output dir
                 output_dir = os.path.join(
-                    self.config['output']['plots_dir'] + self.config['master_scenario'],
+                    self.config['output']['plots_dir'],
                     list(scen_emis_list.values())[0]
                 )
                 os.makedirs(output_dir, exist_ok=True)

@@ -158,4 +158,11 @@ class Benmap_Processor:
                     "sens": sens_output_csv_path_case,
                 }
 
+        # Exclude other runs if "run_only_separate_case" is true. 
+        if self.cfg["stages"]["run_only_separate_case"]:
+            separate_cases = self.cfg.get('stages', {}).get('separate_case_per_each_run') or []
+            for run_name in list(output_pairs.keys()):
+                if not any(case_name in run_name for case_name in separate_cases):
+                    del output_pairs[run_name]
+
         return output_pairs

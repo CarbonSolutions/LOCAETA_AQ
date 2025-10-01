@@ -492,11 +492,18 @@ class INMAP_Analyzer:
             separate_cases = self.cfg.get('stages', {}).get('separate_case_per_each_run') or []
             for case_name in separate_cases:
                 _, run_name_case = run_inmap_obj.get_emission_paths(scenario, f"{target_run_name}_{case_name}")
-                sens_run_output_case = os.path.join(output_base, run_name)
+                sens_run_output_case = os.path.join(output_base, run_name_case)
                 run_infos[run_name_case] = {
                     'base': os.path.join(base_run_output, "2020nei_output_run_steady.shp"),
                     'sens': os.path.join(sens_run_output_case, "2020nei_output_run_steady.shp")
                 }
+
+        # Exclude other runs if "run_only_separate_case" is true. 
+        if self.cfg["stages"]["run_only_separate_case"]:
+            separate_cases = self.cfg.get('stages', {}).get('separate_case_per_each_run') or []
+            for run_name in list(run_infos.keys()):
+                if not any(case_name in run_name for case_name in separate_cases):
+                    del run_infos[run_name]
 
         return run_infos
     

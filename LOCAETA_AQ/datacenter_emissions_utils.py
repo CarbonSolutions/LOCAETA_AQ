@@ -309,7 +309,7 @@ class DataCenterEmissionProcessor:
             ax.legend()
 
         plt.tight_layout()
-        fig_path = os.path.join(outputdir, f'Total_Difference_{emis_region}.png')
+        fig_path = os.path.join(outputdir, f'Total_Difference.png')
         plt.savefig(fig_path, dpi=300, bbox_inches='tight')
         plt.close()
         logger.info(f"Saved {fig_path}")

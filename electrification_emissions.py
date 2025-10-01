@@ -24,7 +24,7 @@ def main(cfg):
 
     # Create output directories if not exists
     os.makedirs(os.path.join(config['output']['output_dir'], config['master_scenario']), exist_ok=True)
-    os.makedirs(os.path.join(config['output']['plots_dir'], config['master_scenario']), exist_ok=True)
+    os.makedirs(os.path.join(config['output']['plots_dir']), exist_ok=True)
 
     # Initialize processor
     processor = ElectrificationEmissionProcessor(config)

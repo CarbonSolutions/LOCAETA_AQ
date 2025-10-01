@@ -642,12 +642,12 @@ class CCSEmissionProcessor:
         ccs_totals = gdf[self.NEI_cols].sum()
         gdf_with_ccs_zeroed.loc[is_ccs, self.NEI_cols] = 0 
         zero_totals = gdf_with_ccs_zeroed[self.NEI_cols].sum()
-        plot_df = pd.DataFrame({"NEI": nei_totals.values, "CCS": ccs_totals.values, "Zero_out_CCS":zero_totals.values}, index = self.NEI_cols)
+        plot_df = pd.DataFrame({"NEI": nei_totals.values, "CCS": ccs_totals.values, "Zero_out_CCS_facilities":zero_totals.values}, index = self.NEI_cols)
 
         # Step 3: Plot
         ax = plot_df.plot(kind='bar', figsize = (10,6))
         plt.ylabel("Total Emissions [tons]")
-        plt.title("Total NEI vs CCS vs zero out emissions at all industrial facilities")
+        plt.title("Total NEI vs CCS vs zero out CCS facilities emissions at all industrial facilities")
         plt.axhline(0, color='black',linestyle = '--')
         plt.xticks(rotation=0)
 
@@ -674,17 +674,17 @@ class CCSEmissionProcessor:
         
         nei_totals = gdf_ccs_only[NEI_cols_renamed].sum()
         ccs_totals = gdf_ccs_only[self.NEI_cols].sum()
-        #zero_totals = pd.Series({col: 0 for col in self.NEI_cols})
+        zero_totals = pd.Series({col: 0 for col in self.NEI_cols})
         
         plot_df = pd.DataFrame({
             "NEI": nei_totals.values,
             "CCS": ccs_totals.values,
-        #    "Zero_out": zero_totals.values
+        #    "Zero_out_CCS_facilities": zero_totals.values
         }, index=self.NEI_cols)
         
         ax = plot_df.plot(kind='bar', figsize=(10, 6))
         plt.ylabel("Total Emissions [tons]")
-        plt.title(f"{title_prefix}NEI vs CCS vs Zero-out Emissions at CCS Facilities")
+        plt.title(f"{title_prefix}NEI vs CCS at CCS Facilities")
         plt.axhline(0, color='black', linestyle='--')
         plt.xticks(rotation=0)
         
@@ -696,7 +696,7 @@ class CCSEmissionProcessor:
                        rotation=90, ha='center', va='bottom' if height >= 0 else 'top')
         
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, 'nei_vs_ccs_vs_zeroout_comparison.png'),
+        plt.savefig(os.path.join(output_dir, 'nei_vs_ccs_comparison_at_CCS_facilities.png'),
                    dpi=300, bbox_inches='tight')
         plt.close()
         

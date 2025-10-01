@@ -35,6 +35,7 @@ def main(cfg):
 
     # Collect run info
     output_pairs = processor.build_output_pairs(scenario, run_names, grid_level, target_year)
+    logger.info(f"all the runs to be processed : {output_pairs}")
 
     # grid_level should be capitalize for BenMAP
     grid_level =  config['default_setup']['grid_level'].capitalize() # 'county' # or 'tracts' 

@@ -32,7 +32,6 @@ def main(cfg):
 
     # Benmap configuration
     benmap_root = config['input']['batchmode_dir']
-    benmap_output_dir = config['output']['plots_dir']
     grid_shapefile_path = cfg["benmap"]['default_setup']['shapefile_dir'] 
     grid_level =  config['default_setup']['grid_level'] 
     target_year = config['default_setup']['target_year'] 
@@ -70,8 +69,6 @@ def main(cfg):
         for benmap_output in benmap_output_type:
 
             benmap_output_file = f'{benmap_root}/APVR/{control_run}-{benmap_output}.csv'
-            benmap_output_dir = f"{benmap_output_dir}/{run_name}"
-            os.makedirs(benmap_output_dir, exist_ok=True)
 
             # STEP 1: Process BenMAP output and merge with grid
             final_df = processor.process_benmap_output(benmap_output_file, grid_gdf, benmap_output)
