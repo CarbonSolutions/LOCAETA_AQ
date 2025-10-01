@@ -1,34 +1,47 @@
+##########################
+### root directories  ###
+##########################
 base_dirs:
-  project_root: "/Users/yunhalee/Documents/LOCAETA"
+  main_root: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ"
   output_root: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs"
-  inmap_root: "/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/inmap-1.9.6-gridsplit"
-  benmap_root: "/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP" 
   nei_root: "/Users/yunhalee/Documents/LOCAETA/NEI_emissions/NEI_2020_gaftp_Jun2024"
   nei_output_root: &nei_output "/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/evaldata_v1.6.1/2020_nei_emissions"
   ccs_root: "/Users/yunhalee/Documents/LOCAETA/CCS_emissions"
   datacenter_root: "/Users/yunhalee/Documents/LOCAETA/DataCenter_emissions"
   electrification_root: "/Users/yunhalee/Documents/LOCAETA/Electrification"
-  main_root: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ"
   report_root: "/Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/quarto_reports"
+  inmap_root: "/Users/yunhalee/Documents/LOCAETA/RCM/INMAP/inmap-1.9.6-gridsplit"
+  benmap_root: "/Users/yunhalee/Documents/LOCAETA/RCM/BenMAP" 
 
+###############################
+### workflow configuration  ###
+###############################
 stages:
+# master setup 
   scenario: datacenter_emissions # name must match with the available emissions below
   run_names: 
     - current_2020
-  report_run: current_2020  # available report_run: ['USA_CCS', 'LA_CCS','CO_CCS', 'current_2020', '2050_decarb95', '2050_noIRA_111D','current_easyhard','current_easyhard_Food_Agr']
-  skip_base_run: false    # You can also use this to run only base by using run_names with base runs and setting this true. 
-  run_only_separate_case: false # if the runs in run_names are already available, set this true, so it can skip running them again
   separate_case_per_each_run: # Use this to get CAMBIUM region specific run
     - PJM_East
     - CAISO
-  run_nei: false
+# emissions
+  process_nei: false
+  skip_process_scenario_emissions: true 
+# inmap and benmap 
+  skip_base_run: false    # You can also use this to run only base by using run_names with base runs and setting this true. 
+  run_only_separate_case: false # if the runs in run_names are already available, set this true, so it can skip running them again
   run_inmap: true
   analyze_inmap: true
   run_benmap: true
   analyze_benmap: true
+# quarto report
   generate_report_results: true 
   render_quarto_report: true
+  report_run: current_2020  # available report_run: ['USA_CCS', 'LA_CCS','CO_CCS', 'current_2020', '2050_decarb95', '2050_noIRA_111D','current_easyhard','current_easyhard_Food_Agr']
 
+############################
+### inmap configuration  ###
+############################
 inmap:
   input:
     toml_dir: eval                  # append to inmap_root in Python
@@ -47,6 +60,9 @@ inmap:
       #   - "28"
       #   - "48" 
 
+#############################
+### benmap configuration  ###
+#############################
 benmap:
   input:
     input_dir: inmap_output         # under benmap_root
@@ -63,6 +79,9 @@ benmap:
     plots_dir: benmap              # append to output_root in Python
     json_dir: JSON
 
+#############################
+### report configuration  ###
+#############################
 report:
 # available scenarios to choose ['USA_CCS', 'LA_CCS','CO_CCS', 'current_2020', '2050_decarb95', '2050_noIRA_111D','current_easyhard','current_easyhard_Food_Agr']
   input:
@@ -71,9 +90,9 @@ report:
     output_dir: final_reports                 # under report_root
     plots_dir: report
 
-##########################
-### Emission Scenarios ###
-##########################
+########################################
+### Emission Scenarios Configuration ###
+########################################
 
 # nei_emissions are basis for all scenarios. 
 # The nei output files must be available for other emission processing. 
