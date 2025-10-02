@@ -182,6 +182,12 @@ This will:
 2. Automatically execute each modeling and analysis stage based on the flags under `stages`
 3. Save intermediate and final outputs under the appropriate directories defined in `base_dirs` and `output_dir` and `plots_dir` under Scenario options
 
+## Description of available runs from the current LOCAETA-AQ repository
+
+<p align="center">
+  <img src="./Run_descriptions.png" alt="LOCAETA-AQ Run Description Table" width="85%">
+</p>
+
 ---
 
 ## 4. Example Runs
@@ -240,14 +246,6 @@ stages:
   analyze_benmap: true
 
 ```
-
-## Description of available runs from the current repository
-
-<p align="center">
-  <img src="./Run_descriptions.pdf" alt="LOCAETA-AQ Run Description Table" width="85%">
-</p>
-
-**Figure:** Description of all available runs from the current LOCAETA-AQ repository 
 
 
 ---
