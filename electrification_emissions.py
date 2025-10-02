@@ -77,6 +77,7 @@ if __name__ == "__main__":
     import logging
     import yaml
     from datetime import datetime
+    import argparse
 
     # start logger 
     logfile = f"log_files/run_electrification_emissions_{datetime.now():%Y%m%d_%H%M%S}.log"
@@ -88,6 +89,14 @@ if __name__ == "__main__":
             logging.FileHandler(logfile, mode="w")
         ]
     )
-    
-    cfg = load_config("config.yaml")
+    parser = argparse.ArgumentParser(description="Run the electrification emissions.")
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="config.yaml",
+        help="Path to the configuration YAML file (default: config.yaml)",
+    )
+    args = parser.parse_args()
+
+    cfg = load_config(args.config)
     main(cfg)

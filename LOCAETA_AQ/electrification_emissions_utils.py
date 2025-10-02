@@ -395,7 +395,7 @@ class ElectrificationEmissionProcessor:
 
 
         csv_input_dir = os.path.join(self.config["input"]["raw_csv_dir"], overall_scenario)
-        output_dir = os.path.join(self.config["output"]["output_dir"], overall_scenario, scen_name)
+        output_dir = os.path.join(self.config["output"]["output_dir"], emis_name)
         os.makedirs(output_dir, exist_ok=True)
 
         facilities_file = os.path.join(csv_input_dir, f"pp_{scen_name}.csv")
@@ -452,7 +452,7 @@ class ElectrificationEmissionProcessor:
 
         first_scen, first_emis = next(iter(scen_emis_list.items()))
         csv_input_dir = os.path.join(self.config["input"]["raw_csv_dir"], overall_scenario)
-        output_dir = os.path.join(self.config["output"]["output_dir"], overall_scenario, first_scen)
+        output_dir = os.path.join(self.config["output"]["output_dir"], first_emis)
         os.makedirs(output_dir, exist_ok=True)
 
         """Process non-powerplant emissions (CCS facilities)."""
@@ -567,8 +567,7 @@ class ElectrificationEmissionProcessor:
             logger.info(f"Processing scenario={scen_name}, emission={emis_name}")
             scenario_dir = os.path.join(
                 self.config["output"]["output_dir"],
-                overall_scenario,
-                scen_name
+                emis_name
             )
             os.makedirs(scenario_dir, exist_ok=True)
 
@@ -674,7 +673,7 @@ class ElectrificationEmissionProcessor:
 
         # case 1: powerplants
         for i, (scen_name, emis_name) in enumerate(scen_emis_list.items()):
-            emis_dir_path = os.path.join(self.config['output']['output_dir'], overall_scenario, scen_name)
+            emis_dir_path = os.path.join(self.config['output']['output_dir'], emis_name)
             df_compare = self.process_emissions(emis_dir_path, emis_name, is_powerplant=True)
             compare_all.append(df_compare)
 
@@ -730,8 +729,7 @@ class ElectrificationEmissionProcessor:
         for i, (scen_name, emis_name) in enumerate(scen_emis_list.items()):
 
             emis_dir_path =os.path.join(self.config['output']['output_dir'], 
-                                        overall_scenario, 
-                                        scen_name)
+                                        emis_name)
 
             for is_base_emission in [True, False]:
                 # Determine file suffixes and pollutant map
