@@ -1,160 +1,290 @@
 # Local Climate and Air Emissions Tracking Atlas (LOCAETA)
 
-LOCAETA is an interactive, user-friendly data platform that utilizes a suite of cutting-edge atmospheric datasets (ground-based and remote sensing) and models to demonstrate the impact of decarbonization technologies on local air quality and public health.
+LOCAETA is an interactive, user-friendly data platform that integrates advanced atmospheric models and datasets to quantify the air quality and public health impacts of decarbonization technologies.
 
 ## Background
 
-The [LOCAETA Data Explorer](https://apps.carbonsolutionsllc.com/locaeta/) is designed to offer accessible air quality information in a user-friendly format, aimed at helping the public better understand how local air quality and public health are influenced by innovative decarbonization technologies. This platform provides:
+The [LOCAETA Data Explorer](https://apps.carbonsolutionsllc.com/locaeta/) provides accessible, science-based air quality information to help communities, policymakers, and researchers understand how decarbonization strategies affect local air quality and health outcomes.  
 
-- Satellite and in situ sensor data
-- Identification of industrial facilities impacting community air quality
-- Screening-level air quality modeling across the U.S.
+It combines:
 
-#### Decarbonization Strategies Available to Explore: 
+- Satellite and in situ air quality observations  
+- Industrial facility-level emissions  
+- Screening-level modeling of air quality and health impacts  
 
-- Carbon Capture and Storage (CCS)
-- Industrial Electrification
-- Fuel Switching to Hydrogen or Other Clean Fuels
+### Decarbonization Strategies Analyzed
 
-Each decarbonization option includes calculations of corresponding air quality co-benefits at the facility level, along with estimates of public health benefits for communities across a wide geographic area.
+- **Carbon Capture and Storage (CCS)**
+- **Industrial Electrification**
+- **Data Center Electrification**
+- **Fuel Switching (e.g., Hydrogen, Clean Fuels)**
 
-## LOCAETA-AQ repository Contents
+Each pathway includes facility-level emission changes, corresponding air quality modeling with INMAP, and public health impact assessments using BenMAP.
 
-This repository contains the code used for LOCAETA's air quality modeling and impact analysis. Currently, it uses the INMAP air quality model and performs a detailed public health assessment with well-established methods such as BenMAP.
+---
 
-- **INMAP Air Quality Model**: See the details of INMAP in this [link](https://inmap.run/)
-- **BenMAP Public Health Model**: See the details of BenMAP in this [link](https://www.epa.gov/benmap/)
+## Repository Overview
 
+This repository, **LOCAETA_AQ**, contains the code and configurations for automated emission processing, air quality modeling, and health impact workflows.  
 
-## Repository structure
+### Core Components
+
+- **Emissions** – Processing raw NEI-SMOKE formatted csv files to shapefiles 
+- **INMAP** – Reduced-form air quality model ([details](https://inmap.run/))
+- **BenMAP** – Health impact model ([details](https://www.epa.gov/benmap))
+- **Quarto Reports** – Automated report generation from model outputs
+
+### Repository Structure
 
 ```plaintext
 LOCAETA_AQ/
-├── LOCAETA_AQ/
-├── quarto-reports/
-│   ├── *.qmd                     # Quarto report files
-│   ├── *.html                    # final HTML report
-├── notebooks/                    # Directory for useful jupyter notebook iles for additional processing
-│   ├── BenMAP_output_analysis_final.ipynb                     # Python script for BenMAP output analysis
-│   ├── check_emissions.ipynb                                  # Python script for evaluating emissions
-│   ├── DataCenter_to_NEI_SMOKE_emissions.ipynb                # Python script for DataCenter emission processing
-│   ├── Electrification_to_NEI_SMOKE_emissions.ipynb           # Python script for Electrification emission processing
-│   ├── USA_CCS_emission_processing.ipynb                      # Python script for USA CCS emission processing
-│   ├── INMAP_further_analysis.ipynb                           # Python script for INMAP further analysis (plotting combined bar plots among runs)
-│   ├── remove_NH3_VOC_from_CCS.ipynb                          # Jupyter notebook for creating CCS without NH3 
-│   ├── modify_facility_emissions.ipynb                        # Jupyter notebook for modifying a single facility emission
-├── outputs/                      # Directory for storing generated outputs (NOT INCLUDED IN THE REPO)
-├── __init__.py
-├── setup.py                                   
-├── README.md                     # README file for project documentation                 
-├── NEI_csv_to_shapefile.py       # Python script for converting NEI CSV data to shapefiles 
-├── Incorporate_CCS_to_NEI.py     # Python script to incorporate CCS data into NEI dataset 
-├── inmap_run_comparison.py       # Python script for comparing INMAP model runs 
-├── process_INMAP_for_BenMAP.py   # Python script for processing INMAP data for BenMAP
-└── README.md                     # README file for project documentation
+├── config.yaml                      # Central configuration file controlling the full workflow
+├── run_workflow.py                  # Main orchestration script (runs all workflow stages sequentially)
+│
+├── nei_emissions.py                 # Process NEI base emissions
+├── ccs_emissions.py                 # Process CCS emissions
+├── datacenter_emissions.py          # Process data center emissions
+├── electrification_emissions.py     # Process industrial electrification emissions
+│
+├── run_inmap.py                     # Run INMAP simulations
+├── analyze_inmap.py                 # Analyze INMAP outputs (maps, summaries, comparisons)
+│
+├── run_benmap.py                    # Run BenMAP simulations (batch mode)
+├── analyze_benmap.py                # Analyze BenMAP outputs and compute health metrics
+│
+├── generate_report_results.py       # Combine INMAP + BenMAP outputs for report input
+├── render_report.py                 # Render automated Quarto reports (HTML/PDF)
+│
+├── quarto_reports/                  # Quarto templates and rendered reports
+├── outputs/                         # Model outputs (excluded from repo)
+├── LOCAETA_AQ/                      # Helper functions and shared utilities
+├── setup.py
+└── README.md
 ```
 
-# Worflow of LOCAETA-AQ
+---
 
+# Config-Driven Workflow
 
-## Step 1: Emission processing
+Starting from this version, the **entire LOCAETA-AQ workflow**—from emissions processing to report generation—is automated using the configuration file `config.yaml` and a single driver script `run_workflow.py`. Note that each workflow driver (e.g., run_inmap, analyze_benmap) can be executed individually. 
 
-1. Generate NEI shapefiles from SMOKE ready csv files
-```
-python ./NEI_csv_to_shapefile.py
-```
-Note that it needs to set a directory where the SMOKE ready csv files are located and a directory where shapefiles will be saved. 
+---
 
-2. Apply new emission scenario into NEI shapefiles
+## 1. Overview
 
-#### **Regional amine-based CCS scenarios** 
-```
-python ./Incorporate_CCS_to_NEI.py
-```
-This script generate a new emission shapefile that has all point-source NEI emissions and a emission shapefile that includes CCS emissions for the facilities affected by CCS tech. The combined point-source emissions are needed, because CCS tech can apply to any point source type. With that, this script doesn't change non-point source. This script and the script called by this script may need to be revised, if the CCS output from Kelly is changed (esp. for column names). 
+The workflow proceeds in stages:
 
-If you want to check/validate emissions, you can use this jupyter notebook: 
-```
-./notebooks/check_emissions.ipynb.
-```
+1. **Emission Processing**
+2. **INMAP Simulation**
+3. **INMAP Analysis**
+4. **BenMAP Health Impact Analysis** (This is written to run in Mac OS)
+5. **BenMAP Analysis**
+6. **Report Generation (Quarto)**
 
-If you need to remove NH3 and VOC emission, you can use this jupyter notebook: 
-```
-./notebooks/remove_NH3_VOC_from_CCS.ipynb
-```
+Each stage is controlled by the `stages` section in `config.yaml`.
 
-If you need to modify a specific facility emissions, you can use this jupyter notebook: 
-```
-./notebooks/modify_facility_emissions.ipynb
-```
+---
 
-#### **Whole USA amine-based CCS scenarios**
-```
-./notebooks/USA_CCS_emission_processing.ipynb
-```
-Note that the regional CCS emission processing is developed first but the whole USA CCS scenario is much complicated, so I wrote new script to process the whole USA CCS emissions. 
+## 2. Configure the Workflow (`config.yaml`)
 
-#### **Data Center scenarios** 
-```
-./notebooks/DataCenter_to_NEI_SMOKE_emissions.ipynb
+All user-editable settings are in [`config.yaml`](./config.yaml).  
+Key sections:
+
+### 🔹 `base_dirs`
+Defines the main directory structure:
+```yaml
+base_dirs:
+  main_root: "/path/to/LOCAETA_AQ"
+  output_root: "/path/to/LOCAETA_AQ/outputs"
+  nei_root: "/path/to/NEI_emissions"
+  ccs_root: "/path/to/CCS_emissions"
+  inmap_root: "/path/to/inmap-1.9.6-gridsplit"
+  benmap_root: "/path/to/BenMAP"
+  report_root: "/path/to/quarto_reports"
 ```
 
-#### **Electrification scenarios** 
-```
-./notebooks/Electrification_to_NEI_SMOKE_emissions.ipynb
-```
+### 🔹 `stages`
+Controls what to run:
+```yaml
+stages:
+  scenario: datacenter_emissions        # Select emission scenario type
+  run_names: 
+    - current_2020                      # Emission scenario to process
+  separate_case_per_each_run:
+    - MISO_Central                      # Regional subcase (optional)
 
-## Step 2:  Run INMAP
+  process_nei: false                    # Process NEI base emissions
+  skip_process_scenario_emissions: true # Skip emission reprocessing if done
+  skip_base_run: true                   # Skip INMAP base if already available
+  run_only_separate_case: true          
 
-Once the emission files are processed, it is time to run INMAP. You can find the instruction on how to run INMAP in this repo: https://github.com/yunhal/inmap-1.9.6-gridsplit 
-
-Brief steps: 
-  1. create "toml" run file (you can modify eval/nei2020Config_CO_CCS.toml)
-  2. set the emission file path you just processed
-  3. set the INMAP output file path (make sure to create the output directory as well)
-  4. run INMAP  
-
-You can use this script (inmap-1.9.6-gridsplit/create_inmap_toml.ipynb) to run these steps in one shot.
-
-## Step 3: Analyze INMAP outputs
-```
-python ./inmap_run_comparison.py 
-```
-Make sure to set run_pairs which defines the INMAP output file path and scenario name. This script will generate figures under analysis_output_dir and json files under webdata_path by each run pair.
-
-To general a combined bar plot with multiple INMAP runs, do this: 
-
-```
-./notebooks/INMAP_further_analysis.ipynb 
+  run_inmap: true
+  analyze_inmap: true
+  run_benmap: true
+  analyze_benmap: true
+  generate_report_results: true
+  render_quarto_report: true
+  report_run: current_2020
 ```
 
-## Step 4: Convert INMAP output to BenMAP input file and run BenMAP
+### 🔹 Scenario Options
+Each emission scenario (e.g., `ccs_emissions`, `datacenter_emissions`, `electrification_emissions`) defines its own input/output settings, target scenarios, and notes.  
+For example:
+
+```yaml
+datacenter_emissions:
+  input:
+    raw_csv_dir: "."
+  output:
+    output_dir: output
+    plots_dir: emissions
+  target_scenario:
+    - current_2020
+    - 2050_noIRA_111D
+    - 2050_decarb95
+  separate_scenario:
+    - CAISO
+    - PJM_East
+    - MISO_Central
+  has_own_base_emission: true
 ```
-python ./process_INMAP_for_BenMAP.py
+
+You can switch between emission types and run_names by setting:
+```yaml
+stages:
+  scenario: ccs_emissions
+  run_names: 
+  - current_2020                     
+  separate_case_per_each_run:
+  - MISO_Central  
 ```
-This will generate air quality files in csv for each INMAP run, which will be used as an input to BenMAP. The instruction to run BenMAP will be available in this repo: https://github.com/yunhal/BenMAP_batchmode_for_MAC
-
-In that repo, you will find this script (BenMAP_batchmode_for_MAC/batchmode/run_benmap_Wine.ipynb) that will run BenMAP in batch mode. 
-
-## Step 5: Analyze BenMAP ouputs
-
-You can run this jupyter notebook for that: 
-```
-./notebooks/BenMAP_output_analysis_final.ipynb
+or
+```yaml
+stages:
+  scenario: electrification_emissions
+  run_names: 
+  - current_easyhard
+  - 2050_easyhard_decarb95                      
 ```
 
-## Step 6: Generate a Quarto report
+---
 
-I designed a quarto file to generate a LOCAETA-AQ report with minimum efforts. It will automatically grab key INMAP/BenMAP results and scenario descriptions files. For instance, here are the key model results used in the report: 1) a total emission plot that describes the overall emission changes in the scenario, 2) overall area-weighted concentrations from INMAP, 3) spatial distribution of total PM2.5 from INMAP, 4) BenMAP outputs. 
+## 3. Run the Workflow
 
-The scenario description files (i.e., intro.txt, simulations_description.csv, and emis_description.txt) must be available under "outputs/report_txt/{run_name}" before generating a report. 
+Once the configuration file is ready, simply execute:
 
+```bash
+python run_workflow.py --config config.yaml
+```
 
-## Contact Information
+This will:
+1. Read all parameters from `config.yaml`
+2. Automatically execute each modeling and analysis stage based on the flags under `stages`
+3. Save intermediate and final outputs under the appropriate directories defined in `base_dirs` and `output_dir` and `plots_dir` under Scenario options
 
-For any questions or further information regarding this repository, please contact:
+---
+
+## 4. Example Runs
+
+### Example 1: Datacenter Scenario (run only Cambium region runs, so it uses skip_base_run and run_only_separate_case)
+```yaml
+stages:
+  scenario: datacenter_emissions
+  run_names: 
+    - current_2020
+    - 2050_decarb95
+  separate_case_per_each_run: 
+    - CAISO
+    - PJM_East
+    - MISO_Central
+    - MISO_South
+    - NorthernGrid_West
+    - SPP_North
+  skip_base_run: false
+  run_only_separate_case: true
+  run_inmap: true
+  analyze_inmap: true
+  run_benmap: true
+  analyze_benmap: true
+```
+
+### Example 2: CCS USA scenario only (skip base INMAP run, which is NEI2020 run)
+```yaml
+stages:
+  scenario: ccs_emissions
+  run_names: USA_CCS
+  skip_base_run: true
+  run_only_separate_case: false
+  run_inmap: true
+  analyze_inmap: true
+  run_benmap: true
+  analyze_benmap: true
+```
+
+### Example 3: Electrification scenario only
+```yaml
+stages:
+  scenario: electrification_emissions
+  run_names: 
+    - current_easyhard_Food_Agr
+    - 2050_easyhard_noIRA_111D_Food_Agr
+    - 2050_easyhard_decarb95_Food_Agr
+  skip_base_run: false
+  run_only_separate_case: false
+  run_inmap: true
+  analyze_inmap: true
+  run_benmap: true
+  analyze_benmap: true
+
+```
+
+---
+
+## 5. Outputs
+
+After each run, results are organized under:
+```
+outputs/
+├── emissions/
+├── inmap/
+├── benmap/
+└── report/
+```
+
+### INMAP
+- Concentration maps, CSVs, and JSON summaries saved under `output_root/inmap`
+- Plots and spatial summaries in `plots_dir`
+
+### BenMAP
+- Health impact results and summaries in `benmap_root/APVR`
+- Plots under `output_root/benmap`
+
+### Quarto Reports
+- Automatically generated HTML reports under `report_root/final_reports`
+- Based on `LOCAETA_report_template.qmd`
+
+---
+
+## 6. Troubleshooting
+
+- Make sure directory paths in `config.yaml` exist before running.
+- If you only want to analyze existing results, set:
+  ```yaml
+  run_inmap: false
+  run_benmap: false
+  analyze_inmap: true
+  analyze_benmap: true
+  ```
+- To re-run only report generation:
+  ```yaml
+  generate_report_results: true
+  render_quarto_report: true
+  ```
+
+---
+
+## Contact
 
 **Yunha Lee**  
-**Research Scientist**  
-**Carbon Solutions**  
-Email: [yunha.lee@carbonsolutionsllc.com](mailto:yunha.lee@carbonsolutionsllc.com)
+*Research Scientist, Carbon Solutions LLC*  
+📧 [yunha.lee@carbonsolutionsllc.com](mailto:yunha.lee@carbonsolutionsllc.com)
