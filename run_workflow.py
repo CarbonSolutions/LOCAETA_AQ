@@ -97,6 +97,17 @@ def main(cfg):
 
 
 if __name__ == "__main__":
-    
-    cfg = load_config("config.yaml")
+
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Run the LOCAETA-AQ workflow.")
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="config.yaml",
+        help="Path to the configuration YAML file (default: config.yaml)",
+    )
+    args = parser.parse_args()
+
+    cfg = load_config(args.config)
     main(cfg)

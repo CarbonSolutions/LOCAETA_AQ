@@ -128,6 +128,7 @@ if __name__ == "__main__":
     import logging
     import yaml
     from datetime import datetime
+    import argparse
 
     # start logger 
     logfile = f"log_files/analyze_inmap_{datetime.now():%Y%m%d_%H%M%S}.log"
@@ -140,7 +141,15 @@ if __name__ == "__main__":
         ]
     )
     
-    cfg = load_config("config.yaml")
-    main(cfg)
+    parser = argparse.ArgumentParser(description="Analyze inmap outputs.")
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="config.yaml",
+        help="Path to the configuration YAML file (default: config.yaml)",
+    )
+    args = parser.parse_args()
 
+    cfg = load_config(args.config)
+    main(cfg)
 
