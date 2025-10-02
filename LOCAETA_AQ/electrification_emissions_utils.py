@@ -389,13 +389,13 @@ class ElectrificationEmissionProcessor:
 
 
     # Process powerplant emissions 
-    def process_powerplant_scenario(self, scen_name, emis_name, nei_all_pt):
+    def process_powerplant_scenario(self, scen_name, emis_name, nei_all_pt, overall_scenario):
         """Process powerplant emissions for one scenario."""
         logger.info(f"processing, {scen_name}")
 
 
-        csv_input_dir = os.path.join(self.config["input"]["raw_csv_dir"], self.config['master_scenario'])
-        output_dir = os.path.join(self.config["output"]["output_dir"], self.config['master_scenario'], scen_name)
+        csv_input_dir = os.path.join(self.config["input"]["raw_csv_dir"], overall_scenario)
+        output_dir = os.path.join(self.config["output"]["output_dir"], overall_scenario, scen_name)
         os.makedirs(output_dir, exist_ok=True)
 
         facilities_file = os.path.join(csv_input_dir, f"pp_{scen_name}.csv")
@@ -447,12 +447,12 @@ class ElectrificationEmissionProcessor:
 
 
     # process other facilities emissions
-    def process_non_powerplant(self,  scen_emis_list, unmapped_df, nei_all_pt):
+    def process_non_powerplant(self,  scen_emis_list, unmapped_df, nei_all_pt, overall_scenario):
 
 
         first_scen, first_emis = next(iter(scen_emis_list.items()))
-        csv_input_dir = os.path.join(self.config["input"]["raw_csv_dir"], self.config['master_scenario'])
-        output_dir = os.path.join(self.config["output"]["output_dir"], self.config['master_scenario'], first_scen)
+        csv_input_dir = os.path.join(self.config["input"]["raw_csv_dir"], overall_scenario)
+        output_dir = os.path.join(self.config["output"]["output_dir"], overall_scenario, first_scen)
         os.makedirs(output_dir, exist_ok=True)
 
         """Process non-powerplant emissions (CCS facilities)."""
@@ -550,7 +550,7 @@ class ElectrificationEmissionProcessor:
                 os.symlink(os.path.abspath(src), dst)
                 logger.info(f"Symlink is created for {dst}")
 
-    def create_non_powerplant_symlinks(self, scen_emis_list):
+    def create_non_powerplant_symlinks(self, scen_emis_list, overall_scenario):
         """
         Create symlinks for non-powerplant emissions across scenarios.
         
@@ -567,7 +567,7 @@ class ElectrificationEmissionProcessor:
             logger.info(f"Processing scenario={scen_name}, emission={emis_name}")
             scenario_dir = os.path.join(
                 self.config["output"]["output_dir"],
-                self.config['master_scenario'],
+                overall_scenario,
                 scen_name
             )
             os.makedirs(scenario_dir, exist_ok=True)
@@ -606,9 +606,6 @@ class ElectrificationEmissionProcessor:
 
     def process_emissions(self, emis_dir_path, emis_name, is_powerplant=True):
         """Process emissions for a given case (powerplant or non-powerplant)."""
-
-        overall_scenario = self.config['master_scenario']
-
         
         if is_powerplant:
             file_path1 = os.path.join(emis_dir_path, f'{emis_name}_pp_base.shp')
@@ -669,21 +666,20 @@ class ElectrificationEmissionProcessor:
     # First plotting
     # -------------------------
 
-    def compare_emissions(self, scen_emis_list):
+    def compare_emissions(self, scen_emis_list, overall_scenario):
 
         """comparing powerplant and non-powerplant emissions."""
-        overall_scenario = self.config['master_scenario']
 
         compare_all = []
 
         # case 1: powerplants
         for i, (scen_name, emis_name) in enumerate(scen_emis_list.items()):
-            emis_dir_path = os.path.join(self.config['output']['output_dir'], self.config['master_scenario'], scen_name)
+            emis_dir_path = os.path.join(self.config['output']['output_dir'], overall_scenario, scen_name)
             df_compare = self.process_emissions(emis_dir_path, emis_name, is_powerplant=True)
             compare_all.append(df_compare)
 
         # non powerplant emissions are all same, so it doesn't matter which directory gets read.
-        df_compare = self.process_emissions(emis_dir_path, emis_name, is_powerplant=False)
+        df_compare = self.process_emissions(emis_dir_path, emis_name, is_powerplant=False )
         compare_all.append(df_compare)
 
         # combine
@@ -691,7 +687,7 @@ class ElectrificationEmissionProcessor:
 
         # setup output dir
         output_dir = os.path.join(
-            self.config['output']['plots_dir'], # self.config['master_scenario'],
+            self.config['output']['plots_dir'], # overall_scenario,
             list(scen_emis_list.values())[0])
         os.makedirs(output_dir, exist_ok=True)
 
@@ -713,11 +709,10 @@ class ElectrificationEmissionProcessor:
     # Second plotting (original emissions comparison)
     # -------------------------
 
-    def compare_with_original(self, scen_emis_list):
+    def compare_with_original(self, scen_emis_list, overall_scenario):
         """Compare shapefile emissions with original CSV emissions."""
 
-        overall_scenario = self.config['master_scenario']
-        csv_input_dir = os.path.join(self.config["input"]["raw_csv_dir"], self.config['master_scenario'])
+        csv_input_dir = os.path.join(self.config["input"]["raw_csv_dir"], overall_scenario)
 
         pollutant_final_map = {
             'NOx': 'NOx_tons_final',
@@ -735,7 +730,7 @@ class ElectrificationEmissionProcessor:
         for i, (scen_name, emis_name) in enumerate(scen_emis_list.items()):
 
             emis_dir_path =os.path.join(self.config['output']['output_dir'], 
-                                        self.config['master_scenario'], 
+                                        overall_scenario, 
                                         scen_name)
 
             for is_base_emission in [True, False]:

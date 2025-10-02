@@ -19,20 +19,19 @@ def main(cfg):
     config['combined_nei_file'] = os.path.join(cfg['base_dirs']['nei_output_root'],
                                                 cfg['nei_emissions']['output']['combined_pt_source_file'])
 
-    overall_scenario = config['master_scenario']
-    scenario_list = config['target_scenario']
-
-    # Create output directories if not exists
-    os.makedirs(os.path.join(config['output']['output_dir'], config['master_scenario']), exist_ok=True)
     os.makedirs(os.path.join(config['output']['plots_dir']), exist_ok=True)
+    scenario_list = config['target_scenario']
+    master_scenarios = config['master_scenario'] 
+
+    # Ensure master_scenarios is always a list
+    if isinstance(master_scenarios, str):
+        master_scenarios = [master_scenarios]
 
     # Initialize processor
     processor = ElectrificationEmissionProcessor(config)
 
     # Read the point source emissions
     nei_all_pt = gpd.read_file(config['combined_nei_file'])
-
-    # Reset index to ensure proper comparison
     nei_all_pt.reset_index(drop=True, inplace=True)
 
     col_dict = {}
@@ -43,30 +42,36 @@ def main(cfg):
 
     nei_all_pt.head()
 
-    # Build dictionary mapping scenario name -> emission file name
-    if overall_scenario != "Full_USA":
-        scen_emis_list =  {scen: f"{scen}_{overall_scenario}" for scen in scenario_list}
-    else:
-        scen_emis_list = {scen: scen for scen in scenario_list}
-    
-    logger.info(scen_emis_list)
+    for overall_scenario in master_scenarios:
+        logger.info(f"Processing master scenario: {overall_scenario}")
 
-    egrid, mapped_df, unmapped_df = None, None, None
-    for scen_name, emis_name in scen_emis_list.items():
-        logger.info(f"{scen_name}, {emis_name}")
-        egrid, mapped_df, unmapped_df = processor.process_powerplant_scenario(
-            scen_name, emis_name, nei_all_pt)
+        # Create output directories if not exists
+        os.makedirs(os.path.join(config['output']['output_dir'], overall_scenario), exist_ok=True)
+            
+        # Build dictionary mapping scenario name -> emission file name
+        if overall_scenario != "Full_USA":
+            scen_emis_list =  {scen: f"{scen}_{overall_scenario}" for scen in scenario_list}
+        else:
+            scen_emis_list = {scen: scen for scen in scenario_list}
+        
+        logger.info(scen_emis_list)
 
-    processor.process_non_powerplant(
-        scen_emis_list, unmapped_df, nei_all_pt)
-    
-    processor.create_non_powerplant_symlinks(scen_emis_list)
+        egrid, mapped_df, unmapped_df = None, None, None
+        for scen_name, emis_name in scen_emis_list.items():
+            logger.info(f"{scen_name}, {emis_name}")
+            egrid, mapped_df, unmapped_df = processor.process_powerplant_scenario(
+                scen_name, emis_name, nei_all_pt, overall_scenario)
 
-    # Plot 1: Base vs Final comparison
-    processor.compare_emissions(scen_emis_list)
+        processor.process_non_powerplant(
+            scen_emis_list, unmapped_df, nei_all_pt, overall_scenario)
+        
+        processor.create_non_powerplant_symlinks(scen_emis_list, overall_scenario)
 
-    # Plot 2: Compare shapefile emissions with original CSV
-    processor.compare_with_original(scen_emis_list)
+        # Plot 1: Base vs Final comparison
+        processor.compare_emissions(scen_emis_list, overall_scenario)
+
+        # Plot 2: Compare shapefile emissions with original CSV
+        processor.compare_with_original(scen_emis_list, overall_scenario)
 
 if __name__ == "__main__":
     import logging
