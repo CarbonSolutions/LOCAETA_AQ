@@ -212,7 +212,10 @@ stages:
 ```yaml
 stages:
   scenario: ccs_emissions
-  run_names: USA_CCS
+  run_names: 
+    - USA_CCS
+    - USA_CCS_wo_NH3_VOC
+    - USA_zero_out_CCS
   skip_base_run: true
   run_only_separate_case: false
   run_inmap: true
@@ -237,6 +240,15 @@ stages:
   analyze_benmap: true
 
 ```
+
+## Description of available runs from the current repository
+
+<p align="center">
+  <img src="./Run_descriptions.pdf" alt="LOCAETA-AQ Run Description Table" width="85%">
+</p>
+
+**Figure:** Description of all available runs from the current LOCAETA-AQ repository 
+
 
 ---
 
