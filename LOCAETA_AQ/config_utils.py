@@ -46,7 +46,7 @@ def load_config(config_file):
 
             if workflow_key and current_key:
                 # plots_dir always uses output_root
-                if current_key in ["plots_dir", "JSON_dir"] and "output_root" in base_dirs:
+                if current_key in ["plots_dir", "json_dir"] and "output_root" in base_dirs:
                     return str(Path(base_dirs["output_root"]) / p)
                 # any other _dir uses workflow root
                 elif current_key.endswith("_dir"):
