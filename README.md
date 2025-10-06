@@ -58,7 +58,7 @@ LOCAETA_AQ/
 ├── quarto_reports/                  # Quarto templates and rendered reports
 ├── outputs/                         # Model outputs (excluded from repo)
 ├── LOCAETA_AQ/                      # Helper functions and shared utilities
-├── setup.py
+├── pyproject.toml
 └── README.md
 ```
 
