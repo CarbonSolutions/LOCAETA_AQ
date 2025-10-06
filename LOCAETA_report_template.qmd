@@ -10,11 +10,6 @@ date: today
 
 date-format: "MMMM D, YYYY"
 
-params:
-  report_run: current_2020
-  run_list: ["current_2020", "current_2020_PJM_East", "current_2020_CAISO"]
-  plots_dir: /Users/yunhalee/Documents/LOCAETA/LOCAETA_AQ/outputs/report/current_2020
-
 #  html:
 code-fold: true
 execute:
