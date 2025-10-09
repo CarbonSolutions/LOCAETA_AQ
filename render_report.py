@@ -8,6 +8,8 @@ from LOCAETA_AQ.run_benmap_utils import Benmap_Processor
 from LOCAETA_AQ.config_utils import load_config
 import tempfile
 from quarto import render
+import fiona
+print(os.path.join(os.path.dirname(fiona.__file__), 'gdal_data'))
 
 
 # logging from run_workflow 
@@ -22,8 +24,9 @@ def main(cfg):
     main_root = cfg['base_dirs']['main_root']
     qmd_template = config["input"]["qmd_template"]
     report_run = cfg['stages']['report_run']
-    output_dir = config["output"]["output_dir"]
-
+    output_root = config["output"]["plots_dir"] 
+    output_dir = os.path.join(output_root, "final_reports")
+    
     os.makedirs(output_dir, exist_ok=True)
     
     qmd_path = os.path.join(main_root, qmd_template)

@@ -92,7 +92,8 @@ class INMAP_Processor:
         # Output base path
         output_base = config["output"]["output_dir"]
         if config.get("master_scenario"):
-            output_base = os.path.join(output_base, config["master_scenario"])
+            for master_scenario in config["master_scenario"]:
+                output_base = os.path.join(output_base, master_scenario)
 
         return output_base, run_name
 
